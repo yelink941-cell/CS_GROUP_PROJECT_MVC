@@ -11,22 +11,22 @@
        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
        <maven.compiler.source>17</maven.compiler.source>
        <maven.compiler.target>17</maven.compiler.target>
+       <spring.version>5.3.39</spring.version>
+       <hibernate.version>5.6.15.Final</hibernate.version>
    </properties>
   <dependencies>
-   
-   <!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
+  <!-- Source: https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
 <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-webmvc</artifactId>
-    <version>5.3.39</version>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-core</artifactId>
+    <version>5.6.15.Final</version>
     <scope>compile</scope>
 </dependency>
-  <!-- Source: https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core -->
 <dependency>
-    <groupId>org.hibernate.orm</groupId>
-    <artifactId>hibernate-core</artifactId>
-    <version>6.5.2.Final</version>
-    <scope>compile</scope>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
 </dependency>
 
 <!-- Source: https://mvnrepository.com/artifact/org.projectlombok/lombok -->
@@ -34,20 +34,6 @@
     <groupId>org.projectlombok</groupId>
     <artifactId>lombok</artifactId>
     <version>1.18.42</version>
-    <scope>compile</scope>
-</dependency>
-<!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
-<dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-jdbc</artifactId>
-    <version>5.3.39</version>
-    <scope>compile</scope>
-</dependency>
-<!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-orm -->
-<dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-orm</artifactId>
-    <version>5.3.39</version>
     <scope>compile</scope>
 </dependency>
 <!-- Source: https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
@@ -58,8 +44,60 @@
     <scope>compile</scope>
 </dependency>
 
+
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>5.3.39</version>
+    <scope>compile</scope>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.3.39</version>
+</dependency>
+
+    <!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-orm -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-orm</artifactId>
+    <version>5.3.39</version>
+    <scope>compile</scope>
+</dependency>
+
+<!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-web -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-web</artifactId>
+    <version>5.3.39</version>
+    <scope>compile</scope>
+</dependency>
+
+<dependency>
+    <groupId>org.mindrot</groupId>
+    <artifactId>jbcrypt</artifactId>
+    <version>0.4</version>
+</dependency>
+
   </dependencies>
   <build>
     <finalName>OJT_22CheatSheet</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.4.0</version>
+      </plugin>
+    </plugins>
   </build>
 </project>
