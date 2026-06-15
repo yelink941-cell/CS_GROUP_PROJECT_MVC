@@ -9,7 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import jakarta.persistence.Lob;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,7 +29,7 @@ public class UserProfile {
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
-    @Lob
+    @javax.persistence.Lob
     @Column(name = "avatar", columnDefinition = "LONGBLOB")
     private byte[] avatar;
 
