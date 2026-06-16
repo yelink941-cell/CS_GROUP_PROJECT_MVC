@@ -103,6 +103,17 @@ public class UserController {
             return "login"; 
         }
     }
+    
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        // 🧼 Session ကို လုံးဝ ဖျက်သိမ်း (Invalidate) လိုက်ခြင်း
+        if (session != null) {
+            session.invalidate(); 
+        }
+        
+        // 🔄 Session ပျက်သွားပြီးနောက် Login Page သို့ ပြန်လည် မောင်းထုတ်မည်
+        return "redirect:/"; 
+    }
 
     /**
      * Render Dedicated Standalone Profile Page View 
