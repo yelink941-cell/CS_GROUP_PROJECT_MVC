@@ -1,52 +1,58 @@
 package com.hibernate.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.time.LocalDateTime;
+
 
 @Getter
-
 @Setter
 @Entity
 @Table(name = "user_profiles")
 public class UserProfile {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
-    @Column(name = "full_name", length = 150, nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    @Column(name = "full_name", length = 150)
     private String fullName;
 
-    @Column(name = "bio", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String bio;
 
-    @javax.persistence.Lob
-    @Column(name = "avatar", columnDefinition = "LONGBLOB")
-    private byte[] avatar;
-
-    // ⬇️ နေ့၊ လ၊ ခုနှစ် သီးသန့်စီ ခွဲသိမ်းရန် ပြောင်းလဲလိုက်သော Fields များ
     @Column(name = "dob_day")
-    private int dobDay;
+    private Integer dobDay;
 
     @Column(name = "dob_month")
-    private int dobMonth;
+    private Integer dobMonth;
 
     @Column(name = "dob_year")
-    private int dobYear;
+    private Integer dobYear;
 
-    @Column(name = "country", length = 100)
-    private String country;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", unique = true, nullable = false)
-    private User user;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

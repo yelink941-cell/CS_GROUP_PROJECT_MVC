@@ -4,31 +4,37 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.hibernate.entity.enums.ReportStatus;
+
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "categories")
-public class Category {
+@Table(name = "reports")
+public class Report {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, unique = true, length = 150)
-    private String name;
+    @Column(name = "post_id", nullable = false)
+    private Integer postId;
+
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
+
+    @Column(length = 255)
+    private String reason;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String detail;
 
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ReportStatus status = ReportStatus.PENDING;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
-    @OneToMany(mappedBy = "category")
-    private List<Post> posts;
 }

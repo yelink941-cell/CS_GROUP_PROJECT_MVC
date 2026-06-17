@@ -11,7 +11,7 @@
 		<a href="login">Login</a>
 		<a href="profile">My Profile</a>
 		</header>
-		Home
+		Home YE
 		
 </body>
 </html>

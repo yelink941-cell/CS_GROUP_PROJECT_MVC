@@ -1,0 +1,77 @@
+package com.hibernate.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import com.hibernate.entity.enums.PostStatus;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "posts")
+public class Post {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false, length = 255)
+    private String title;
+
+    @Column(nullable = false, unique = true, length = 255)
+    private String slug;
+
+    @Column(columnDefinition = "TEXT")
+    private String excerpt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private PostStatus status = PostStatus.DRAFT;
+
+    @Column(name = "compiled_file_url", length = 500)
+    private String compiledFileUrl;
+
+    @Column(name = "is_downloadable")
+    private Boolean isDownloadable = false;
+
+    @Column(name = "view_count")
+    private Integer viewCount = 0;
+
+    @Column(name = "download_count")
+    private Integer downloadCount = 0;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<PostContent> contents;
+
+    @ManyToMany
+    @JoinTable(
+        name = "post_tags",
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private List<Tag> tags;
+}
