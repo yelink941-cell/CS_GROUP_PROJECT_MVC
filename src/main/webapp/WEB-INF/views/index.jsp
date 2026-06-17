@@ -9,9 +9,8 @@
 <body>
 		<header> <a href="register">Register</a>
 		<a href="login">Login</a>
-		<a href="profile">My Profile</a>
 		</header>
-		Home YE
+		
 		
 </body>
 </html>
