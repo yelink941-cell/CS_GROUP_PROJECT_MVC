@@ -1,6 +1,5 @@
 package com.hibernate.entity;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,10 +9,12 @@ import com.hibernate.entity.enums.ReportStatus;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Entity;
+
 @Getter
 @Setter
 @Entity
-@Table(name = "comment_reports")
+@TableS(name = "comment_reports")
 public class CommentReport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
