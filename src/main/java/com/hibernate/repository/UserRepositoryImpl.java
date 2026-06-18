@@ -22,16 +22,6 @@ public class UserRepositoryImpl implements UserRepository {
         getSession().persist(user); 
     }
     
-    @Override
-    public User save(User user) {
-        if (user.getId() == null) {
-            getCurrentSession().save(user); // Hi Data အသစ်သွင်းခြင်း
-            return user;
-        } else {
-            getCurrentSession().update(user); // Update လုပ်ခြင်း
-            return user;
-        }
-    }
 
     @Override
     public boolean isEmailExists(String email) {

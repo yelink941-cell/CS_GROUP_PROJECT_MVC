@@ -7,7 +7,7 @@ import com.hibernate.entity.UserProfile;
 
 public interface UserRepository {
 	void saveUser(User user);
-    void saveProfile(UserProfile profile);
+    
     boolean isEmailExists(String email);
     User getUserByEmail(String email);
     UserProfile getUserProfileByUserId(int userId);
