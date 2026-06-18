@@ -26,7 +26,7 @@ public class ConversationRepositoryImpl implements ConversationRepository {
     @Override
     public Conversation save(Conversation conversation) {
         if (conversation.getId() == null) {
-            // ID မရှိသေးရင် ဒေတာဘေ့စ်ထဲ အသစ်သွားသိမ်းမယ်
+            
             getCurrentSession().save(conversation);
             return conversation;
         } else {
