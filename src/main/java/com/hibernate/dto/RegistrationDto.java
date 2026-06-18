@@ -12,6 +12,7 @@ public class RegistrationDto {
     private String confirmPassword;
     private String fullName;
     private String bio;
+    private String country;
     private Integer dobDay;
     private Integer dobMonth;
     private Integer dobYear;

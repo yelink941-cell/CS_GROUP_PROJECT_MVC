@@ -1,50 +1,60 @@
 package com.hibernate.repository;
 import com.hibernate.entity.User;
+import com.hibernate.entity.UserProfile;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 @Repository
 @Transactional
 public class UserRepositoryImpl implements UserRepository {
 	@Autowired
     private SessionFactory sessionFactory;
 
-    private Session getCurrentSession() {
+	private Session getSession() {
         return sessionFactory.getCurrentSession();
     }
+   
     @Override
-    public User save(User user) {
-        if (user.getId() == null) {
-            getCurrentSession().save(user); // Data အသစ်သွင်းခြင်း
-            return user;
-        } else {
-            getCurrentSession().update(user); // Update လုပ်ခြင်း
-            return user;
-        }
+    public void saveUser(User user) {
+        getSession().persist(user); 
+    }
+    
+    @Override
+    public void saveProfile(UserProfile profile) {
+        getSession().persist(profile);
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
-        User user = getCurrentSession().createQuery(
-            "FROM User u WHERE u.email = :email", User.class)
-            .setParameter("email", email)
-            .uniqueResult(); // singleResult() အစား uniqueResult() သုံးပါသည်
-            
-        return Optional.ofNullable(user);
+    public boolean isEmailExists(String email) {
+        Long count = getSession()
+                .createQuery("select count(u) from User u where u.email = :email", Long.class)
+                .setParameter("email", email)
+                .uniqueResult();
+        return count > 0;
+    }
+    @Override
+    public User getUserByEmail(String email) {
+        return getSession()
+                .createQuery("from User u where u.email = :email", User.class)
+                .setParameter("email", email)
+                .uniqueResult();
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        User user = getCurrentSession().createQuery(
-            "FROM User u WHERE u.username = :username", User.class)
-            .setParameter("username", username)
-            .uniqueResult();
-            
-        return Optional.ofNullable(user);
+    public UserProfile getUserProfileByUserId(int userId) {
+        return getSession()
+               .createQuery("FROM UserProfile up WHERE up.user.id = :userId", UserProfile.class)
+               .setParameter("userId", userId)
+               .uniqueResult();
     }
+
+    @Override
+    public void updateProfile(UserProfile profile) {
+        getSession().merge(profile);
+    }
+
+    
 }
