@@ -1,34 +1,39 @@
 package com.hibernate.entity;
 
-import jakarta.persistence.*;
+
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import java.time.LocalDateTime;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "conversations")
-public class Conversation {
+@SQLDelete(sql = "UPDATE conversations SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
+@Getter
+@Setter
+public class Conversation extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(length = 255)
+    private String title;
 
-    // conversation_participants Table အတွက် Many-to-Many Mapping
-    @ManyToMany
-    @JoinTable(
-        name = "conversation_participants",
-        joinColumns = @JoinColumn(name = "conversation_id"),
-        inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> participants;
+    @Column(name = "is_group", nullable = false)
+    private boolean isGroup = false;
 
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL)
-    private List<Message> messages;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ConversationParticipant> participants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY)
+    @OrderBy("createdAt DESC")
+    private List<Message> messages = new ArrayList<>();
 }

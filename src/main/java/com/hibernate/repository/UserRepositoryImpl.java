@@ -4,9 +4,12 @@ import com.hibernate.entity.User;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository; 
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Optional;
 @Repository
+@Transactional
 public class UserRepositoryImpl implements UserRepository {
 	@Autowired
     private SessionFactory sessionFactory;
@@ -17,7 +20,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User save(User user) {
         if (user.getId() == null) {
-            getCurrentSession().save(user); // Data အသစ်သွင်းခြင်း
+            getCurrentSession().save(user); // Hi Data အသစ်သွင်းခြင်း
             return user;
         } else {
             getCurrentSession().update(user); // Update လုပ်ခြင်း
