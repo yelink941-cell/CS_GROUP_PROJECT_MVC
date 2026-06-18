@@ -23,8 +23,14 @@ public class UserRepositoryImpl implements UserRepository {
     }
     
     @Override
-    public void saveProfile(UserProfile profile) {
-        getSession().persist(profile);
+    public User save(User user) {
+        if (user.getId() == null) {
+            getCurrentSession().save(user); // Hi Data အသစ်သွင်းခြင်း
+            return user;
+        } else {
+            getCurrentSession().update(user); // Update လုပ်ခြင်း
+            return user;
+        }
     }
 
     @Override
