@@ -1,84 +1,82 @@
 package com.hibernate.service;
 
-import com.hibernate.dto.RegistrationDto;
 import com.hibernate.entity.User;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
-import com.hibernate.entity.enums.UserStatus;
-import com.hibernate.repository.UserRepository;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
-	@Autowired
+
+    @Autowired
     private SessionFactory sessionFactory;
 
+    // Helper method to get the current context-bound transaction session
     private Session getCurrentSession() {
         return sessionFactory.getCurrentSession();
-    }
-    private final UserRepository userRepository;
-
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional
-    public User registerNewUser(RegistrationDto dto) {
+    public boolean registerNewUser(User user, UserProfile profile) {
+        Session session = getCurrentSession();
+
+        // 1. Check if email already exists using HQL
+        Long count = session.createQuery("select count(u) from User u where u.email = :email", Long.class)
+                .setParameter("email", user.getEmail())
+                .uniqueResult();
+
+        if (count > 0) {
+            return false; // Email already registered
+        }
+
+        // 2. Hash password and persist parent entity (User)
+        String hashedPassword = BCrypt.hashpw(user.getPasswordHash(), BCrypt.gensalt());
+        user.setPasswordHash(hashedPassword);
         
-        // ၁။ Password Check
-        if (dto.getPassword() == null || !dto.getPassword().equals(dto.getConfirmPassword())) {
-            throw new IllegalArgumentException("Password နှင့် Confirm Password မကိုက်ညီပါ!");
-        }
+        // This inserts the user into DB and assigns the auto-generated ID to the object
+        session.persist(user); 
 
-        // ၂။ Duplicate Email Check
-        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("ဤ Email မှာ အသုံးပြုပြီးသား ဖြစ်နေပါသည်။");
-        }
-
-        // ၃။ Duplicate Username Check
-        if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("ဤ Username မှာ အသုံးပြုပြီးသား ဖြစ်နေပါသည်။");
-        }
-
-        // ၄။ User Map
-        User user = new User();
-        user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setPasswordHash(dto.getPassword()); // လက်တွေ့တွင် encode လုပ်ရန်လိုသည်
-        user.setStatus(UserStatus.ACTIVE);
-        user.setRole(Role.USER);
-
-        // ၅။ UserProfile Map
-        UserProfile profile = new UserProfile();
-        profile.setFullName(dto.getFullName());
-        profile.setBio(dto.getBio());
-        profile.setDobDay(dto.getDobDay());
-        profile.setDobMonth(dto.getDobMonth());
-        profile.setDobYear(dto.getDobYear());
+        // 3. Link parent to child entity and persist child (UserProfile)
+        profile.setUser(user); 
+        session.persist(profile);
         
-        // ၆။ Bind Relationship (အရေးကြီးဆုံးအပိုင်း)
-        profile.setUser(user);    
-        user.setProfile(profile); 
-
-        // ၇။ Save to Database
-        return userRepository.save(user);
+        return true;
     }
+
     @Override
-    public User loginUser(String email, String password) {
-        // 🔍 .orElse(null) ထည့်ပြီး ဗူးထဲကနေ User Object ကို ထုတ်ယူခြင်း
-        User user = userRepository.findByEmail(email).orElse(null);
+    @Transactional(readOnly = true)
+    public User authenticateUser(String email, String plainPassword) {
+        Session session = getCurrentSession();
         
-        // ၂။ User ရှိပြီး Password တူညီမှု ရှိမရှိ စစ်ဆေးခြင်း
-        if (user != null && user.getPasswordHash().equals(password)) {
-            return user; 
+        User user = session.createQuery("from User u where u.email = :email", User.class)
+                .setParameter("email", email)
+                .uniqueResult();
+                
+        if (user != null && BCrypt.checkpw(plainPassword, user.getPasswordHash())) {
+            return user;
         }
-        
-        return null; // မကိုက်ညီပါက သို့မဟုတ် မရှိပါက null ပြန်မည်
+        return null;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfile getUserProfileByUserId(int userId) {
+        return getCurrentSession()
+                .createQuery("FROM UserProfile up WHERE up.user.id = :userId", UserProfile.class)
+                .setParameter("userId", userId)
+                .uniqueResult();
+    }
+
+    @Override
+    @Transactional
+    public void updateUserProfile(UserProfile profile) {
+        // merge acts as an update for detached objects coming from the MVC controller
+        getCurrentSession().merge(profile);
     }
 }

@@ -1,6 +1,4 @@
 package com.hibernate.entity;
-
-// ❌ jakarta.persistence အားလုံးကို ဖျက်ပါ သို့မဟုတ် Replace လုပ်ပါ
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
