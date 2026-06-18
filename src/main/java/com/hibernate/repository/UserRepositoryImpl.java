@@ -33,7 +33,7 @@ public class UserRepositoryImpl implements UserRepository {
         User user = getCurrentSession().createQuery(
             "FROM User u WHERE u.email = :email", User.class)
             .setParameter("email", email)
-            .uniqueResult(); // singleResult() အစား uniqueResult() သုံးပါသည်
+            .uniqueResult(); 
             
         return Optional.ofNullable(user);
     }
