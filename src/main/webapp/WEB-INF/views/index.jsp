@@ -10,6 +10,7 @@
 		<header> <a href="register">Register</a>
 		<a href="login">Login</a>
 		</header>
+		<p>${msg}</p>
 		
 		
 </body>

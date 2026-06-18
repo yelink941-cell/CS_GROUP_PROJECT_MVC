@@ -5,4 +5,5 @@ import com.hibernate.entity.User;
 
 public interface UserService {
     User registerNewUser(RegistrationDto registrationDto);
+    User loginUser(String email, String password);
 }

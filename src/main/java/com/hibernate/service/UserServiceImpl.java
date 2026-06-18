@@ -6,7 +6,6 @@ import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
 import com.hibernate.repository.UserRepository;
-import com.hibernate.service.UserService;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -69,5 +68,17 @@ public class UserServiceImpl implements UserService {
 
         // ၇။ Save to Database
         return userRepository.save(user);
+    }
+    @Override
+    public User loginUser(String email, String password) {
+        // 🔍 .orElse(null) ထည့်ပြီး ဗူးထဲကနေ User Object ကို ထုတ်ယူခြင်း
+        User user = userRepository.findByEmail(email).orElse(null);
+        
+        // ၂။ User ရှိပြီး Password တူညီမှု ရှိမရှိ စစ်ဆေးခြင်း
+        if (user != null && user.getPasswordHash().equals(password)) {
+            return user; 
+        }
+        
+        return null; // မကိုက်ညီပါက သို့မဟုတ် မရှိပါက null ပြန်မည်
     }
 }
