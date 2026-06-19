@@ -2,7 +2,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Sign In</title>
+    <meta charset="UTF-8">
+    <title>Login - Cheat Sheet Project</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/posts.css">
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 100px; background-color: #f0f2f5; }
         .login-container { background: white; padding: 35px; border-radius: 12px; max-width: 400px; margin: auto; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); }
@@ -20,8 +22,10 @@
 </head>
 <body>
 
-<div class="login-container">
-    <h2>Welcome Back</h2>
+    <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
+
+    <div class="login-card">
+        <h2>Sign In</h2>
 
     <% if(request.getAttribute("error") != null) { %>
         <p class="error"><%= request.getAttribute("error") %></p>

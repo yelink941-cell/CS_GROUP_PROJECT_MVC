@@ -6,9 +6,13 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tag Form</title>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/posts.css">
 </head>
 <body>
+
+<jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
 <c:set var="formAction" value="${pageContext.request.contextPath}/admin/tags" />
 <c:if test="${tag.id != null}">

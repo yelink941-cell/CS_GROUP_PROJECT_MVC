@@ -5,42 +5,48 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Post Form</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post Form - CheatSheet Hub</title>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/posts.css">
 </head>
 <body>
+    <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
+
     <c:set var="formAction" value="${pageContext.request.contextPath}/user/posts/" />
     <c:if test="${post.id != null}">
         <c:set var="formAction" value="${pageContext.request.contextPath}/user/posts/update/${post.id}" />
     </c:if>
 
-    <h2>
-        <c:if test="${post.id == null}">Create Post</c:if>
-        <c:if test="${post.id != null}">Edit Post</c:if>
-    </h2>
+    <main class="page-container">
+    <section class="form-card">
+        <h1>
+            <c:if test="${post.id == null}">Create Post</c:if>
+            <c:if test="${post.id != null}">Edit Post</c:if>
+        </h1>
 
     <c:if test="${not empty errorMessage}">
-        <p style="color: red;"><c:out value="${errorMessage}" /></p>
+        <p class="form-message-error"><c:out value="${errorMessage}" /></p>
     </c:if>
 
     <form action="${formAction}" method="post">
-        <p>
-            <label for="title">Title</label><br>
-            <input type="text" id="title" name="title" value="${post.title}" required>
-        </p>
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input class="form-control" type="text" id="title" name="title" value="${post.title}" required>
+        </div>
 
-        <p>
-            <label for="slug">Slug</label><br>
-            <input type="text" id="slug" name="slug" value="${post.slug}" required>
-        </p>
+        <div class="form-group">
+            <label for="slug">Slug</label>
+            <input class="form-control" type="text" id="slug" name="slug" value="${post.slug}" required>
+        </div>
 
-        <p>
-            <label for="excerpt">Excerpt</label><br>
-            <textarea id="excerpt" name="excerpt" rows="5" cols="60"><c:out value="${post.excerpt}" /></textarea>
-        </p>
+        <div class="form-group">
+            <label for="excerpt">Excerpt</label>
+            <textarea class="form-control" id="excerpt" name="excerpt" rows="5"><c:out value="${post.excerpt}" /></textarea>
+        </div>
 
-        <p>
-            <label for="categoryId">Category</label><br>
-            <select id="categoryId" name="categoryId" required>
+        <div class="form-group">
+            <label for="categoryId">Category</label>
+            <select class="form-control" id="categoryId" name="categoryId" required>
                 <option value="">Select Category</option>
                 <c:forEach var="category" items="${categories}">
                     <c:set var="categorySelected" value="false" />
@@ -59,11 +65,11 @@
                     </c:if>
                 </c:forEach>
             </select>
-        </p>
+        </div>
 
-        <p>
-            <label for="tagIds">Tags</label><br>
-            <select id="tagIds" name="tagIds" multiple size="6">
+        <div class="form-group">
+            <label for="tagIds">Tags</label>
+            <select class="form-control" id="tagIds" name="tagIds" multiple size="6">
                 <c:forEach var="tag" items="${tags}">
                     <c:set var="tagSelected" value="false" />
                     <c:forEach var="selectedTagId" items="${selectedTagIds}">
@@ -88,30 +94,32 @@
                     </c:if>
                 </c:forEach>
             </select>
-        </p>
+        </div>
 
-        <p>
-            <label for="status">Status</label><br>
-            <select id="status" name="status" required>
-                <c:forEach var="status" items="${statuses}">
-                    <c:if test="${post.status == status}">
-                        <option value="${status}" selected>
-                            <c:out value="${status}" />
+        <div class="form-group">
+            <label for="visibility">Visibility</label>
+            <select class="form-control" id="visibility" name="visibility" required>
+                <c:forEach var="visibility" items="${visibilities}">
+                    <c:if test="${post.visibility == visibility}">
+                        <option value="${visibility}" selected>
+                            <c:out value="${visibility}" />
                         </option>
                     </c:if>
-                    <c:if test="${post.status != status}">
-                        <option value="${status}">
-                            <c:out value="${status}" />
+                    <c:if test="${post.visibility != visibility}">
+                        <option value="${visibility}">
+                            <c:out value="${visibility}" />
                         </option>
                     </c:if>
                 </c:forEach>
             </select>
-        </p>
+        </div>
 
-        <p>
-            <button type="submit">Save</button>
-            <a href="${pageContext.request.contextPath}/user/posts/">Back to List</a>
-        </p>
+        <div class="card-actions">
+            <a class="button button-secondary" href="${pageContext.request.contextPath}/user/posts">Back to List</a>
+            <button class="button" type="submit">Save Post</button>
+        </div>
     </form>
+    </section>
+    </main>
 </body>
 </html>

@@ -15,33 +15,32 @@ public class UserRepositoryImpl implements UserRepository {
         return sessionFactory.getCurrentSession();
     }
     @Override
-    public User save(User user) {
-        if (user.getId() == null) {
-            getCurrentSession().save(user); // Data အသစ်သွင်းခြင်း
-            return user;
-        } else {
-            getCurrentSession().update(user); // Update လုပ်ခြင်း
-            return user;
-        }
+    public void saveUser(User user) {
+        getSession().persist(user); 
+    }
+  
+  
+
+    @Override
+    public boolean isEmailExists(String email) {
+        Long count = getSession()
+                .createQuery("select count(u) from User u where u.email = :email", Long.class)
+                .setParameter("email", email)
+                .uniqueResult();
+        return count > 0;
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
-        User user = getCurrentSession().createQuery(
-            "FROM User u WHERE u.email = :email", User.class)
-            .setParameter("email", email)
-            .uniqueResult(); // singleResult() အစား uniqueResult() သုံးပါသည်
-            
-        return Optional.ofNullable(user);
+    public User getUserById(Integer id) {
+        return getSession().get(User.class, id);
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        User user = getCurrentSession().createQuery(
-            "FROM User u WHERE u.username = :username", User.class)
-            .setParameter("username", username)
-            .uniqueResult();
-            
-        return Optional.ofNullable(user);
+    public User getUserByEmail(String email) {
+        return getSession()
+                .createQuery("from User u where u.email = :email", User.class)
+                .setParameter("email", email)
+                .uniqueResult();
     }
+
 }

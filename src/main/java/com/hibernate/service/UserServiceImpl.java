@@ -24,50 +24,47 @@ public class UserServiceImpl implements UserService {
     }
     private final UserRepository userRepository;
 
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    @Override
+    @Transactional
+    public boolean registerNewUser(User user, UserProfile profile) {
+        Session session = getCurrentSession();
+
+        // 1. Check if email already exists using HQL
+        Long count = session.createQuery("select count(u) from User u where u.email = :email", Long.class)
+                .setParameter("email", user.getEmail())
+                .uniqueResult();
+
+        if (count > 0) {
+            return false; // Email already registered
+        }
+
+        // 2. Hash password and persist parent entity (User)
+        String hashedPassword = BCrypt.hashpw(user.getPasswordHash(), BCrypt.gensalt());
+        user.setPasswordHash(hashedPassword);
+        
+        // This inserts the user into DB and assigns the auto-generated ID to the object
+        session.persist(user); 
+
+        // 3. Link parent to child entity and persist child (UserProfile)
+        profile.setUser(user); 
+        session.persist(profile);
+        
+        return true;
     }
 
     @Override
-    @Transactional
-    public User registerNewUser(RegistrationDto dto) {
+    @Transactional(readOnly = true)
+    public User authenticateUser(String email, String plainPassword) {
+        Session session = getCurrentSession();
         
-        // ၁။ Password Check
-        if (dto.getPassword() == null || !dto.getPassword().equals(dto.getConfirmPassword())) {
-            throw new IllegalArgumentException("Password နှင့် Confirm Password မကိုက်ညီပါ!");
+        User user = session.createQuery("from User u where u.email = :email", User.class)
+                .setParameter("email", email)
+                .uniqueResult();
+                
+        if (user != null && BCrypt.checkpw(plainPassword, user.getPasswordHash())) {
+            return user;
         }
-
-        // ၂။ Duplicate Email Check
-        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("ဤ Email မှာ အသုံးပြုပြီးသား ဖြစ်နေပါသည်။");
-        }
-
-        // ၃။ Duplicate Username Check
-        if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("ဤ Username မှာ အသုံးပြုပြီးသား ဖြစ်နေပါသည်။");
-        }
-
-        // ၄။ User Map
-        User user = new User();
-        user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setPasswordHash(dto.getPassword()); // လက်တွေ့တွင် encode လုပ်ရန်လိုသည်
-        user.setStatus(UserStatus.ACTIVE);
-        user.setRole(Role.USER);
-
-        // ၅။ UserProfile Map
-        UserProfile profile = new UserProfile();
-        profile.setFullName(dto.getFullName());
-        profile.setBio(dto.getBio());
-        profile.setDobDay(dto.getDobDay());
-        profile.setDobMonth(dto.getDobMonth());
-        profile.setDobYear(dto.getDobYear());
-        
-        // ၆။ Bind Relationship (အရေးကြီးဆုံးအပိုင်း)
-        profile.setUser(user);    
-        user.setProfile(profile); 
-
-        // ၇။ Save to Database
-        return userRepository.save(user);
+        return null;
     }
+
 }

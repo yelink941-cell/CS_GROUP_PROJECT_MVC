@@ -16,6 +16,8 @@ public interface PostRepository {
 
     List<Post> findAll();
 
+    List<Post> findByAuthorId(Integer authorId);
+
     Optional<Post> findBySlug(String slug);
 
     boolean existsBySlug(String slug);
@@ -23,4 +25,8 @@ public interface PostRepository {
     List<Post> findByCategoryId(Integer categoryId);
 
     List<Post> findByStatus(PostStatus status);
+
+    List<Post> findPendingPosts();
+
+    List<Post> findPublishedPublicPosts();
 }
