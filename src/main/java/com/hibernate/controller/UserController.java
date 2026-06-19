@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 public class UserController {
-
     private final UserService userService;
 
     // Spring injects the service implementation automatically
