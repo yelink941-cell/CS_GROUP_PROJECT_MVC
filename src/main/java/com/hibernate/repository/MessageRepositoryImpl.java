@@ -1,36 +1,60 @@
 package com.hibernate.repository;
 
-import com.hibernate.entity.Message;
+import java.util.List;
+import java.util.Optional;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
-import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
+import com.hibernate.entity.Message;
+import lombok.RequiredArgsConstructor;
 
 @Repository
+@RequiredArgsConstructor
+@Transactional
 public class MessageRepositoryImpl implements MessageRepository {
 
     private final SessionFactory sessionFactory;
 
-    public MessageRepositoryImpl(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
-
-    private Session getCurrentSession() {
+    private Session getSession() {
         return sessionFactory.getCurrentSession();
     }
 
     @Override
-    public Message save(Message message) {
-        getCurrentSession().save(message);
-        return message;
+    public Long insertMessage(Message message) {
+        return (Long) getSession().save(message);
     }
 
     @Override
-    public List<Message> findByConversationId(Long conversationId) {
-        // အခန်းနံပါတ်အလိုက် စာတွေကို အချိန်အလိုက် စီပြီး ရှာဖွေရန် HQL ရေးနည်းပါ
-        String hql = "FROM Message m WHERE m.conversation.id = :conversationId ORDER BY m.createdAt DESC";
-        return getCurrentSession().createQuery(hql, Message.class)
+    public Message getById(Long id) {
+        return getSession().get(Message.class, id);
+    }
+
+    @Override
+    public List<Message> getChatHistory(Long conversationId, Long lastMessageId, int limit) {
+        String hql = "SELECT DISTINCT m FROM Message m " +
+                     "LEFT JOIN FETCH m.attachments " +
+                     "WHERE m.conversation.id = :conversationId " +
+                     "AND m.id < :lastMessageId " +
+                     "ORDER BY m.id DESC";
+
+        return getSession().createQuery(hql, Message.class)
                 .setParameter("conversationId", conversationId)
-                .getResultList();
+                .setParameter("lastMessageId", lastMessageId)
+                .setMaxResults(limit)
+                .list();
+    }
+
+    @Override
+    public Optional<Message> findLatestByConversationId(Long conversationId) {
+        Message message = getSession().createQuery(
+                "SELECT m FROM Message m " +
+                "LEFT JOIN FETCH m.attachments " +
+                "WHERE m.conversation.id = :conversationId " +
+                "ORDER BY m.id DESC", Message.class)
+                .setParameter("conversationId", conversationId)
+                .setMaxResults(1)
+                .uniqueResult();
+        return Optional.ofNullable(message);
     }
 }

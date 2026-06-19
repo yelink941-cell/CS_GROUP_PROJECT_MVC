@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 @Repository
 @Transactional
@@ -46,5 +47,23 @@ public class UserRepositoryImpl implements UserRepository {
             .uniqueResult();
             
         return Optional.ofNullable(user);
+    }
+
+    @Override
+    public Optional<User> findById(Long id) {
+        return Optional.ofNullable(getCurrentSession().get(User.class, id));
+    }
+
+    @Override
+    public List<User> searchByUsername(String keyword, Long excludeUserId, int limit) {
+        return getCurrentSession().createQuery(
+                "FROM User u WHERE u.deletedAt IS NULL " +
+                "AND u.id <> :excludeId " +
+                "AND LOWER(u.username) LIKE LOWER(:keyword) " +
+                "ORDER BY u.username ASC", User.class)
+                .setParameter("excludeId", excludeUserId)
+                .setParameter("keyword", "%" + keyword + "%")
+                .setMaxResults(limit)
+                .list();
     }
 }
