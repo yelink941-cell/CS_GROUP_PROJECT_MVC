@@ -4,25 +4,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>User Registration</title>
+    <title>Multi-step Registration</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/posts.css">
     <style>
-        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f4f9; }
-        .container { max-width: 450px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); margin: auto; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .dob-group { display: flex; gap: 10px; }
-        .btn { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
-        .btn:hover { background-color: #0056b3; }
-        .error { color: red; margin-bottom: 15px; font-weight: bold; }
-        .success { color: green; margin-bottom: 15px; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f0f2f5; }
+        .form-container { background: white; padding: 30px; border-radius: 12px; max-width: 480px; margin: 50px auto; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+        .btn-container { display: flex; gap: 10px; margin-top: 25px; }
+        .btn { padding: 11px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; flex: 1; text-align: center; }
+        .btn-next { background-color: #007bff; color: white; }
+        .btn-submit { background-color: #28a745; color: white; }
+        .btn-skip { background-color: #6c757d; color: white; }
+        .btn-back { background-color: #e4e6eb; color: #333; }
+        .progress-bar { display: flex; justify-content: space-between; margin-bottom: 25px; }
+        .step-indicator { width: 35px; height: 35px; background: #e4e6eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #65676b; }
+        .step-indicator.active { background: #007bff; color: white; }
+        .form-step { display: none; }
+        .form-step.active { display: block; }
+        .error { color: red; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>အကောင့်သစ်ဖွင့်ရန်</h2>
+<jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
+
+<div class="form-container">
+    <h2>Create Account</h2>
 
     <c:if test="${not empty errorMessage}">
         <div class="error">${errorMessage}</div>
