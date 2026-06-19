@@ -1,51 +1,47 @@
 package com.hibernate.entity;
 
+import javax.persistence.*;
+
+import com.hibernate.entity.enums.MessageType;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
+@Entity
+@Table(name = "messages", indexes = {
+    @Index(name = "idx_messages_conversation", columnList = "conversation_id, created_at DESC")
+})
 @Getter
 @Setter
-@Entity
-@Table(name = "messages")
 public class Message {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id", nullable = false)
     private Conversation conversation;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
-    private User sender;
+    @Column(name = "sender_id", nullable = false)
+    private Long senderId;
 
-    @Column(name = "message_text", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "message_text", columnDefinition = "TEXT")
     private String messageText;
 
-    @Column(name = "is_read")
-    private Boolean isRead = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_type", length = 50, nullable = false)
+    private MessageType messageType = MessageType.TEXT;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "edited_at")
-    private LocalDateTime editedAt;
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MessageAttachment> attachments = new ArrayList<>();
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MessageRead> reads = new ArrayList<>();
 }
