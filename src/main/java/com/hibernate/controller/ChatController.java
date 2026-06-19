@@ -22,7 +22,7 @@ import com.hibernate.service.ChatService;
 import com.hibernate.service.MessageMapper;
 
 @RestController
-@RequestMapping("/api/chat")
+@RequestMapping("/api/chat") //ki
 public class ChatController {
 
     private final ChatService chatService;
