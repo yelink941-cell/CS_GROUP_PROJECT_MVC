@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostService {
-    Post createPost(Post post, Integer categoryId, List<Integer> tagIds, Integer userId, PostVisibility visibility);
+    Post createPost(Post post, Integer categoryId, List<Integer> tagIds, Long userId, PostVisibility visibility);
 
     Post updatePost(Integer id, Post post, Integer categoryId, List<Integer> tagIds, PostVisibility visibility);
 
@@ -17,7 +17,7 @@ public interface PostService {
 
     List<Post> getAllPosts();
 
-    List<Post> getPostsByAuthorId(Integer authorId);
+    List<Post> getPostsByAuthorId(Long authorId);
 
     Optional<Post> getPostBySlug(String slug);
 

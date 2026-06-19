@@ -7,6 +7,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Public Posts - CheatSheet Hub</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/posts.css">
+    <style>
+        .chat-fab {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 58px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            background: #008069;
+            border-radius: 50%;
+            box-shadow: 0 4px 14px rgba(0, 128, 105, 0.4);
+            font-size: 26px;
+            text-decoration: none;
+            transition: transform 0.2s ease, background 0.2s ease;
+            z-index: 20;
+        }
+
+        .chat-fab:hover {
+            background: #006b58;
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 <body>
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
@@ -65,5 +90,9 @@
             </section>
         </c:if>
     </main>
+
+    <c:if test="${not empty sessionScope.currentUser}">
+        <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages">&#128172;</a>
+    </c:if>
 </body>
 </html>

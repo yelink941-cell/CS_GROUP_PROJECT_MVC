@@ -31,7 +31,7 @@ public class PostServiceImpl implements PostService {
             Post post,
             Integer categoryId,
             List<Integer> tagIds,
-            Integer userId,
+            Long userId,
             PostVisibility visibility) {
         post.setAuthor(getUser(userId));
         post.setCategory(getCategory(categoryId));
@@ -80,7 +80,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<Post> getPostsByAuthorId(Integer authorId) {
+    public List<Post> getPostsByAuthorId(Long authorId) {
         return postRepository.findByAuthorId(authorId);
     }
 
@@ -137,7 +137,7 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new IllegalArgumentException("Category not found."));
     }
 
-    private User getUser(Integer userId) {
+    private User getUser(Long userId) {
         User user = userRepository.getUserById(userId);
 
         if (user == null) {

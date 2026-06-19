@@ -1,12 +1,25 @@
 package com.hibernate.repository;
 
 import com.hibernate.entity.User;
-
-
+import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository {
-	void saveUser(User user);
+    void saveUser(User user);
+
+    User save(User user);
+
     boolean isEmailExists(String email);
-    User getUserById(Integer id);
+
+    User getUserById(Long id);
+
     User getUserByEmail(String email);
-}	
+
+    Optional<User> findByEmail(String email);
+
+    Optional<User> findByUsername(String username);
+
+    Optional<User> findById(Long id);
+
+    List<User> searchByUsername(String keyword, Long excludeUserId, int limit);
+}

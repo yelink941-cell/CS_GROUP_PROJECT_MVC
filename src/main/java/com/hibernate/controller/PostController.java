@@ -26,7 +26,7 @@ public class PostController {
 
     @GetMapping
     public String listPosts(Model model, HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
+        Long userId = (Long) session.getAttribute("userId");
 
         if (userId == null) {
             return "redirect:/login";
@@ -57,7 +57,7 @@ public class PostController {
             @RequestParam PostVisibility visibility,
             Model model,
             HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
+        Long userId = (Long) session.getAttribute("userId");
 
         if (userId == null) {
             return "redirect:/login";
@@ -80,7 +80,7 @@ public class PostController {
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Integer id, Model model, HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
+        Long userId = (Long) session.getAttribute("userId");
 
         if (userId == null) {
             return "redirect:/login";
@@ -106,7 +106,7 @@ public class PostController {
             @RequestParam(required = false) List<Integer> tagIds,
             @RequestParam PostVisibility visibility,
             HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
+        Long userId = (Long) session.getAttribute("userId");
 
         if (userId == null) {
             return "redirect:/login";
@@ -125,7 +125,7 @@ public class PostController {
 
     @GetMapping("/delete/{id}")
     public String deletePost(@PathVariable Integer id, HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
+        Long userId = (Long) session.getAttribute("userId");
 
         if (userId == null) {
             return "redirect:/login";

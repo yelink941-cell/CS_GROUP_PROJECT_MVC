@@ -16,7 +16,7 @@ public interface PostRepository {
 
     List<Post> findAll();
 
-    List<Post> findByAuthorId(Integer authorId);
+    List<Post> findByAuthorId(Long authorId);
 
     Optional<Post> findBySlug(String slug);
 

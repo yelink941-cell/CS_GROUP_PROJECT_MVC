@@ -68,7 +68,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public List<Post> findByAuthorId(Integer authorId) {
+    public List<Post> findByAuthorId(Long authorId) {
         return getCurrentSession()
                 .createQuery(
                         "SELECT p FROM Post p "
