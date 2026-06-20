@@ -1,6 +1,7 @@
 package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
+import com.hibernate.entity.enums.ContentType;
 import com.hibernate.entity.enums.PostVisibility;
 import com.hibernate.service.CategoryService;
 import com.hibernate.service.PostService;
@@ -55,6 +56,10 @@ public class PostController {
             @RequestParam Integer categoryId,
             @RequestParam(required = false) List<Integer> tagIds,
             @RequestParam PostVisibility visibility,
+            @RequestParam(value = "sectionSubtitles[]", required = false) List<String> sectionSubtitles,
+            @RequestParam(value = "contentTypes[]", required = false) List<ContentType> contentTypes,
+            @RequestParam(value = "contentDataList[]", required = false) List<String> contentDataList,
+            @RequestParam(value = "sortOrders[]", required = false) List<Integer> sortOrders,
             Model model,
             HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -70,12 +75,43 @@ public class PostController {
             model.addAttribute("post", post);
             model.addAttribute("selectedCategoryId", categoryId);
             model.addAttribute("selectedTagIds", tagIds);
+            preserveSectionData(
+                    model,
+                    sectionSubtitles,
+                    contentTypes,
+                    contentDataList,
+                    sortOrders);
             loadFormData(model);
             return "user/post/form";
         }
 
-        postService.createPost(post, categoryId, tagIds, userId, visibility);
-        return "redirect:/user/posts";
+        try {
+            postService.createPost(
+                    post,
+                    categoryId,
+                    tagIds,
+                    userId,
+                    visibility,
+                    sectionSubtitles,
+                    contentTypes,
+                    contentDataList,
+                    sortOrders);
+            return "redirect:/user/posts";
+        } catch (IllegalArgumentException exception) {
+            post.setId(null);
+            model.addAttribute("errorMessage", exception.getMessage());
+            model.addAttribute("post", post);
+            model.addAttribute("selectedCategoryId", categoryId);
+            model.addAttribute("selectedTagIds", tagIds);
+            preserveSectionData(
+                    model,
+                    sectionSubtitles,
+                    contentTypes,
+                    contentDataList,
+                    sortOrders);
+            loadFormData(model);
+            return "user/post/form";
+        }
     }
 
     @GetMapping("/edit/{id}")
@@ -158,5 +194,25 @@ public class PostController {
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("tags", tagService.getAllTags());
         model.addAttribute("visibilities", PostVisibility.values());
+        model.addAttribute(
+                "sectionTypes",
+                new ContentType[] {
+                    ContentType.TEXT,
+                    ContentType.CODE,
+                    ContentType.IMAGE,
+                    ContentType.TABLE
+                });
+    }
+
+    private void preserveSectionData(
+            Model model,
+            List<String> sectionSubtitles,
+            List<ContentType> contentTypes,
+            List<String> contentDataList,
+            List<Integer> sortOrders) {
+        model.addAttribute("sectionSubtitles", sectionSubtitles);
+        model.addAttribute("selectedContentTypes", contentTypes);
+        model.addAttribute("contentDataList", contentDataList);
+        model.addAttribute("sortOrders", sortOrders);
     }
 }

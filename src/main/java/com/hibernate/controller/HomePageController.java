@@ -1,18 +1,35 @@
 package com.hibernate.controller;
 
+import com.hibernate.entity.Post;
+import com.hibernate.entity.PostFile;
+import com.hibernate.service.PostContentService;
+import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostService;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
 public class HomePageController {
     private final PostService postService;
-	
-    @GetMapping({"/", "/posts/public"})
+    private final PostContentService postContentService;
+    private final PostFileService postFileService;
+
+    @GetMapping("/")
     public String homePage(Model model) {
         model.addAttribute("posts", postService.getPublishedPublicPosts());
         return "index";
@@ -20,11 +37,53 @@ public class HomePageController {
 
     @GetMapping("/posts/public/details")
     public String publicPostDetails(@RequestParam("slug") String slug, Model model) {
+        return publicPostDetailsBySlug(slug, model);
+    }
+
+    @GetMapping("/posts/{slug}")
+    public String publicPostDetailsBySlug(@PathVariable String slug, Model model) {
         return postService.getPostBySlug(slug)
                 .map(post -> {
                     model.addAttribute("post", post);
+                    model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
+                    model.addAttribute("postFiles", postFileService.getFilesByPostId(post.getId()));
                     return "public/post/details";
                 })
                 .orElse("redirect:/posts/public");
+    }
+
+    @GetMapping("/posts/{slug}/files/{fileId}")
+    public ResponseEntity<?> viewPublicFile(
+            @PathVariable String slug,
+            @PathVariable Integer fileId) {
+        Post post = postService.getPostBySlug(slug).orElse(null);
+        if (post == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        PostFile postFile = postFileService.getFile(post.getId(), fileId).orElse(null);
+        if (postFile == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            Path filePath = postFileService.resolveFile(postFile);
+            if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Resource resource = new UrlResource(filePath.toUri());
+            MediaType mediaType = MediaType.parseMediaType(postFile.getFileType());
+            ContentDisposition disposition = ContentDisposition.inline()
+                    .filename(postFile.getFileName(), StandardCharsets.UTF_8)
+                    .build();
+
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                    .body(resource);
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

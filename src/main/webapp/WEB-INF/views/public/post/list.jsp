@@ -6,29 +6,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Public Posts - CheatSheet Hub</title>
+    <title><c:out value="${pageTitle}" /> - CheatSheet Hub</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-list.css?v=5">
-    <style>
-        .chat-fab {
-            position: fixed;
-            right: 24px;
-            bottom: 24px;
-            width: 54px;
-            height: 54px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            background: #0f766e;
-            border-radius: 50%;
-            box-shadow: 0 6px 18px rgba(15, 118, 110, 0.25);
-            font-size: 24px;
-            text-decoration: none;
-            z-index: 20;
-        }
-    </style>
 </head>
 <body class="public-list-page">
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
@@ -36,23 +17,19 @@
     <main class="page-container public-list-container">
         <header class="library-header">
             <span>Public Library</span>
-            <h1>Explore Cheat Sheets</h1>
-            <p>Simple, practical guides created by the community and approved for everyone.</p>
+            <h1><c:out value="${pageTitle}" /></h1>
+            <p><c:out value="${pageDescription}" /></p>
         </header>
-
-        <c:if test="${not empty msg}">
-            <p><c:out value="${msg}" /></p>
-        </c:if>
 
         <c:if test="${empty posts}">
             <section class="empty-state">
-                <h2>No public posts yet</h2>
-                <p>Published public posts will appear here after admin approval.</p>
+                <h2>No posts found</h2>
+                <p><c:out value="${emptyMessage}" /></p>
             </section>
         </c:if>
 
         <c:if test="${not empty posts}">
-            <section class="library-grid" aria-label="Published public posts">
+            <section class="library-grid" aria-label="Public posts">
                 <c:forEach var="post" items="${posts}">
                     <c:url var="detailsUrl" value="/posts/${post.slug}" />
 
@@ -89,9 +66,5 @@
             </section>
         </c:if>
     </main>
-
-    <c:if test="${not empty sessionScope.currentUser}">
-        <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages">&#128172;</a>
-    </c:if>
 </body>
 </html>

@@ -24,6 +24,14 @@ public interface PostRepository {
 
     List<Post> findByCategoryId(Integer categoryId);
 
+    List<Post> findPublishedPublicByTagId(Integer tagId);
+
+    List<Post> findPopularPublishedPublicPosts();
+
+    List<Object[]> countPublishedPublicPostsByCategory();
+
+    List<Object[]> countPublishedPublicPostsByTag();
+
     List<Post> findByStatus(PostStatus status);
 
     List<Post> findPendingPosts();

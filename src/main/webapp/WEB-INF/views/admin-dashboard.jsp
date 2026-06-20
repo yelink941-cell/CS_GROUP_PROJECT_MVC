@@ -5,6 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Portal - Dashboard</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { display: flex; min-height: 100vh; background-color: #f4f6f9; color: #333; }

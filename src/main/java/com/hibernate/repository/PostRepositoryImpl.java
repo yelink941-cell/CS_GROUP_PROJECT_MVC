@@ -85,9 +85,10 @@ public class PostRepositoryImpl implements PostRepository {
     public Optional<Post> findBySlug(String slug) {
         Post post = getCurrentSession()
                 .createQuery(
-                        "SELECT p FROM Post p "
+                        "SELECT DISTINCT p FROM Post p "
                                 + "LEFT JOIN FETCH p.author "
                                 + "LEFT JOIN FETCH p.category "
+                                + "LEFT JOIN FETCH p.tags "
                                 + "WHERE p.slug = :slug "
                                 + "AND p.status = :status "
                                 + "AND p.visibility = :visibility "
@@ -116,13 +117,86 @@ public class PostRepositoryImpl implements PostRepository {
         return getCurrentSession()
                 .createQuery(
                         "SELECT p FROM Post p "
+                                + "LEFT JOIN FETCH p.author "
                                 + "LEFT JOIN FETCH p.category "
                                 + "WHERE p.category.id = :categoryId "
                                 + "AND p.status = :status "
                                 + "AND p.visibility = :visibility "
-                                + "AND p.deletedAt IS NULL",
+                                + "AND p.deletedAt IS NULL "
+                                + "ORDER BY p.createdAt DESC",
                         Post.class)
                 .setParameter("categoryId", categoryId)
+                .setParameter("status", PostStatus.PUBLISHED)
+                .setParameter("visibility", PostVisibility.PUBLIC)
+                .getResultList();
+    }
+
+    @Override
+    public List<Post> findPublishedPublicByTagId(Integer tagId) {
+        return getCurrentSession()
+                .createQuery(
+                        "SELECT DISTINCT p FROM Post p "
+                                + "JOIN p.tags filteredTag "
+                                + "LEFT JOIN FETCH p.author "
+                                + "LEFT JOIN FETCH p.category "
+                                + "WHERE filteredTag.id = :tagId "
+                                + "AND p.status = :status "
+                                + "AND p.visibility = :visibility "
+                                + "AND p.deletedAt IS NULL "
+                                + "ORDER BY p.createdAt DESC",
+                        Post.class)
+                .setParameter("tagId", tagId)
+                .setParameter("status", PostStatus.PUBLISHED)
+                .setParameter("visibility", PostVisibility.PUBLIC)
+                .getResultList();
+    }
+
+    @Override
+    public List<Post> findPopularPublishedPublicPosts() {
+        return getCurrentSession()
+                .createQuery(
+                        "SELECT p FROM Post p "
+                                + "LEFT JOIN FETCH p.author "
+                                + "LEFT JOIN FETCH p.category "
+                                + "WHERE p.status = :status "
+                                + "AND p.visibility = :visibility "
+                                + "AND p.deletedAt IS NULL "
+                                + "ORDER BY COALESCE(p.viewCount, 0) DESC, p.createdAt DESC",
+                        Post.class)
+                .setParameter("status", PostStatus.PUBLISHED)
+                .setParameter("visibility", PostVisibility.PUBLIC)
+                .getResultList();
+    }
+
+    @Override
+    public List<Object[]> countPublishedPublicPostsByCategory() {
+        return getCurrentSession()
+                .createQuery(
+                        "SELECT category, COUNT(post.id) FROM Category category "
+                                + "LEFT JOIN category.posts post WITH "
+                                + "post.status = :status "
+                                + "AND post.visibility = :visibility "
+                                + "AND post.deletedAt IS NULL "
+                                + "GROUP BY category "
+                                + "ORDER BY category.name",
+                        Object[].class)
+                .setParameter("status", PostStatus.PUBLISHED)
+                .setParameter("visibility", PostVisibility.PUBLIC)
+                .getResultList();
+    }
+
+    @Override
+    public List<Object[]> countPublishedPublicPostsByTag() {
+        return getCurrentSession()
+                .createQuery(
+                        "SELECT tag, COUNT(post.id) FROM Tag tag "
+                                + "LEFT JOIN tag.posts post WITH "
+                                + "post.status = :status "
+                                + "AND post.visibility = :visibility "
+                                + "AND post.deletedAt IS NULL "
+                                + "GROUP BY tag "
+                                + "ORDER BY tag.name",
+                        Object[].class)
                 .setParameter("status", PostStatus.PUBLISHED)
                 .setParameter("visibility", PostVisibility.PUBLIC)
                 .getResultList();

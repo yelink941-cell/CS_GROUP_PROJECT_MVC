@@ -1,13 +1,23 @@
 package com.hibernate.service;
 
 import com.hibernate.entity.Post;
+import com.hibernate.entity.enums.ContentType;
 import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.entity.enums.PostVisibility;
 import java.util.List;
 import java.util.Optional;
 
 public interface PostService {
-    Post createPost(Post post, Integer categoryId, List<Integer> tagIds, Long userId, PostVisibility visibility);
+    Post createPost(
+            Post post,
+            Integer categoryId,
+            List<Integer> tagIds,
+            Long userId,
+            PostVisibility visibility,
+            List<String> sectionSubtitles,
+            List<ContentType> contentTypes,
+            List<String> contentDataList,
+            List<Integer> sortOrders);
 
     Post updatePost(Integer id, Post post, Integer categoryId, List<Integer> tagIds, PostVisibility visibility);
 
@@ -24,6 +34,16 @@ public interface PostService {
     boolean existsBySlug(String slug);
 
     List<Post> getPostsByCategoryId(Integer categoryId);
+
+    List<Post> getPublishedPublicPostsByTagId(Integer tagId);
+
+    List<Post> getPopularPublishedPublicPosts();
+
+    List<Post> getNewestPublishedPublicPosts();
+
+    List<Object[]> getPublishedPublicPostCountsByCategory();
+
+    List<Object[]> getPublishedPublicPostCountsByTag();
 
     List<Post> getPostsByStatus(PostStatus status);
 

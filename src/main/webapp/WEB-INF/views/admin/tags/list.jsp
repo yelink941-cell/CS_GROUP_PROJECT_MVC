@@ -8,7 +8,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tag Management</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/posts.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin.css">
 </head>
 <body>
 

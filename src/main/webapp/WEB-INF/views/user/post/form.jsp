@@ -7,7 +7,63 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Post Form - CheatSheet Hub</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/posts.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css?v=2">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css?v=2">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-form.css?v=2">
+<style>
+    .section-builder {
+        margin: 30px 0;
+        padding-top: 26px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .section-builder-heading {
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .section-builder-heading h2,
+    .section-editor h3 {
+        margin: 0;
+    }
+
+    .section-builder-heading p {
+        margin: 6px 0 0;
+        color: #687386;
+    }
+
+    .section-editor {
+        margin-bottom: 18px;
+        padding: 22px;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .section-editor-header {
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .remove-section {
+        min-height: 34px;
+        padding: 7px 11px;
+    }
+
+    @media (max-width: 640px) {
+        .section-builder-heading,
+        .section-editor-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+</style>
 </head>
 <body>
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
@@ -114,6 +170,64 @@
             </select>
         </div>
 
+        <c:if test="${post.id == null}">
+            <section class="section-builder">
+                <div class="section-builder-heading">
+                    <div>
+                        <h2>Sections</h2>
+                        <p>Add text, code, image, or table sections while creating this post.</p>
+                    </div>
+                    <button class="button button-secondary" id="addSectionButton" type="button">+ Add Section</button>
+                </div>
+
+                <div id="sectionsContainer">
+                    <c:forEach var="submittedContent" items="${contentDataList}" varStatus="status">
+                        <article class="section-editor">
+                            <div class="section-editor-header">
+                                <h3>Section</h3>
+                                <button class="button button-danger remove-section" type="button">Remove Section</button>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Section Title</label>
+                                <input class="form-control" type="text" name="sectionSubtitles[]"
+                                       value="<c:out value='${sectionSubtitles[status.index]}' />"
+                                       placeholder="Example: Java Data Types">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Content Type</label>
+                                <select class="form-control" name="contentTypes[]" required>
+                                    <c:forEach var="sectionType" items="${sectionTypes}">
+                                        <c:choose>
+                                            <c:when test="${selectedContentTypes[status.index] == sectionType}">
+                                                <option value="${sectionType}" selected><c:out value="${sectionType}" /></option>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value="${sectionType}"><c:out value="${sectionType}" /></option>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:forEach>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Content Data</label>
+                                <textarea class="form-control" name="contentDataList[]" rows="8" required
+                                          placeholder="Enter section text, code, image URL, or table data"><c:out value="${submittedContent}" /></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Sort Order</label>
+                                <input class="form-control" type="number" name="sortOrders[]" min="0" required
+                                       value="${empty sortOrders[status.index] ? status.index + 1 : sortOrders[status.index]}">
+                            </div>
+                        </article>
+                    </c:forEach>
+                </div>
+            </section>
+        </c:if>
+
         <div class="card-actions">
             <a class="button button-secondary" href="${pageContext.request.contextPath}/user/posts">Back to List</a>
             <button class="button" type="submit">Save Post</button>
@@ -121,5 +235,62 @@
     </form>
     </section>
     </main>
+
+    <c:if test="${post.id == null}">
+        <script>
+            (function () {
+                const sectionsContainer = document.getElementById("sectionsContainer");
+                const addSectionButton = document.getElementById("addSectionButton");
+
+                function addSection() {
+                    const sectionNumber = sectionsContainer.children.length + 1;
+                    const section = document.createElement("article");
+                    section.className = "section-editor";
+                    section.innerHTML = `
+                        <div class="section-editor-header">
+                            <h3>Section</h3>
+                            <button class="button button-danger remove-section" type="button">Remove Section</button>
+                        </div>
+                        <div class="form-group">
+                            <label>Section Title</label>
+                            <input class="form-control" type="text" name="sectionSubtitles[]"
+                                   placeholder="Example: Java Data Types">
+                        </div>
+                        <div class="form-group">
+                            <label>Content Type</label>
+                            <select class="form-control" name="contentTypes[]" required>
+                                <option value="TEXT">TEXT</option>
+                                <option value="CODE">CODE</option>
+                                <option value="IMAGE">IMAGE</option>
+                                <option value="TABLE">TABLE</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Content Data</label>
+                            <textarea class="form-control" name="contentDataList[]" rows="8" required
+                                      placeholder="Enter section text, code, image URL, or table data"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Sort Order</label>
+                            <input class="form-control" type="number" name="sortOrders[]" min="0"
+                                   required>
+                        </div>`;
+                    sectionsContainer.appendChild(section);
+                    section.querySelector('input[name="sortOrders[]"]').value = sectionNumber;
+                }
+
+                addSectionButton.addEventListener("click", addSection);
+                sectionsContainer.addEventListener("click", function (event) {
+                    if (event.target.classList.contains("remove-section")) {
+                        event.target.closest(".section-editor").remove();
+                    }
+                });
+
+                if (sectionsContainer.children.length === 0) {
+                    addSection();
+                }
+            }());
+        </script>
+    </c:if>
 </body>
 </html>

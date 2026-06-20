@@ -2,11 +2,14 @@ package com.hibernate.service;
 
 import com.hibernate.entity.Category;
 import com.hibernate.entity.Post;
+import com.hibernate.entity.PostContent;
 import com.hibernate.entity.Tag;
 import com.hibernate.entity.User;
+import com.hibernate.entity.enums.ContentType;
 import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.entity.enums.PostVisibility;
 import com.hibernate.repository.CategoryRepository;
+import com.hibernate.repository.PostContentRepository;
 import com.hibernate.repository.PostRepository;
 import com.hibernate.repository.TagRepository;
 import com.hibernate.repository.UserRepository;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
+    private final PostContentRepository postContentRepository;
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
@@ -32,14 +36,25 @@ public class PostServiceImpl implements PostService {
             Integer categoryId,
             List<Integer> tagIds,
             Long userId,
-            PostVisibility visibility) {
+            PostVisibility visibility,
+            List<String> sectionSubtitles,
+            List<ContentType> contentTypes,
+            List<String> contentDataList,
+            List<Integer> sortOrders) {
         post.setAuthor(getUser(userId));
         post.setCategory(getCategory(categoryId));
         post.setTags(getTags(tagIds));
         post.setVisibility(visibility);
         post.setStatus(getStatusForVisibility(visibility));
         post.setRejectionReason(null);
-        return postRepository.save(post);
+        Post savedPost = postRepository.save(post);
+        savePostContents(
+                savedPost,
+                sectionSubtitles,
+                contentTypes,
+                contentDataList,
+                sortOrders);
+        return savedPost;
     }
 
     @Override
@@ -97,6 +112,31 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getPostsByCategoryId(Integer categoryId) {
         return postRepository.findByCategoryId(categoryId);
+    }
+
+    @Override
+    public List<Post> getPublishedPublicPostsByTagId(Integer tagId) {
+        return postRepository.findPublishedPublicByTagId(tagId);
+    }
+
+    @Override
+    public List<Post> getPopularPublishedPublicPosts() {
+        return postRepository.findPopularPublishedPublicPosts();
+    }
+
+    @Override
+    public List<Post> getNewestPublishedPublicPosts() {
+        return postRepository.findPublishedPublicPosts();
+    }
+
+    @Override
+    public List<Object[]> getPublishedPublicPostCountsByCategory() {
+        return postRepository.countPublishedPublicPostsByCategory();
+    }
+
+    @Override
+    public List<Object[]> getPublishedPublicPostCountsByTag() {
+        return postRepository.countPublishedPublicPostsByTag();
     }
 
     @Override
@@ -169,5 +209,59 @@ public class PostServiceImpl implements PostService {
         }
 
         return tags;
+    }
+
+    private void savePostContents(
+            Post post,
+            List<String> sectionSubtitles,
+            List<ContentType> contentTypes,
+            List<String> contentDataList,
+            List<Integer> sortOrders) {
+        if (contentDataList == null || contentDataList.isEmpty()) {
+            return;
+        }
+
+        for (int index = 0; index < contentDataList.size(); index++) {
+            String contentData = contentDataList.get(index);
+            String subtitle = getValue(sectionSubtitles, index);
+
+            if (isBlank(contentData) && isBlank(subtitle)) {
+                continue;
+            }
+
+            if (isBlank(contentData)) {
+                throw new IllegalArgumentException("Content data is required for every section.");
+            }
+
+            PostContent postContent = new PostContent();
+            postContent.setPost(post);
+            postContent.setSubtitle(isBlank(subtitle) ? null : subtitle.trim());
+            postContent.setContentType(getContentType(contentTypes, index));
+            postContent.setContentData(contentData);
+            postContent.setSortOrder(getSortOrder(sortOrders, index));
+            postContentRepository.save(postContent);
+        }
+    }
+
+    private <T> T getValue(List<T> values, int index) {
+        if (values == null || index >= values.size()) {
+            return null;
+        }
+
+        return values.get(index);
+    }
+
+    private ContentType getContentType(List<ContentType> contentTypes, int index) {
+        ContentType contentType = getValue(contentTypes, index);
+        return contentType == null ? ContentType.TEXT : contentType;
+    }
+
+    private Integer getSortOrder(List<Integer> sortOrders, int index) {
+        Integer sortOrder = getValue(sortOrders, index);
+        return sortOrder == null ? index + 1 : sortOrder;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }
