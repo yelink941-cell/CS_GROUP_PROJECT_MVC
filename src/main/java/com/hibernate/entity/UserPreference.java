@@ -1,15 +1,29 @@
 package com.hibernate.entity;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.hibernate.entity.enums.ProfileVisibility;
 import com.hibernate.entity.enums.Theme;
 
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+
 
 @Getter
 @Setter

@@ -1,10 +1,14 @@
 package com.hibernate.repository;
 
 import com.hibernate.entity.User;
-import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.Optional; // ဒီ Import ကို သေချာစစ်ပါ
 
-public interface UserRepository {
-    User save(User user);
+@Repository
+public interface UserRepository extends JpaRepository<User, Integer> {
+    
+    // Optional သုံးထားမှသာ .isPresent() ကို သုံးလို့ရပါမယ်
     Optional<User> findByEmail(String email);
     Optional<User> findByUsername(String username);
-}	
+}

@@ -6,56 +6,31 @@ import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
 import com.hibernate.repository.UserRepository;
-import com.hibernate.service.UserService;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
-	@Autowired
-    private SessionFactory sessionFactory;
 
-    private Session getCurrentSession() {
-        return sessionFactory.getCurrentSession();
-    }
-    private final UserRepository userRepository;
-
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private UserRepository userRepository; // ဒါကိုပဲ သုံးပါမယ်
 
     @Override
     @Transactional
     public User registerNewUser(RegistrationDto dto) {
-        
-        // ၁။ Password Check
-        if (dto.getPassword() == null || !dto.getPassword().equals(dto.getConfirmPassword())) {
-            throw new IllegalArgumentException("Password နှင့် Confirm Password မကိုက်ညီပါ!");
-        }
-
-        // ၂။ Duplicate Email Check
-        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("ဤ Email မှာ အသုံးပြုပြီးသား ဖြစ်နေပါသည်။");
-        }
-
-        // ၃။ Duplicate Username Check
-        if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("ဤ Username မှာ အသုံးပြုပြီးသား ဖြစ်နေပါသည်။");
-        }
-
-        // ၄။ User Map
+    	
+        // ၁။ User Object အသစ်တည်ဆောက်ခြင်း
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
-        user.setPasswordHash(dto.getPassword()); // လက်တွေ့တွင် encode လုပ်ရန်လိုသည်
+        user.setPasswordHash(dto.getPassword()); 
         user.setStatus(UserStatus.ACTIVE);
         user.setRole(Role.USER);
 
-        // ၅။ UserProfile Map
+        // ၂။ UserProfile Object အသစ်တည်ဆောက်ခြင်း
         UserProfile profile = new UserProfile();
         profile.setFullName(dto.getFullName());
         profile.setBio(dto.getBio());
@@ -63,11 +38,14 @@ public class UserServiceImpl implements UserService {
         profile.setDobMonth(dto.getDobMonth());
         profile.setDobYear(dto.getDobYear());
         
-        // ၆။ Bind Relationship (အရေးကြီးဆုံးအပိုင်း)
-        profile.setUser(user);    
-        user.setProfile(profile); 
+        // ၃။ Relationship ချိတ်ဆက်ခြင်း
+        profile.setUser(user);   
+        user.setProfile(profile);
 
-        // ၇။ Save to Database
-        return userRepository.save(user);
+        // ၄။ Save လုပ်ခြင်း (EntityManager အစား UserRepository ကိုသုံးပါ)
+        User savedUser = userRepository.save(user); 
+        userRepository.flush(); // Database ထဲသို့ ချက်ချင်း ပို့ပေးရန်
+        
+        return savedUser;
     }
 }

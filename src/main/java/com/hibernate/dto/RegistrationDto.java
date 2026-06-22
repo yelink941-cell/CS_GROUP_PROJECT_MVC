@@ -1,5 +1,7 @@
 package com.hibernate.dto;
 
+
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,4 +17,5 @@ public class RegistrationDto {
     private Integer dobDay;
     private Integer dobMonth;
     private Integer dobYear;
+    
 }
