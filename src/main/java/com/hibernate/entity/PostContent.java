@@ -1,6 +1,5 @@
 package com.hibernate.entity;
 
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;

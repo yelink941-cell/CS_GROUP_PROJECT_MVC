@@ -1,11 +1,19 @@
 package com.hibernate.repository;
 
 import com.hibernate.entity.Category;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.List;
+import java.util.Optional;
 
-@Repository
-public interface CategoryRepository extends JpaRepository<Category, Integer> {
-    // ဒီနေရာမှာ ဘာမှ ထပ်ရေးစရာမလိုပါဘူး
-    // JpaRepository က save(), findById(), findAll() စတဲ့ method တွေကို သူ့အလိုလို ရပြီးသားပါ
+public interface CategoryRepository {
+    Category save(Category category);
+
+    Category update(Category category);
+
+    void delete(Integer id);
+
+    Optional<Category> findById(Integer id);
+
+    List<Category> findAll();
+
+    boolean existsByName(String name);
 }

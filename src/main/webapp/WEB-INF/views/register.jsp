@@ -4,9 +4,10 @@
 <html>
 <head>
     <title>Multi-step Registration</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/posts.css">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 50px; background-color: #f0f2f5; }
-        .form-container { background: white; padding: 30px; border-radius: 12px; max-width: 480px; margin: auto; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f0f2f5; }
+        .form-container { background: white; padding: 30px; border-radius: 12px; max-width: 480px; margin: 50px auto; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #333; }
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; }
@@ -26,6 +27,8 @@
     </style>
 </head>
 <body>
+
+<jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
 <div class="form-container">
     <h2>Create Account</h2>
