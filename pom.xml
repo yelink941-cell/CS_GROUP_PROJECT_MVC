@@ -30,8 +30,6 @@
         <version>4.0.1</version>
         <scope>provided</scope>
     </dependency>
-
-<<<<<<< HEAD
 <!-- Source: https://mvnrepository.com/artifact/org.projectlombok/lombok -->
 <dependency>
     <groupId>org.projectlombok</groupId>
@@ -46,7 +44,6 @@
     <version>8.0.33</version>
     <scope>compile</scope>
 </dependency>
-=======
     <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
@@ -60,7 +57,7 @@
         <version>8.0.33</version>
         <scope>compile</scope>
     </dependency>
->>>>>>> origin/main
+
 
     <dependency>
         <groupId>javax.servlet</groupId>
@@ -106,7 +103,7 @@
         <version>5.1.0</version>
     </dependency>
 
-<<<<<<< HEAD
+
 <dependency>
     <groupId>org.springframework.data</groupId>
     <artifactId>spring-data-jpa</artifactId>
@@ -125,7 +122,6 @@
     <version>5.3.39</version>
 </dependency>
 
-=======
     <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
@@ -137,7 +133,6 @@
         <artifactId>jackson-datatype-jsr310</artifactId>
         <version>2.17.2</version>
     </dependency>
->>>>>>> origin/main
   </dependencies>
   
   <build>
