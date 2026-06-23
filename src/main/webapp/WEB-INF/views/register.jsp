@@ -13,24 +13,17 @@
         h2 { text-align: center; color: #333; }
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
         .btn-container { display: flex; gap: 10px; margin-top: 25px; }
         .btn { padding: 11px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; flex: 1; text-align: center; }
-        .btn-next { background-color: #007bff; color: white; }
-        .btn-submit { background-color: #28a745; color: white; }
-        .btn-skip { background-color: #6c757d; color: white; }
-        .btn-back { background-color: #e4e6eb; color: #333; }
-        .progress-bar { display: flex; justify-content: space-between; margin-bottom: 25px; }
-        .step-indicator { width: 35px; height: 35px; background: #e4e6eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #65676b; }
-        .step-indicator.active { background: #007bff; color: white; }
-        .form-step { display: none; }
-        .form-step.active { display: block; }
-        .error { color: red; text-align: center; }
+        .btn-submit { background-color: #28a745; color: white; width: 100%; margin-top: 15px; }
+        .dob-group { display: flex; gap: 10px; }
+        .dob-group select { flex: 1; }
+        .error { color: red; text-align: center; margin-bottom: 15px; }
+        .success { color: green; text-align: center; margin-bottom: 15px; }
     </style>
 </head>
 <body>
-
-
 
 <div class="form-container">
     <h2>Create Account</h2>
@@ -42,7 +35,7 @@
         <div class="success">${successMessage}</div>
     </c:if>
 
-    <form:form action="${pageContext.request.contextPath}/register" method="POST" modelAttribute="registrationDto">
+    <form:form action="${pageContext.request.contextPath}/register" method="POST" modelAttribute="registrationDto" enctype="multipart/form-data">
         
         <div class="form-group">
             <label>Full Name:</label>
@@ -67,6 +60,11 @@
         <div class="form-group">
             <label>Confirm Password:</label>
             <form:password path="confirmPassword" required="required" />
+        </div>
+
+        <div class="form-group">
+            <label>Profile Picture (အသုံးပြုမည့်ပုံရွေးပါ):</label>
+            <input type="file" name="avatar" accept="image/*" />
         </div>
 
         <div class="form-group">
@@ -100,7 +98,7 @@
             </div>
         </div>
 
-        <button type="submit" class="btn">Register လုပ်မည်</button>
+        <button type="submit" class="btn btn-submit">Register လုပ်မည်</button>
     </form:form>
 </div>
 

@@ -56,6 +56,56 @@
 .public-back-actions{
     margin-top:35px !important;
 }
+
+/* 📁 Collection Selector Styling */
+.collection-box {
+    margin-top: 24px; 
+    padding-top: 20px; 
+    border-top: 1px dashed #e2e8f0;
+}
+.collection-form {
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    flex-wrap: wrap;
+}
+.collection-label {
+    font-size: 14px; 
+    font-weight: 600; 
+    color: #4b5563;
+}
+.collection-select {
+    padding: 10px 16px; 
+    border: 1px solid #d1d5db; 
+    border-radius: 10px; 
+    background-color: #ffffff; 
+    color: #374151; 
+    font-size: 14px; 
+    min-width: 220px; 
+    outline: none; 
+    cursor: pointer;
+}
+.btn-add-collection {
+    background: #4038ff; 
+    color: white; 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: 10px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: background 0.2s, background-color 0.2s;
+}
+.btn-add-collection:hover {
+    background: #312bc4;
+}
+
+/* 🎯 🌟 🔒 Item ရှိပြီးသား ဖိုဒါဆိုလျှင် ပြသမည့် ခလုတ်စတိုင်လ် (Disabled Style) */
+.btn-add-collection:disabled {
+    background-color: #94a3b8 !important; /* မီးခိုးရောင်မှိန်မှိန် */
+    color: #f1f5f9 !important;
+    cursor: not-allowed; /* နှိပ်လို့မရကြောင်း ပြောင်းလဲရန် */
+    transform: none !important;
+}
 </style>
     
 </head>
@@ -90,6 +140,32 @@
                     <c:otherwise>No excerpt provided.</c:otherwise>
                 </c:choose>
             </div>
+
+            <c:if test="${not empty sessionScope.userId}">
+                <div class="collection-box">
+                    <form action="${pageContext.request.contextPath}/user/collections/add-post" method="post" class="collection-form">
+                        <input type="hidden" name="postId" value="${post.id}">
+                        <input type="hidden" name="slug" value="${post.slug}">
+                        
+                        <label for="collectionSelect" class="collection-label">
+                            📁 Save to Folder:
+                        </label>
+                        
+                        <select id="collectionSelect" name="collectionId" required class="collection-select" onchange="checkFolderStatus()">
+                            <option value="">-- Select Your Collection --</option>
+                            <c:forEach var="col" items="${collections}">
+                                <option value="${col.id}" data-saved="${col.posts.contains(post) ? 'true' : 'false'}">
+                                    <c:out value="${col.name}" />
+                                </option>
+                            </c:forEach>
+                        </select>
+                        
+                        <button id="addFolderBtn" type="submit" class="btn-add-collection">
+                            ➕ Add to Folder
+                        </button>
+                    </form>
+                </div>
+            </c:if>
         </article>
 
         <section class="public-content-section">
@@ -164,5 +240,42 @@
             <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>
         </div>
     </main>
+
+    <script>
+        function checkFolderStatus() {
+            var selectBox = document.getElementById("collectionSelect");
+            var actionBtn = document.getElementById("addFolderBtn");
+            
+            // Login မဝင်ထားသော User များ ကြည့်သည့်အခါ Element မရှိလျှင် Error မတက်စေရန်
+            if (!selectBox || !actionBtn) return;
+            
+            // ရွေးချယ်ထားသော option ကို ယူခြင်း
+            var selectedOption = selectBox.options[selectBox.selectedIndex];
+            
+            // Custom attribute ဖြစ်သော data-saved တန်ဖိုးကို လှမ်းဖတ်ခြင်း
+            var isSaved = selectedOption.getAttribute("data-saved");
+
+            if (selectBox.value === "") {
+                // ဘာမှမရွေးချယ်ထားပါက မူရင်းအတိုင်း ပြန်ထားမည်
+                actionBtn.innerHTML = "➕ Add to Folder";
+                actionBtn.disabled = false;
+            } 
+            else if (isSaved === "true") {
+                // 🎯 ရှိပြီးသား Folder ဖြစ်ပါက နှိပ်မရအောင် ပိတ်ပြီး စာသားပြောင်းမည်
+                actionBtn.innerHTML = "✓ Saved";
+                actionBtn.disabled = true;
+            } 
+            else {
+                // 🎯 မရှိသေးသော Folder အသစ်ဖြစ်ပါက ပုံမှန်အတိုင်း ပြန်ဖွင့်ပေးမည်
+                actionBtn.innerHTML = "➕ Add to Folder";
+                actionBtn.disabled = false;
+            }
+        }
+        
+        // စာမျက်နှာ စတင်ပွင့်ပွင့်ချင်းမှာ အခြေအနေ မှန်ကန်နေစေရန် တစ်ကြိမ် Run ပေးခြင်း
+        document.addEventListener("DOMContentLoaded", function() {
+            checkFolderStatus();
+        });
+    </script>
 </body>
 </html>
