@@ -4,6 +4,7 @@ import com.hibernate.entity.Post;
 import com.hibernate.entity.enums.ContentType;
 import com.hibernate.entity.enums.PostVisibility;
 import com.hibernate.service.CategoryService;
+import com.hibernate.service.CollectionService; 
 import com.hibernate.service.PostService;
 import com.hibernate.service.TagService;
 import java.util.List;
@@ -24,6 +25,7 @@ public class PostController {
     private final PostService postService;
     private final CategoryService categoryService;
     private final TagService tagService;
+    private final CollectionService collectionService; 
 
     @GetMapping
     public String listPosts(Model model, HttpSession session) {
@@ -175,6 +177,24 @@ public class PostController {
 
         postService.deletePost(id);
         return "redirect:/user/posts";
+    }
+
+    // 🎯 ဤနေရာတွင် Comment များကို ဖွင့်ပြီး မင်းရဲ့ JSP နှင့် အချက်အလက်များ ချိတ်ဆက်ပေးလိုက်ပါပြီ
+    @GetMapping("/{slug}")
+    public String showPostDetail(@PathVariable String slug, Model model, HttpSession session) {
+        return postService.getPostBySlug(slug).map(post -> {
+            model.addAttribute("post", post);
+            
+            // Post ရဲ့ အသေးစိတ် Content များကိုပါ JSP ဆီ ပို့ပေးခြင်း
+            model.addAttribute("contents", post.getContents());
+            
+            Long userId = (Long) session.getAttribute("userId");
+            if (userId != null) {
+                // 📁 လက်ရှိ ယူဆာပိုင်ဆိုင်သော Collections များကို ဆွဲထုတ်ပြီး Model ထဲသို့ ထည့်ပေးခြင်း
+                model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
+            }
+            return "user/post/detail"; 
+        }).orElse("redirect:/user/posts");
     }
 
     private boolean isLoggedIn(HttpSession session) {

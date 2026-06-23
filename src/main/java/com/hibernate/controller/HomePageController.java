@@ -2,12 +2,15 @@ package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
 import com.hibernate.entity.PostFile;
+import com.hibernate.service.CollectionService; // 🎯 Added import for CollectionService
 import com.hibernate.service.PostContentService;
 import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import javax.servlet.http.HttpSession; // 🎯 Session သုံးရန် Import ထည့်ပေးထားသည်
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -28,6 +31,7 @@ public class HomePageController {
     private final PostService postService;
     private final PostContentService postContentService;
     private final PostFileService postFileService;
+    private final CollectionService collectionService; // 🎯 Injected CollectionService via Lombok
 
     @GetMapping("/")
     public String homePage(Model model) {
@@ -36,17 +40,26 @@ public class HomePageController {
     }
 
     @GetMapping("/posts/public/details")
-    public String publicPostDetails(@RequestParam("slug") String slug, Model model) {
-        return publicPostDetailsBySlug(slug, model);
+    public String publicPostDetails(@RequestParam("slug") String slug, Model model, HttpSession session) {
+        return publicPostDetailsBySlug(slug, model, session);
     }
 
     @GetMapping("/posts/{slug}")
-    public String publicPostDetailsBySlug(@PathVariable String slug, Model model) {
+    public String publicPostDetailsBySlug(@PathVariable String slug, Model model, HttpSession session) {
         return postService.getPostBySlug(slug)
                 .map(post -> {
                     model.addAttribute("post", post);
                     model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
                     model.addAttribute("postFiles", postFileService.getFilesByPostId(post.getId()));
+                    
+                    // 🎯 ဤလိုင်းလေးကို အသစ်တိုးပေးလိုက်ပါဗျာ (JSP ထဲ တိုက်ရိုက်သယ်ယူနိုင်ရန်)
+                    model.addAttribute("currentPostSlug", slug); 
+                    
+                    Long userId = (Long) session.getAttribute("userId");
+                    if (userId != null) {
+                        model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
+                    }
+                    
                     return "public/post/details";
                 })
                 .orElse("redirect:/posts/public");
