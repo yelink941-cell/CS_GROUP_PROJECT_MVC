@@ -3,10 +3,12 @@ package com.hibernate.service;
 <<<<<<< Updated upstream
 import com.hibernate.dto.RegistrationDto;
 import com.hibernate.entity.User;
+import com.hibernate.entity.UserProfile;
 
 public interface UserService {
+    boolean registerNewUser(User user, UserProfile profile);
+
     User registerNewUser(RegistrationDto registrationDto);
-=======
 import com.hibernate.entity.User;
 import com.hibernate.entity.UserProfile;
 import java.util.List;
@@ -21,5 +23,12 @@ public interface UserService {
     List<User> getAllUsers(); 
     void deleteUser(int id); // ဒီစာကြောင်းကို ထည့်ပေးပါ
     void banUser(int id);
->>>>>>> Stashed changes
+
 }
+
+
+    User authenticateUser(String email, String plainPassword);
+
+    User loginUser(String email, String password);
+}
+

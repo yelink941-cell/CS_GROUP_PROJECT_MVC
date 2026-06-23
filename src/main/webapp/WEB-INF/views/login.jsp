@@ -1,54 +1,54 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Sign In</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 100px; background-color: #f0f2f5; }
-        .login-container { background: white; padding: 35px; border-radius: 12px; max-width: 400px; margin: auto; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-bottom: 25px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
-        .form-group input { width: 100%; padding: 11px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-        .btn-submit { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
-        .btn-submit:hover { background-color: #0056b3; }
-        .error { color: red; text-align: center; margin-bottom: 15px; font-weight: 500; }
-        .success { color: green; text-align: center; margin-bottom: 15px; font-weight: 500; }
-        .footer-link { text-align: center; margin-top: 20px; font-size: 14px; color: #65676b; }
-        .footer-link a { color: #007bff; text-decoration: none; font-weight: bold; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CheatSheet Hub</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-form.css?v=3">
 </head>
-<body>
+<body class="auth-page">
+    <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
-<div class="login-container">
-    <h2>Welcome Back</h2>
+    <main class="auth-main">
+        <section class="auth-card">
+            <div class="auth-heading">
+                <span>Welcome back</span>
+                <h1>Sign in to your account</h1>
+                <p>Continue creating and managing your cheat sheets.</p>
+            </div>
 
-    <% if(request.getAttribute("error") != null) { %>
-        <p class="error"><%= request.getAttribute("error") %></p>
-    <% } %>
-    
-    <% if(request.getAttribute("msg") != null) { %>
-        <p class="success"><%= request.getAttribute("msg") %></p>
-    <% } %>
+            <c:if test="${not empty error}">
+                <p class="auth-message auth-error"><c:out value="${error}" /></p>
+            </c:if>
 
-    <form action="${pageContext.request.contextPath}/login" method="POST">
-        <div class="form-group">
-            <label>Email Address:</label>
-            <input type="email" name="email" placeholder="Enter your email" required />
-        </div>
-        
-        <div class="form-group">
-            <label>Password:</label>
-            <input type="password" name="password" placeholder="Enter your password" required />
-        </div>
-        
-        <button type="submit" class="btn-submit">Sign In</button>
-    </form>
+            <c:if test="${not empty msg}">
+                <p class="auth-message auth-success"><c:out value="${msg}" /></p>
+            </c:if>
 
-    <div class="footer-link">
-        Don't have an account? <a href="${pageContext.request.contextPath}/register">Create Account</a>
-    </div>
-</div>
+            <form action="${pageContext.request.contextPath}/login" method="post">
+                <div class="auth-field">
+                    <label for="email">Email address</label>
+                    <input id="email" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                </div>
 
+                <div class="auth-field">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" name="password" placeholder="Enter your password"
+                           autocomplete="current-password" required>
+                </div>
+
+                <button class="auth-submit" type="submit">Sign In</button>
+            </form>
+
+            <p class="auth-footer">
+                Don&apos;t have an account?
+                <a href="${pageContext.request.contextPath}/register">Create account</a>
+            </p>
+        </section>
+    </main>
 </body>
 </html>

@@ -5,6 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Portal - Dashboard</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { display: flex; min-height: 100vh; background-color: #f4f6f9; color: #333; }
@@ -17,6 +20,7 @@
         .sidebar-link { display: flex; align-items: center; padding: 12px 16px; color: #cbd5e1; text-decoration: none; border-radius: 6px; font-size: 15px; transition: all 0.2s; }
         .sidebar-link:hover { background-color: #334155; color: #fff; }
         .sidebar-link.active { background-color: #0284c7; color: #fff; font-weight: 6px; }
+        .sidebar-link[href="#"] { display: none; }
         
         /* --- MAIN LAYOUT WORKSPACE --- */
         .main-workspace { margin-left: 260px; flex-grow: 1; display: flex; flex-direction: column; }
@@ -45,18 +49,20 @@
 <body>
 
     <%
-        User currentUser = (User) session.getAttribute("currentUser");
-        if (currentUser == null || !"ADMIN".equalsIgnoreCase(currentUser.getRole())) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-    %>
+    User currentUser = (User) session.getAttribute("user");
+    String currentRole = (String) session.getAttribute("role");
+
+    if (currentUser == null || !"ADMIN".equals(currentRole)) {
+        response.sendRedirect(request.getContextPath() + "/login");
+        return;
+    }
+%>
 
     <aside class="sidebar">
         <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link active">
+                <a href="${pageContext.request.contextPath}/admin-dashboard" class="sidebar-link active">
                     <span>📊 Core Dashboard</span>
                 </a>
             </li>
@@ -66,15 +72,25 @@
                 </a>
             </li>
             <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
+                    <span>Tag Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
                 <a href="#" class="sidebar-link">
                     <span>📝 Post Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
-    			<a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
-        			<span>👥 User Management</span>
-    			</a>
-			</li>
+                <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
+                    <span>Pending Posts</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link">
+                    <span>👥 User Management</span>
+                </a>
+            </li>
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link">
                     <span>🚨 Report Logs</span>
@@ -90,7 +106,7 @@
             <div class="user-profile-badge">
                 <span>Welcome, <strong><%= currentUser.getUsername() %></strong></span>
                 <span class="badge"><%= currentUser.getRole() %></span>
-                <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Sign Out</a>
+                <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Logout</a>
             </div>
         </header>
 
@@ -105,10 +121,18 @@
                     <h3>Categories Config Matrix</h3>
                     <p>Manage categories, set visibility flags, and organize platform sections.</p>
                 </a>
+                <a href="${pageContext.request.contextPath}/admin/tags" class="stat-card">
+                    <h3>Tags Config Matrix</h3>
+                    <p>Manage tags and organize searchable post labels.</p>
+                </a>
                 <div class="stat-card">
                     <h3>Active Post Items</h3>
                     <p>Review system sheet documents, code samples, and compiled attachment downloads.</p>
                 </div>
+                <a href="${pageContext.request.contextPath}/admin/posts/pending" class="stat-card">
+                    <h3>Pending Post Reviews</h3>
+                    <p>Approve or reject public posts submitted by users.</p>
+                </a>
                 <div class="stat-card">
                     <h3>Moderation Queues</h3>
                     <p>Inspect flagged user reports, descriptions, and ban actions.</p>
