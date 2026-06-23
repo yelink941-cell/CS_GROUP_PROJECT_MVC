@@ -15,7 +15,6 @@ import javax.persistence.Table;
 
 import com.hibernate.entity.enums.ContentType;
 
-
 import lombok.Getter;
 import lombok.Setter;
 

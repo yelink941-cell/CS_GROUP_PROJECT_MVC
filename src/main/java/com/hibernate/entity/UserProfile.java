@@ -14,7 +14,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import java.time.LocalDateTime;
+
+import lombok.Getter;
+import lombok.Setter;
+
 
 
 @Getter
@@ -26,7 +29,7 @@ public class UserProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // ဤနေရာတွင် cascade=CascadeType.ALL ကို ထည့်ပါ
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 

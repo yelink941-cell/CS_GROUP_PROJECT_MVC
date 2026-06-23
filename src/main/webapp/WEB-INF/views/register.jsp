@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -35,74 +34,104 @@
 <div class="form-container">
     <h2>Create Account</h2>
 
-    <c:if test="${not empty errorMessage}">
-        <div class="error">${errorMessage}</div>
-    </c:if>
-    <c:if test="${not empty successMessage}">
-        <div class="success">${successMessage}</div>
-    </c:if>
+    <div class="progress-bar">
+        <div id="ind-1" class="step-indicator active">1</div>
+        <div id="ind-2" class="step-indicator">2</div>
+    </div>
 
-    <form:form action="${pageContext.request.contextPath}/register" method="POST" modelAttribute="registrationDto">
+    <% if(request.getAttribute("error") != null) { %>
+        <p class="error"><%= request.getAttribute("error") %></p>
+    <% } %>
+
+    <form:form id="regForm" action="${pageContext.request.contextPath}/register" method="POST" modelAttribute="registrationDto" enctype="multipart/form-data">
         
-        <div class="form-group">
-            <label>Full Name:</label>
-            <form:input path="fullName" required="required" placeholder="မောင်မောင်" />
-        </div>
-
-        <div class="form-group">
-            <label>Username:</label>
-            <form:input path="username" required="required" placeholder="maungmaung123" />
-        </div>
-
-        <div class="form-group">
-            <label>Email:</label>
-            <form:input path="email" type="email" required="required" placeholder="example@mail.com" />
-        </div>
-
-        <div class="form-group">
-            <label>Password:</label>
-            <form:password path="password" required="required" />
-        </div>
-
-        <div class="form-group">
-            <label>Confirm Password:</label>
-            <form:password path="confirmPassword" required="required" />
-        </div>
-
-        <div class="form-group">
-            <label>Bio:</label>
-            <form:textarea path="bio" rows="3" placeholder="မိမိအကြောင်းအကျဉ်းချုပ်ရေးရန်..." />
-        </div>
-
-        <div class="form-group">
-            <label>Birthday (မွေးနေ့):</label>
-            <div class="dob-group">
-                <form:select path="dobDay" required="required">
-                    <form:option value="" label="နေ့"/>
-                    <c:forEach var="i" begin="1" end="31">
-                        <form:option value="${i}" label="${i}"/>
-                    </c:forEach>
-                </form:select>
-
-                <form:select path="dobMonth" required="required">
-                    <form:option value="" label="လ"/>
-                    <c:forEach var="i" begin="1" end="12">
-                        <form:option value="${i}" label="${i}"/>
-                    </c:forEach>
-                </form:select>
-
-                <form:select path="dobYear" required="required">
-                    <form:option value="" label="ခုနှစ်"/>
-                    <c:forEach var="i" begin="1950" end="2026">
-                        <form:option value="${i}" label="${i}"/>
-                    </c:forEach>
-                </form:select>
+        <div id="step-1" class="form-step active">
+            <div class="form-group">
+                <label>Full Name:</label>
+                <input type="text" id="fullName" name="fullName" required />
+            </div>
+            <div class="form-group">
+                <label>Email Address:</label>
+                <form:input path="email" type="email" id="email" required="required" />
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <form:password path="password" id="password" required="required" />
+            </div>
+            
+            <div class="form-group">
+    			<label>Confirm Password:</label>
+    			<form:password path="confirmPassword" id="confirmPassword" required="required" />
+			</div>
+            <div class="btn-container">
+                <button type="button" class="btn btn-next" onclick="goToStep2()">Next ▶</button>
             </div>
         </div>
 
-        <button type="submit" class="btn">Register လုပ်မည်</button>
+        <div id="step-2" class="form-step">
+            <div class="form-group">
+                <label>Username:</label>
+                <form:input path="username" id="username" placeholder="e.g. ye_hsu123" />
+            </div>
+            <div class="form-group">
+                <label>Profile Image :</label>
+                <input type="file" name="avatarFile" accept="image/*" />
+            </div>
+            <div class="form-group">
+                <label>Bio:</label>
+                <textarea name="bio" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Date of Birth (Day / Month / Year):</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" name="dobDay" placeholder="DD" min="1" max="31" />
+                    <input type="number" name="dobMonth" placeholder="MM" min="1" max="12" />
+                    <input type="number" name="dobYear" placeholder="YYYY" min="1900" max="2026" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Country:</label>
+                <input type="text" name="country" />
+            </div>
+            
+            <div class="btn-container">
+                <button type="button" class="btn btn-back" onclick="goToStep1()">◄ Back</button>
+                <button type="button" class="btn btn-skip" onclick="skipAndSubmit()">Skip</button>
+                <button type="submit" class="btn btn-submit">Submit</button>
+            </div>
+        </div>
     </form:form>
 </div>
 
+<script>
+    function goToStep2() {
+        var fullName = document.getElementById("fullName").value.trim();
+        var email = document.getElementById("email").value.trim();
+        var password = document.getElementById("password").value.trim();
+
+        if (fullName === "" || email === "" || password === "") {
+            alert("Please Fill the First Step First !");
+            return;
+        }
+        document.getElementById("step-1").classList.remove("active");
+        document.getElementById("step-2").classList.add("active");
+        document.getElementById("ind-2").classList.add("active");
+    }
+
+    function goToStep1() {
+        document.getElementById("step-2").classList.remove("active");
+        document.getElementById("step-1").classList.add("active");
+        document.getElementById("ind-2").classList.remove("active");
+    }
+
+    function skipAndSubmit() {
+        var usernameField = document.getElementById("username");
+        if(usernameField.value.trim() === "") {
+            var email = document.getElementById("email").value;
+            usernameField.value = email.split('@')[0] + Math.floor(Math.random() * 1000); 
+        }
+        document.getElementById("regForm").submit();
+    }
+</script>
 </body>
 </html>

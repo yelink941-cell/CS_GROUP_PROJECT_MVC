@@ -9,8 +9,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.entity.enums.PostVisibility;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,6 +32,8 @@ import javax.persistence.Table;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "posts")
 public class Post {
@@ -46,11 +50,11 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String excerpt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 

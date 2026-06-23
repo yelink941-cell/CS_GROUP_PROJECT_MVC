@@ -1,6 +1,8 @@
 package com.hibernate.service;
 
-<<<<<<< Updated upstream
+
+import org.springframework.stereotype.Service;
+
 import com.hibernate.dto.RegistrationDto;
 import com.hibernate.entity.User;
 import com.hibernate.entity.UserProfile;

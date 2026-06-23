@@ -5,7 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import java.time.LocalDateTime;
+
+import lombok.Getter;
+import lombok.Setter;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

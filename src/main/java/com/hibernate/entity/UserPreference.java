@@ -9,7 +9,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 import com.hibernate.entity.enums.ProfileVisibility;
 import com.hibernate.entity.enums.Theme;
 
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
