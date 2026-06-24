@@ -3,18 +3,20 @@ package com.hibernate.service;
 import com.hibernate.entity.User;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
+import com.hibernate.entity.enums.UserStatus;
+import com.hibernate.repository.UserRepository;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
-    @Autowired
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
+    private final UserRepository userRepository;
 
     // Helper method to get the current context-bound transaction session
     private Session getCurrentSession() {
@@ -50,14 +52,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public User registerNewUser(RegistrationDto dto) {
+        if (dto.getPassword() == null
+                || !dto.getPassword().equals(dto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and confirmation do not match.");
+        }
+
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPasswordHash(dto.getPassword());
+        user.setStatus(UserStatus.ACTIVE);
+        user.setRole(Role.USER);
+
+        UserProfile profile = new UserProfile();
+        profile.setFullName(dto.getFullName());
+        profile.setBio(dto.getBio());
+        profile.setDobDay(dto.getDobDay());
+        profile.setDobMonth(dto.getDobMonth());
+        profile.setDobYear(dto.getDobYear());
+
+        if (!registerNewUser(user, profile)) {
+            throw new IllegalArgumentException("This email is already registered.");
+        }
+
+        return user;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public User authenticateUser(String email, String plainPassword) {
-        Session session = getCurrentSession();
-        
-        User user = session.createQuery("from User u where u.email = :email", User.class)
-                .setParameter("email", email)
-                .uniqueResult();
-                
+        User user = userRepository.getUserByEmail(email);
+
         if (user != null && BCrypt.checkpw(plainPassword, user.getPasswordHash())) {
             return user;
         }
@@ -66,17 +93,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserProfile getUserProfileByUserId(int userId) {
-        return getCurrentSession()
-                .createQuery("FROM UserProfile up WHERE up.user.id = :userId", UserProfile.class)
-                .setParameter("userId", userId)
-                .uniqueResult();
-    }
-
-    @Override
-    @Transactional
-    public void updateUserProfile(UserProfile profile) {
-        // merge acts as an update for detached objects coming from the MVC controller
-        getCurrentSession().merge(profile);
+    public User loginUser(String email, String password) {
+        return authenticateUser(email, password);
     }
 }

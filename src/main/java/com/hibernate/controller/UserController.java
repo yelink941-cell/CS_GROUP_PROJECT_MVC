@@ -35,14 +35,15 @@ public class UserController {
     @PostMapping("/register")
     public String processRegistration(
             @ModelAttribute("registrationDto") RegistrationDto dto, 
-            @RequestParam("avatarFile") MultipartFile avatarFile,
+            // 💡 ပြင်ဆင်ချက်- "avatarFile" မှ "avatar" သို့ ပြောင်းလဲပြီး optional ဖြစ်အောင် ပြုလုပ်ထားသည်
+            @RequestParam(value = "avatar", required = false) MultipartFile avatarFile,
             Model model) {
         
         // 1. Unpack DTO fields into proper Hibernate Entity classes
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
-        user.setPasswordHash(dto.getPassword()); // Service will handle hashing
+        user.setPasswordHash(dto.getPassword()); 
 
         UserProfile profile = new UserProfile();
         profile.setFullName(dto.getFullName());
@@ -55,18 +56,20 @@ public class UserController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("error", "Image processing failed. Please try again.");
+            // 💡 ပြင်ဆင်ချက်- register.jsp ထဲက ${errorMessage} နဲ့ ကိုက်ညီအောင် ပြောင်းလဲထားသည်
+            model.addAttribute("errorMessage", "Image processing failed. Please try again.");
             return "register";
         }
         
-        // 2. Pass to service layer (which now handles SessionFactory transactions)
+        // 2. Pass to service layer
         boolean isSuccess = userService.registerNewUser(user, profile);
         
         if (isSuccess) {
             model.addAttribute("msg", "Account Created Successfully");
             return "login"; 
         } else {
-            model.addAttribute("error", "This Email is already registered!");
+            // 💡 ပြင်ဆင်ချက်- register.jsp ထဲက ${errorMessage} နဲ့ ကိုက်ညီအောင် ပြောင်းလဲထားသည်
+            model.addAttribute("errorMessage", "This Email or Username is already registered!");
             return "register"; 
         }
     }
@@ -87,12 +90,13 @@ public class UserController {
         
         if (loggedInUser != null) {
             session.setAttribute("currentUser", loggedInUser);
+            session.setAttribute("userId", loggedInUser.getId());
             
             // FIXED: Clean, type-safe comparison with Enum literals
             if (Role.ADMIN.equals(loggedInUser.getRole())) {
-                return "redirect:/admin/dashboard";
+                return "redirect:/admin-dashboard";
             } else {
-                return "redirect:/profile";
+                return "redirect:/";
             }
         } else {
             model.addAttribute("error", "Invalid email or password.");
@@ -100,82 +104,18 @@ public class UserController {
         }
     }
 
-    @GetMapping("/profile")
-    public String showUserProfilePage(HttpSession session, Model model) {
-        User currentUser = (User) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
-        
-        UserProfile profile = userService.getUserProfileByUserId(currentUser.getId());
-        
-        if (profile != null && profile.getAvatar() != null) {
-            String base64Avatar = java.util.Base64.getEncoder().encodeToString(profile.getAvatar());
-            model.addAttribute("avatarImage", base64Avatar);
-        }
-        
-        model.addAttribute("userProfile", profile);
-        return "profile";
-    }
-
-    @GetMapping("/profile/edit")
-    public String showEditProfilePage(HttpSession session, Model model) {
-        User currentUser = (User) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
-        
-        UserProfile profile = userService.getUserProfileByUserId(currentUser.getId());
-        model.addAttribute("userProfile", profile);
-        return "edit-profile";
-    }
-
-    @PostMapping("/profile/update")
-    public String processUpdateProfile(
-            @ModelAttribute("userProfile") UserProfile updatedProfile,
-            @RequestParam("avatarFile") MultipartFile avatarFile,
-            HttpSession session,
-            Model model) {
-        
-        User currentUser = (User) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            UserProfile existingProfile = userService.getUserProfileByUserId(currentUser.getId());
-            
-            if (existingProfile != null) {
-                // Attach the underlying references so Hibernate merge works perfectly
-                updatedProfile.setUser(existingProfile.getUser());
-                updatedProfile.setId(existingProfile.getId());
-                
-                if (avatarFile != null && !avatarFile.isEmpty()) {
-                    updatedProfile.setAvatar(avatarFile.getBytes());
-                } else {
-                    updatedProfile.setAvatar(existingProfile.getAvatar());
-                }
-            } else {
-                updatedProfile.setUser(currentUser);
-            }
-            
-            userService.updateUserProfile(updatedProfile);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            model.addAttribute("error", "Failed to update profile settings.");
-            return "edit-profile";
-        }
-        
-        return "redirect:/profile";
-    }
-
-    @GetMapping("/admin/dashboard")
+    @GetMapping("/admin-dashboard")
     public String showAdminDashboard(HttpSession session) {
         User adminUser = (User) session.getAttribute("currentUser");
         if (adminUser == null || !Role.ADMIN.equals(adminUser.getRole())) {
             return "redirect:/login"; 
         }
         return "admin-dashboard";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/";
     }
 }

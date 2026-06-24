@@ -3,8 +3,11 @@ import com.hibernate.entity.User;
 import com.hibernate.entity.UserProfile;
 
 public interface UserService {
-	boolean registerNewUser(User user, UserProfile profile);
+    boolean registerNewUser(User user, UserProfile profile);
+
+    User registerNewUser(RegistrationDto registrationDto);
+
     User authenticateUser(String email, String plainPassword);
-    UserProfile getUserProfileByUserId(int userId);
-    void updateUserProfile(UserProfile profile);
+
+    User loginUser(String email, String password);
 }
