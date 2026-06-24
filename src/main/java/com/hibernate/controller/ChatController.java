@@ -111,7 +111,7 @@ public class ChatController {
     public ResponseEntity<?> sendMediaMessage(
             @RequestParam Long conversationId,
             @RequestParam(required = false) String caption,
-            @RequestParam("file") MultipartFile file,
+            @RequestParam("files") List<MultipartFile> files,
             HttpSession session) {
 
         User currentUser = requireUser(session);
@@ -123,7 +123,7 @@ public class ChatController {
             Message message = chatService.sendMediaMessage(
                     conversationId,
                     currentUser.getId(),
-                    file,
+                    files,
                     caption
             );
             return ResponseEntity.ok(MessageMapper.toResponse(message));

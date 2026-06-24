@@ -23,7 +23,7 @@ public interface ChatService {
 
     Message sendMessage(Long conversationId, Long senderId, String text);
 
-    Message sendMediaMessage(Long conversationId, Long senderId, MultipartFile file, String caption);
+    Message sendMediaMessage(Long conversationId, Long senderId, List<MultipartFile> files, String caption);
 
     List<Message> getChatHistory(Long conversationId, Long currentUserId, Long lastMessageId);
 

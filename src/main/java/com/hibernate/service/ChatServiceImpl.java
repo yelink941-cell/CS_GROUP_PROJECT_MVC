@@ -206,8 +206,51 @@ public class ChatServiceImpl implements ChatService {
         return message;
     }
 
+//    @Override
+//    public Message sendMediaMessage(Long conversationId, Long senderId, List<MultipartFile> files, String caption) {
+//        validateParticipant(conversationId, senderId);
+//
+//        Conversation conversation = conversationRepository.getById(conversationId);
+//        if (conversation == null) {
+//            throw new RuntimeException("စကားဝိုင်း #" + conversationId + " ကို ရှာမတွေ့ပါ။");
+//        }
+//
+//        String fileUrl;
+//        try {
+//            fileUrl = fileStorageService.storeChatFile(conversationId, files.get(0));
+//        } catch (Exception e) {
+//            throw new RuntimeException("ဖိုင်သိမ်းဆည်းရာတွင် အမှားဖြစ်ပါသည်: " + e.getMessage(), e);
+//        }
+//
+//        String contentType = files  .get(0).getContentType();
+//        MessageType messageType = fileStorageService.isVideo(contentType, fileUrl)
+//                ? MessageType.VIDEO : MessageType.IMAGE;
+//
+//        Message message = new Message();
+//        message.setConversation(conversation);
+//        message.setSenderId(senderId);
+//        message.setMessageText(caption != null && !caption.isBlank() ? caption.trim() : null);
+//        message.setMessageType(messageType);
+//
+//        Long messageId = messageRepository.insertMessage(message);
+//        message.setId(messageId);
+//
+//        MessageAttachment attachment = new MessageAttachment();
+//        attachment.setMessage(message);
+//        attachment.setFileUrl(fileUrl);
+//        attachment.setFileType(contentType != null ? contentType : "application/octet-stream");
+//        attachment.setFileSize((int) files.get(0).getSize());
+//        attachmentRepository.insertAttachment(attachment);
+//
+//        message.getAttachments().add(attachment);
+//
+//        conversation.setUpdatedAt(message.getCreatedAt());
+//        conversationRepository.updateConversation(conversation);
+//
+//        return message;
+//    }
     @Override
-    public Message sendMediaMessage(Long conversationId, Long senderId, MultipartFile file, String caption) {
+    public Message sendMediaMessage(Long conversationId, Long senderId, List<MultipartFile> files, String caption) {
         validateParticipant(conversationId, senderId);
 
         Conversation conversation = conversationRepository.getById(conversationId);
@@ -215,41 +258,64 @@ public class ChatServiceImpl implements ChatService {
             throw new RuntimeException("စကားဝိုင်း #" + conversationId + " ကို ရှာမတွေ့ပါ။");
         }
 
-        String fileUrl;
-        try {
-            fileUrl = fileStorageService.storeChatFile(conversationId, file);
-        } catch (Exception e) {
-            throw new RuntimeException("ဖိုင်သိမ်းဆည်းရာတွင် အမှားဖြစ်ပါသည်: " + e.getMessage(), e);
-        }
-
-        String contentType = file.getContentType();
-        MessageType messageType = fileStorageService.isVideo(contentType, fileUrl)
-                ? MessageType.VIDEO : MessageType.IMAGE;
-
+        // ၁။ Message Object ကို အရင်ဆောက်ပါမည် (ID မပါသေးပါ)
         Message message = new Message();
         message.setConversation(conversation);
         message.setSenderId(senderId);
         message.setMessageText(caption != null && !caption.isBlank() ? caption.trim() : null);
-        message.setMessageType(messageType);
 
+        MessageType finalType = MessageType.IMAGE;
+        List<MessageAttachment> attachmentsToSave = new ArrayList<>();
+
+        // ၂။ ဖိုင်များကို Loop ပတ်ပြီး Storage ထဲသိမ်းကာ Attachment Object များ ဆောက်ပါမည်
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) continue;
+
+            String fileUrl;
+            try {
+                // ဖိုင်တစ်ခုချင်းစီကို Storage ထဲ သိမ်းပါသည်
+                fileUrl = fileStorageService.storeChatFile(conversationId, file);
+            } catch (Exception e) {
+                throw new RuntimeException("ဖိုင်သိမ်းဆည်းရာတွင် အမှားဖြစ်ပါသည်: " + e.getMessage(), e);
+            }
+
+            String contentType = file.getContentType();
+            if (fileStorageService.isVideo(contentType, fileUrl)) {
+                finalType = MessageType.VIDEO;
+            }
+
+            // Loop တစ်ခါပတ်တိုင်း Attachment Object "အသစ်" ဆောက်ပါသည်
+            MessageAttachment attachment = new MessageAttachment();
+            attachment.setFileUrl(fileUrl);
+            attachment.setFileType(contentType != null ? contentType : "application/octet-stream");
+            attachment.setFileSize((int) file.getSize());
+
+            attachmentsToSave.add(attachment);
+        }
+
+        if (attachmentsToSave.isEmpty()) {
+            throw new IllegalArgumentException("ပေးပို့ရန် ဖိုင်အနည်းဆုံး ၁ ခု ရွေးချယ်ပေးပါ။");
+        }
+
+        // ၃။ Message ကို DB ထဲ Insert လုပ်ပြီး ID ကို ယူပါသည်
+        message.setMessageType(finalType);
         Long messageId = messageRepository.insertMessage(message);
-        message.setId(messageId);
+        message.setId(messageId); // ရလာသော ID ကို Message Object တွင် ပြန်ထည့်သည်
 
-        MessageAttachment attachment = new MessageAttachment();
-        attachment.setMessage(message);
-        attachment.setFileUrl(fileUrl);
-        attachment.setFileType(contentType != null ? contentType : "application/octet-stream");
-        attachment.setFileSize((int) file.getSize());
-        attachmentRepository.insertAttachment(attachment);
+        // ၄။ ရလာသော Message ID ကို အသုံးပြု၍ Attachment များကို DB ထဲ ထည့်ပါသည်
+        message.setAttachments(new ArrayList<>());
+        for (MessageAttachment att : attachmentsToSave) {
+            att.setMessage(message); // Database Foreign Key (message_id) ဝင်စေရန်
+            attachmentRepository.insertAttachment(att); // DB ထဲသို့ Insert လုပ်သည်
+            message.getAttachments().add(att); // UI တွင် ချက်ချင်းပေါ်စေရန် List ထဲ ပြန်ထည့်သည်
+        }
 
-        message.getAttachments().add(attachment);
-
+        // ၅။ Conversation ရဲ့ Updated အချိန်ကို ပြင်ဆင်သည်
         conversation.setUpdatedAt(message.getCreatedAt());
         conversationRepository.updateConversation(conversation);
 
         return message;
     }
-
     @Override
     public List<Message> getChatHistory(Long conversationId, Long currentUserId, Long lastMessageId) {
         validateParticipant(conversationId, currentUserId);
