@@ -103,6 +103,8 @@
         
         <header class="top-navbar">
             <div class="nav-title">System Overview Workspace</div>
+                                 <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+            
             <div class="user-profile-badge">
                 <span>Welcome, <strong><%= currentUser.getUsername() %></strong></span>
                 <span class="badge"><%= currentUser.getRole() %></span>

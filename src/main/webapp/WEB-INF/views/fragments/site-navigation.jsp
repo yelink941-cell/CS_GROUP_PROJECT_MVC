@@ -12,6 +12,8 @@
                     <a class="nav-link" href="${pageContext.request.contextPath}/admin/categories">Categories</a>
                     <a class="nav-link" href="${pageContext.request.contextPath}/admin/tags">Tags</a>
                     <a class="nav-link" href="${pageContext.request.contextPath}/admin/posts/pending">Pending Posts</a>
+                     <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+                    
                     <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/logout">Logout</a>
                 </c:when>
 
