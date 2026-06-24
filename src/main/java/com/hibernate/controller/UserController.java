@@ -35,14 +35,15 @@ public class UserController {
     @PostMapping("/register")
     public String processRegistration(
             @ModelAttribute("registrationDto") RegistrationDto dto, 
-            @RequestParam("avatarFile") MultipartFile avatarFile,
+            // 💡 ပြင်ဆင်ချက်- "avatarFile" မှ "avatar" သို့ ပြောင်းလဲပြီး optional ဖြစ်အောင် ပြုလုပ်ထားသည်
+            @RequestParam(value = "avatar", required = false) MultipartFile avatarFile,
             Model model) {
         
         // 1. Unpack DTO fields into proper Hibernate Entity classes
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
-        user.setPasswordHash(dto.getPassword()); // Service will handle hashing
+        user.setPasswordHash(dto.getPassword()); 
 
         UserProfile profile = new UserProfile();
         profile.setFullName(dto.getFullName());
@@ -55,18 +56,20 @@ public class UserController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("error", "Image processing failed. Please try again.");
+            // 💡 ပြင်ဆင်ချက်- register.jsp ထဲက ${errorMessage} နဲ့ ကိုက်ညီအောင် ပြောင်းလဲထားသည်
+            model.addAttribute("errorMessage", "Image processing failed. Please try again.");
             return "register";
         }
         
-        // 2. Pass to service layer (which now handles SessionFactory transactions)
+        // 2. Pass to service layer
         boolean isSuccess = userService.registerNewUser(user, profile);
         
         if (isSuccess) {
             model.addAttribute("msg", "Account Created Successfully");
             return "login"; 
         } else {
-            model.addAttribute("error", "This Email is already registered!");
+            // 💡 ပြင်ဆင်ချက်- register.jsp ထဲက ${errorMessage} နဲ့ ကိုက်ညီအောင် ပြောင်းလဲထားသည်
+            model.addAttribute("errorMessage", "This Email or Username is already registered!");
             return "register"; 
         }
     }

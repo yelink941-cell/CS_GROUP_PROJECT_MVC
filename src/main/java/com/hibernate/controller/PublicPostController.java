@@ -4,9 +4,11 @@ import com.hibernate.entity.Category;
 import com.hibernate.entity.Post;
 import com.hibernate.entity.Tag;
 import com.hibernate.service.CategoryService;
+import com.hibernate.service.CollectionService; // 🎯 Added import for CollectionService
 import com.hibernate.service.PostService;
 import com.hibernate.service.TagService;
 import java.util.List;
+ // 🎯 Added import for HttpSession
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +23,7 @@ public class PublicPostController {
     private final PostService postService;
     private final CategoryService categoryService;
     private final TagService tagService;
+    private final CollectionService collectionService; // 🎯 Injected CollectionService
 
     @GetMapping("/public")
     public String allPublicPosts(Model model) {
