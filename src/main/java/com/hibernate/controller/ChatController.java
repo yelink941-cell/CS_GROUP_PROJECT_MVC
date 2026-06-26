@@ -1,75 +1,168 @@
 package com.hibernate.controller;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.hibernate.dto.ConversationRequest;
+import com.hibernate.dto.MessageRequest;
+import com.hibernate.dto.MessageResponse;
 import com.hibernate.entity.Conversation;
 import com.hibernate.entity.Message;
+import com.hibernate.entity.User;
 import com.hibernate.service.ChatService;
-import org.springframework.stereotype.Controller; // 💡 REST API မဟုတ်လို့ @Controller ကို သုံးရပါမယ်
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import com.hibernate.service.MessageMapper;
 
-import java.util.Arrays;
-import java.util.List;
-
-@Controller
-@RequestMapping("/chat") // 💡 ဒီ Controller ထဲက အလုပ်အားလုံးက http://localhost:8080/chat ကနေ စပါမယ်
+@RestController
+@RequestMapping("/api/chat") //ki
 public class ChatController {
 
-    // 💡 Service ကို ပြင်ပကနေ ပြင်လို့မရအောင် private final သတ်မှတ်ခြင်း
     private final ChatService chatService;
 
-    // 💡 စီနီယာကျကျ Constructor Injection နဲ့ သော့လှမ်းပေးခြင်း
     public ChatController(ChatService chatService) {
         this.chatService = chatService;
     }
 
-    // ၁။ စကားဝိုင်းအသစ် တည်ဆောက်ရန် Form စာမျက်နှာကို ပြပေးခြင်း
-    @GetMapping("/new")
-    public String showCreateChatForm() {
-        // src/main/webapp/WEB-INF/views/chat/create.jsp (သို့) Thymeleaf စာမျက်နှာကို ပြခိုင်းတာပါ
-        return "chat/create"; 
+    @GetMapping("/inbox")
+    public ResponseEntity<?> getInbox(HttpSession session) {
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+        return ResponseEntity.ok(chatService.getInbox(currentUser.getId()));
     }
 
-    // ၂။ Form ကနေ Submit နှိပ်လိုက်တဲ့အခါ စကားဝိုင်းအသစ်ကို တကယ်ဆောက်ပေးခြင်း
-    @PostMapping("/create")
-    public String createChat(
-            @RequestParam String title,
-            @RequestParam boolean isGroup,
-            @RequestParam("userIds") Long[] userIds) { // ပါဝင်မယ့် လူတွေရဲ့ ID စာရင်း
-        
-        // Service ကို လှမ်းခေါ်ပြီး Database ထဲ သိမ်းခိုင်းလိုက်တယ်
-        Conversation conversation = chatService.createConversation(title, isGroup, Arrays.asList(userIds));
-        
-        // စကားဝိုင်း ဆောက်ပြီးသွားရင် အဲ့ဒီအခန်းထဲကို တိုက်ရိုက် ခေါ်သွားခိုင်းတာပါ (Redirect စနစ်)
-        return "redirect:/chat/room/" + conversation.getId();
+    @GetMapping("/users/search")
+    public ResponseEntity<?> searchUsers(@RequestParam("q") String keyword, HttpSession session) {
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+        return ResponseEntity.ok(chatService.searchUsers(keyword, currentUser.getId()));
     }
 
-    // ၃။ စကားဝိုင်း (Chat Room) တစ်ခုချင်းစီကို ဝင်ရောက်ကြည့်ရှုခြင်း
-    @GetMapping("/room/{conversationId}")
-    public String viewChatRoom(@PathVariable Long conversationId, Model model) {
-        
-        // Service ကနေတစ်ဆင့် အဲ့ဒီအခန်းရဲ့ စာရာဇဝင် (Chat History) ကို ဆွဲထုတ်တယ်
-        List<Message> chatHistory = chatService.getChatHistory(conversationId);
-        
-        // 💡 Model (Data အိတ်) ထဲကို "messages" ဆိုတဲ့ နာမည်နဲ့ Data အိတ်ထည့်လိုက်တာပါ
-        // ဒါမှ JSP ဝဘ်စာမျက်နှာပေါ်ရောက်ရင် ဒီနာမည်နဲ့ စာတွေကို Loop ပတ်ပြီး ထုတ်ပြလို့ရမှာပါ
-        model.addAttribute("messages", chatHistory);
-        model.addAttribute("conversationId", conversationId);
-        
-        // chat/room.jsp စာမျက်နှာကို ဖွင့်ပြပါလို့ အမိန့်ပေးတာ ဖြစ်ပါတယ်
-        return "chat/room"; 
+    @PostMapping("/start")
+    public ResponseEntity<?> startDirectChat(@RequestParam Long userId, HttpSession session) {
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+
+        try {
+            Conversation conversation = chatService.startDirectChat(currentUser.getId(), userId);
+            Map<String, Object> body = new HashMap<>();
+            body.put("conversationId", conversation.getId());
+            return ResponseEntity.ok(body);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
-    // ၄။ Chat Room ထဲကနေ စာအသစ်လှမ်းပို့တဲ့အခါ ကိုင်တွယ်ခြင်း
-    @PostMapping("/room/{conversationId}/send")
-    public String sendMessage(
-            @PathVariable Long conversationId,
-            @RequestParam Long senderId,
-            @RequestParam String messageText) {
-        
-        // Service ကိုခေါ်ပြီး စာကို Database ထဲ သိမ်းခိုင်းတယ်
-        chatService.sendMessage(conversationId, senderId, messageText);
-        
-        // စာပို့ပြီးတာနဲ့ လက်ရှိ Chat Room စာမျက်နှာဆီကိုပဲ အလိုအလျောက် Refresh (Redirect) ပြန်လုပ်ခိုင်းတာပါ
-        return "redirect:/chat/room/" + conversationId;
+    @PostMapping("/conversations")
+    public ResponseEntity<?> createConversation(@RequestBody ConversationRequest request, HttpSession session) {
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+
+        try {
+            Conversation conversation = chatService.createConversation(
+                    request.getTitle(),
+                    request.isGroup(),
+                    request.getUserIds(),
+                    currentUser.getId()
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(conversation);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/messages")
+    public ResponseEntity<?> sendMessage(@RequestBody MessageRequest request, HttpSession session) {
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+
+        try {
+            Message message = chatService.sendMessage(
+                    request.getConversationId(),
+                    currentUser.getId(),
+                    request.getText()
+            );
+            return ResponseEntity.ok(MessageMapper.toResponse(message));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/messages/media")
+    public ResponseEntity<?> sendMediaMessage(
+            @RequestParam Long conversationId,
+            @RequestParam(required = false) String caption,
+            @RequestParam("files") List<MultipartFile> files,
+            HttpSession session) {
+
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+
+        try {
+            Message message = chatService.sendMediaMessage(
+                    conversationId,
+                    currentUser.getId(),
+                    files,
+                    caption
+            );
+            return ResponseEntity.ok(MessageMapper.toResponse(message));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<?> getChatHistory(
+            @RequestParam Long conversationId,
+            @RequestParam(required = false, defaultValue = "9223372036854775807") Long lastMessageId,
+            HttpSession session) {
+
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+
+        try {
+            List<Message> history = chatService.getChatHistory(conversationId, currentUser.getId(), lastMessageId);
+            List<MessageResponse> responses = history.stream()
+                    .map(MessageMapper::toResponse)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    private User requireUser(HttpSession session) {
+        return (User) session.getAttribute("currentUser");
+    }
+
+    private ResponseEntity<?> unauthorized() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login ဝင်ပါ။");
     }
 }

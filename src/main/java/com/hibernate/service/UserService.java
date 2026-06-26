@@ -30,3 +30,14 @@ public interface UserService {
     User findUserByResetToken(String token);
     void updatePassword(User user, String newPassword);
 }
+import com.hibernate.entity.UserProfile;
+
+public interface UserService {
+    boolean registerNewUser(User user, UserProfile profile);
+
+    User registerNewUser(RegistrationDto registrationDto);
+
+    User authenticateUser(String email, String plainPassword);
+
+    User loginUser(String email, String password);
+}

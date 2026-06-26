@@ -12,6 +12,11 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.hibernate.repository.UserRepository;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.mindrot.jbcrypt.BCrypt;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +24,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
-    @Autowired
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
+    private final UserRepository userRepository;
 
     private Session getCurrentSession() {
         return sessionFactory.getCurrentSession();

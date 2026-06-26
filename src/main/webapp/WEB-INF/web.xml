@@ -26,6 +26,13 @@
         <filter-name>springSecurityFilterChain</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    <multipart-config>
+        <!-- 50 MB တစ် ဖိုင် အထက် မလက်ခံလိုပါက ဤတန်ဖိုးကို ပြောင်းလျှောက်နိုင် -->
+        <max-file-size>52428800</max-file-size>      <!-- 50 MB -->
+        <max-request-size>104857600</max-request-size><!-- 100 MB (တစ်ခါတည်းအဘယ်လိုပါ) -->
+        <file-size-threshold>0</file-size-threshold>
+    </multipart-config>
+	</servlet>
 
     <servlet>
         <servlet-name>spring</servlet-name>

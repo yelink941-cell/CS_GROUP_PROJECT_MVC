@@ -2,15 +2,9 @@ package com.hibernate.controller;
 
 import com.hibernate.dto.RegistrationDto;
 import com.hibernate.entity.User;
-import com.hibernate.entity.UserPreference;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
-import com.hibernate.entity.enums.UserStatus;
 import com.hibernate.service.UserService;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Random;
 
 import javax.servlet.http.HttpSession;
 
@@ -39,8 +33,9 @@ public class UserController {
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
+        // Send a single DTO object to the view to avoid multi-binding mess
         model.addAttribute("registrationDto", new RegistrationDto());
-        return "register"; 
+        return "register";
     }
 
     @PostMapping("/register")
@@ -87,7 +82,7 @@ public class UserController {
 
     @GetMapping("/login")
     public String showLoginForm() {
-        return "login"; 
+        return "login";
     }
     
     @ModelAttribute
@@ -352,5 +347,18 @@ public class UserController {
         session.invalidate();
         SecurityContextHolder.clearContext();
         return "redirect:/?logout=true";
+    @GetMapping("/admin-dashboard")
+    public String showAdminDashboard(HttpSession session) {
+        User adminUser = (User) session.getAttribute("currentUser");
+        if (adminUser == null || !Role.ADMIN.equals(adminUser.getRole())) {
+            return "redirect:/login"; 
+        }
+        return "admin-dashboard";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/";
     }
 }

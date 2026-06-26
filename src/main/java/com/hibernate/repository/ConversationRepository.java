@@ -1,10 +1,12 @@
 package com.hibernate.repository;
 
-import com.hibernate.entity.Conversation;
 import java.util.List;
+import com.hibernate.entity.Conversation;
 
 public interface ConversationRepository {
-    Conversation save(Conversation conversation);
-    Conversation findById(Long id);
-    List<Conversation> findConversationsByUserId(Long userId);
+    Long insertConversation(Conversation conversation);
+    Conversation getById(Long id);
+    Conversation getByIdWithParticipants(Long id);
+    List<Conversation> getAllConversationsByUserId(Long userId);
+    void updateConversation(Conversation conversation);
 }

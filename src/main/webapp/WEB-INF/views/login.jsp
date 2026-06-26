@@ -49,7 +49,8 @@
         .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
     </style>
 </head>
-<body>
+<body class="auth-page">
+    <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
     <header>
         <a href="${pageContext.request.contextPath}/" class="logo">
