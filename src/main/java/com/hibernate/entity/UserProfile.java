@@ -35,6 +35,9 @@ public class UserProfile {
     @Column(columnDefinition = "TEXT")
     private String bio;
     
+    @Column(name = "gender", length = 10)
+    private String gender;
+    
     @javax.persistence.Lob
     @Column(name = "avatar", columnDefinition = "LONGBLOB")
     private byte[] avatar;
@@ -52,9 +55,6 @@ public class UserProfile {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     
-    @Column(name = "country", length = 100)
-    private String country;
-
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
