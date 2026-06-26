@@ -1,6 +1,6 @@
 package com.hibernate.repository;
-import com.hibernate.entity.User;
 
+import com.hibernate.entity.User;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +12,14 @@ import java.util.Optional;
 @Repository
 @Transactional
 public class UserRepositoryImpl implements UserRepository {
-	@Autowired
+    
+    @Autowired
     private SessionFactory sessionFactory;
 
     private Session getCurrentSession() {
         return sessionFactory.getCurrentSession();
     }
+
     @Override
     public void saveUser(User user) {
         getCurrentSession().persist(user);

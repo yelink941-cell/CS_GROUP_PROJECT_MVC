@@ -106,6 +106,78 @@
     cursor: not-allowed; /* နှိပ်လို့မရကြောင်း ပြောင်းလဲရန် */
     transform: none !important;
 }
+
+.button-link {
+    background: none;
+    border: none;
+    color: #4038ff;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    font-size: 13px;
+}
+
+/* Like ခလုတ် အရောင်ပြောင်း Class များ */
+.liked-btn {
+    background-color: #007bff !important;
+    color: white !important;
+    border: 1px solid #007bff !important;
+}
+
+.unliked-btn {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #cccccc !important;
+}
+
+/* Rating Section Styles */
+.rating-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+.star-rating {
+    direction: rtl;
+    display: inline-flex;
+    font-size: 24px;
+    unicode-bidi: bidi-override;
+}
+.star-rating input {
+    display: none;
+}
+.star-rating label {
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: #ffc107; /* ရွှေရောင် */
+}
+.average-rating-box {
+    font-size: 15px;
+    background: #fff3cd;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #ffeeba;
+}
+/* Bookmark ခလုတ် အရောင်ပြောင်း Class များ */
+.bookmarked-btn {
+    background-color: #ffc107 !important;
+    color: #333333 !important;
+    border: 1px solid #ffc107 !important;
+}
+
+.unbookmarked-btn {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #cccccc !important;
+}
 </style>
     
 </head>
@@ -166,6 +238,140 @@
                     </form>
                 </div>
             </c:if>
+
+            <div class="rating-section">
+                <c:choose>
+                    <c:when test="${not empty userLoggedIn}">
+                        <div class="star-rating">
+                            <input type="radio" id="star5" name="rating" value="5" onclick="submitRating(${post.id}, 5)" ${userRating == 5 ? 'checked' : ''}><label for="star5" title="5 stars">★</label>
+                            <input type="radio" id="star4" name="rating" value="4" onclick="submitRating(${post.id}, 4)" ${userRating == 4 ? 'checked' : ''}><label for="star4" title="4 stars">★</label>
+                            <input type="radio" id="star3" name="rating" value="3" onclick="submitRating(${post.id}, 3)" ${userRating == 3 ? 'checked' : ''}><label for="star3" title="3 stars">★</label>
+                            <input type="radio" id="star2" name="rating" value="2" onclick="submitRating(${post.id}, 2)" ${userRating == 2 ? 'checked' : ''}><label for="star2" title="2 stars">★</label>
+                            <input type="radio" id="star1" name="rating" value="1" onclick="submitRating(${post.id}, 1)" ${userRating == 1 ? 'checked' : ''}><label for="star1" title="1 star">★</label>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="star-rating" style="pointer-events: none;">
+                            <label style="color: ${averageRating >= 1 ? '#ffc107' : '#ccc'};">★</label>
+                            <label style="color: ${averageRating >= 2 ? '#ffc107' : '#ccc'};">★</label>
+                            <label style="color: ${averageRating >= 3 ? '#ffc107' : '#ccc'};">★</label>
+                            <label style="color: ${averageRating >= 4 ? '#ffc107' : '#ccc'};">★</label>
+                            <label style="color: ${averageRating >= 5 ? '#ffc107' : '#ccc'};">★</label>
+                        </div>
+                        <a href="${pageContext.request.contextPath}/login" style="font-size: 13px; text-decoration: underline; color: #007bff;">(Rating ပေးရန် Login ဝင်ပါ)</a>
+                    </c:otherwise>
+                </c:choose>
+
+                <div class="average-rating-box">
+                    <strong>⭐ AverageRating:</strong> <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>/5 
+                    (<span id="totalRatingCount">${totalRatings}</span> ratings)
+                </div>
+            </div>
+            
+            <div class="comments-section" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <div class="like-section" style="margin-bottom: 25px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                    <c:choose>
+                        <c:when test="${not empty userLoggedIn}">
+                            <button type="button" onclick="toggleLikePost(${post.id}, this)" class="button ${hasUserLiked ? 'liked-btn' : 'unliked-btn'}" style="display: inline-flex; align-items: center; gap: 8px;">
+                                <span id="likeIcon-${post.id}" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <c:choose>
+                                        <c:when test="${hasUserLiked}">👍 Unlike</c:when>
+                                        <c:otherwise>👍🏻 Like</c:otherwise>
+                                    </c:choose>
+                                </span>
+                            </button>
+                            <span style="font-size: 16px;"><strong>Likes:</strong> <span id="likeCount-${post.id}">${likeCount}</span></span>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/login" class="button unliked-btn" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                                👍🏻 Like (Login လိုအပ်သည်)
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
+                    
+                    <c:choose>
+                        <c:when test="${not empty userLoggedIn}">
+                            <button type="button" onclick="toggleBookmark(${post.id}, this)" class="button ${hasUserBookmarked ? 'bookmarked-btn' : 'unbookmarked-btn'}" style="display: inline-flex; align-items: center; gap: 8px;">
+                                <span id="bookmarkIcon-${post.id}">
+                                    <c:choose>
+                                        <c:when test="${hasUserBookmarked}">⭐ Bookmarked</c:when>
+                                        <c:otherwise>⭐ Bookmark</c:otherwise>
+                                    </c:choose>
+                                </span>
+                            </button>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/login" class="button unbookmarked-btn" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                                ⭐ Bookmark (Login လိုအပ်သည်)
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <button type="button" class="button button-secondary" onclick="toggleCommentsSection()">
+                        💬 Comments (${totalComments})
+                    </button>
+                </div>
+
+                <div id="commentsToggleWrapper" style="display: none;">
+                    <h2 id="commentCountHeader" data-count="${totalComments}"> Comments (${totalComments})</h2>
+                    <c:if test="${not empty userLoggedIn}">
+                        <form id="commentForm" style="margin-bottom: 30px;">
+                            <input type="hidden" id="postId" name="postId" value="${post.id}" />
+                            <div class="form-group">
+                                <textarea id="commentText" name="commentText" rows="3" required placeholder="Comment တစ်ခုခုရေးပါ..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
+                            </div>
+                            <button type="submit" class="button button-primary" style="margin-top: 10px;">Comment ပို့မည်</button>
+                        </form>
+                    </c:if>
+                    
+                    <c:if test="${empty userLoggedIn}">
+                        <p style="color: #666;"><a href="${pageContext.request.contextPath}/login">Login</a> ဝင်မှသာ Comment ရေးနိုင်မည်。</p>
+                    </c:if>
+
+                    <c:if test="${empty comments}">
+                        <p style="color: #888;">Comments မရှိသေးပါ။</p>
+                    </c:if>
+                    
+                    <c:if test="${not empty comments}">
+                        <div id="commentListContainer" class="comment-list" style="display: flex; flex-direction: column; gap: 16px;">
+                            <c:forEach var="comment" items="${comments}">
+                                <div class="comment-item" id="comment-${comment.id}" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">
+                                        <strong><c:out value="${comment.user.username}" /></strong>
+                                        <span>${comment.createdAt}</span>
+                                    </div>
+                                    <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;"><c:out value="${comment.content}" /></p>
+                                    
+                                    <div style="display: flex; gap: 12px; margin-bottom: 8px;">
+                                        <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+                                        <c:if test="${sessionScope.userId == comment.user.id}">
+                                            <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
+                                        </c:if>
+                                    </div>
+
+                                    <%-- Main Comment Reply Form --%>
+                                    <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
+                                        <form onsubmit="submitReply(event, 'c-${comment.id}', ${comment.id}, ${post.id})">
+                                            <textarea id="replyText-c-${comment.id}" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+                                            <br>
+                                            <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Reply ပို့မည်</button>
+                                        </form>
+                                    </div>
+
+                                    <div id="replyListContainer-${comment.id}">
+                                        <c:if test="${not empty comment.replies}">
+                                            <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
+                                                <c:set var="replyList" value="${comment.replies}" scope="request"/>
+                                                <jsp:include page="reply-recurse.jsp" />
+                                            </ul>
+                                        </c:if>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </c:if>
+                </div>
+            </div>
         </article>
 
         <section class="public-content-section">
@@ -271,11 +477,242 @@
                 actionBtn.disabled = false;
             }
         }
-        
-        // စာမျက်နှာ စတင်ပွင့်ပွင့်ချင်းမှာ အခြေအနေ မှန်ကန်နေစေရန် တစ်ကြိမ် Run ပေးခြင်း
-        document.addEventListener("DOMContentLoaded", function() {
-            checkFolderStatus();
+
+        // Main Comment တင်ခြင်း (AJAX)
+        document.getElementById('commentForm')?.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            const postId = document.getElementById('postId').value;
+            const commentText = document.getElementById('commentText').value;
+
+            fetch('${pageContext.request.contextPath}/comments/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'postId=' + postId + '&commentText=' + encodeURIComponent(commentText)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    sessionStorage.setItem('isCommentsOpen', 'true');
+                    // Reload လုပ်ပြီး #commentsToggleWrapper သို့ တန်းရောက်ရန် Anchor တွဲပေးခြင်း
+                    window.location.href = window.location.pathname + window.location.search + '#commentsToggleWrapper';
+                    location.reload(); 
+                } else {
+                    alert('Comment သိမ်းဆည်းရာတွင် အမှားအယွင်းဖြစ်သွားပါသည်။');
+                }
+            })
+            .catch(error => console.error('Error:', error));
         });
+
+        // Reply Box ဖွင့်/ပိတ်ခြင်း 
+        function toggleReplyForm(uniqueId) {
+            const replyForm = document.getElementById('replyFormContainer-' + uniqueId);
+            if (replyForm) {
+                const isVisible = (replyForm.style.display === "block");
+                const allForms = document.querySelectorAll('[id^="replyFormContainer-"]');
+                allForms.forEach(form => form.style.display = "none");
+                
+                if (!isVisible) {
+                    replyForm.style.display = "block";
+                }
+            }
+        }
+
+        // Reply တင်ခြင်း (AJAX)
+        function submitReply(e, uniqueId, parentId, formPostId) {
+            e.preventDefault();
+            const replyTextArea = document.getElementById('replyText-' + uniqueId);
+            const replyContent = replyTextArea.value;
+            const postId = formPostId || document.getElementById('postId').value;
+
+            fetch('${pageContext.request.contextPath}/comments/reply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'postId=' + encodeURIComponent(postId) + 
+                      '&parentId=' + encodeURIComponent(parentId) + 
+                      '&content=' + encodeURIComponent(replyContent)
+            })
+            .then(response => {
+                if (response.ok) {
+                    sessionStorage.setItem('isCommentsOpen', 'true');
+                    window.location.href = window.location.pathname + window.location.search + '#commentsToggleWrapper';
+                    location.reload();
+                } else {
+                    alert('Reply သိမ်းဆည်းရာတွင် အမှားအယွင်းဖြစ်သွားပါသည်။');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Comment ဖျက်ခြင်း (AJAX)
+        function deleteComment(commentId) {
+            if (!confirm('ဤ comment ကို အမှန်တကယ် ဖျက်မှာလား?')) return;
+            
+            fetch('${pageContext.request.contextPath}/comments/delete/' + commentId, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.ok) {
+                    sessionStorage.setItem('isCommentsOpen', 'true');
+                    window.location.href = window.location.pathname + window.location.search + '#commentsToggleWrapper';
+                    location.reload();
+                } else {
+                    alert('ဖျက်ဆီးရာတွင် အမှားအယွင်းဖြစ်သွားပါသည်။');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        //Page Load ပြီးလျှင် Comment Box ပွင့်လျက်သားဖြစ်စေရန်နှင့် Scroll တည်နေရာမပျောက်စေရန်
+        document.addEventListener("DOMContentLoaded", function() {
+            // Collection status run once on load
+            checkFolderStatus();
+
+            // 🟢 အသစ်ထည့်သွင်းထားသော URL Parameter စစ်ဆေးခြင်း (Auto Tab, Scroll & Display)
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab');
+
+            if (activeTab) {
+                if (activeTab === 'comment') {
+                    const commentWrapper = document.getElementById('commentsToggleWrapper');
+                    if (commentWrapper) {
+                        commentWrapper.style.display = 'block';
+                        commentWrapper.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else if (activeTab === 'rating') {
+                    const ratingSection = document.querySelector('.rating-section');
+                    if (ratingSection) {
+                        ratingSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else if (activeTab === 'like') {
+                    const likeSection = document.querySelector('.like-section');
+                    if (likeSection) {
+                        likeSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            }
+
+            if (sessionStorage.getItem('isCommentsOpen') === 'true') {
+                const commentWrapper = document.getElementById('commentsToggleWrapper');
+                if (commentWrapper) {
+                    commentWrapper.style.display = 'block';
+                }
+                sessionStorage.removeItem('isCommentsOpen');
+            }
+        });
+
+        function toggleLikePost(postId, buttonElement) {
+            fetch('${pageContext.request.contextPath}/user/posts/like', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'postId=' + postId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const likeCountSpan = document.getElementById('likeCount-' + postId);
+                    if (likeCountSpan) likeCountSpan.innerText = data.totalLikes; 
+                    
+                    const iconSpan = document.getElementById('likeIcon-' + postId);
+                    if (iconSpan) {
+                        if (data.isLiked) { 
+                            iconSpan.innerHTML = "👍 Unlike";
+                            buttonElement.className = "button liked-btn";
+                        } else {
+                            iconSpan.innerHTML = "👍🏻 Like";
+                            buttonElement.className = "button unliked-btn";
+                        }
+                    }
+                    resetCleanUrl(postId);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function updateCommentCount(change) {
+            const countHeader = document.getElementById('commentCountHeader');
+            if (!countHeader) return;
+            const currentCount = parseInt(countHeader.getAttribute('data-count') || '0', 10);
+            const newCount = Math.max(0, currentCount + change);
+            countHeader.setAttribute('data-count', newCount);
+            countHeader.textContent = 'Comments (' + newCount + ')';
+        }
+
+        function escapeHtml(string) {
+            return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function toggleCommentsSection() {
+            const commentWrapper = document.getElementById('commentsToggleWrapper');
+            if (commentWrapper) {
+                if (commentWrapper.style.display === 'none' || commentWrapper.style.display === '') {
+                    commentWrapper.style.display = 'block';
+                } else {
+                    commentWrapper.style.display = 'none';
+                }
+            }
+        }
+
+        //Rating ပေးခြင်း (AJAX)
+        function submitRating(postId, ratingValue) {
+            fetch('${pageContext.request.contextPath}/api/toggle-rating', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'postId=' + postId + '&rating=' + ratingValue
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // ပျမ်းမျှတန်ဖိုးနှင့် Rating အရေအတွက် အပ်ဒိတ်လုပ်ခြင်း
+                    document.getElementById('avgRatingValue').innerText = data.averageRating;
+                    document.getElementById('totalRatingCount').innerText = data.totalRatings;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        //Bookmark လုပ်ဆောင်ချက် (AJAX)
+        function toggleBookmark(postId, buttonElement) {
+            fetch('${pageContext.request.contextPath}/api/toggle-bookmark', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'postId=' + postId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const iconSpan = document.getElementById('bookmarkIcon-' + postId);
+                    if (iconSpan) {
+                        if (data.isBookmarked) { 
+                            iconSpan.innerHTML = "⭐ Bookmarked";
+                            buttonElement.className = "button bookmarked-btn";
+                        } else {
+                            iconSpan.innerHTML = "⭐ Bookmark";
+                            buttonElement.className = "button unbookmarked-btn";
+                        }
+                    }
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        //URL အား /details/{id} ပုံစံအတိုင်း သန့်ရှင်းစွာ ပြန်ထိန်းပေးမည့် Function
+        function resetCleanUrl(postId) {
+            const cleanUrl = '${pageContext.request.contextPath}/user/posts/details/' + postId;
+            // Browser ၏ URL အား reload မချဘဲ မူလပုံစံအတိုင်း ပြန်လည်သတ်မှတ်သည်
+            if (window.history.replaceState) {
+                window.history.replaceState(null, '', cleanUrl);
+            }
+        }
     </script>
 </body>
 </html>

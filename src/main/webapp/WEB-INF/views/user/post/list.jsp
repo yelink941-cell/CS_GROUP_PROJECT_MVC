@@ -16,16 +16,26 @@
 
     <main class="page-container my-posts-container">
         <header class="my-posts-header">
-            <div>
-                <span>Workspace</span>
+    <div>
+        <span>Workspace</span>
+        <c:choose>
+            <c:when test="${activeTab == 'bookmarks'}">
+                <h1>My Bookmarks</h1>
+                <p>Manage your saved and bookmarked cheat sheets.</p>
+            </c:when>
+            <c:otherwise>
                 <h1>My Posts</h1>
                 <p>Manage your drafts, submissions, published guides, and private notes.</p>
-            </div>
-            <div class="my-posts-header-actions">
-                <small><strong><c:out value="${fn:length(posts)}" /></strong> total posts</small>
-                <a class="button" href="${pageContext.request.contextPath}/user/posts/new">+ Create Post</a>
-            </div>
-        </header>
+            </c:otherwise>
+        </c:choose>
+    </div>
+    <div class="my-posts-header-actions">
+        <small><strong><c:out value="${fn:length(posts)}" /></strong> total items</small>
+        <c:if test="${activeTab != 'bookmarks'}">
+            <a class="button" href="${pageContext.request.contextPath}/user/posts/new">+ Create Post</a>
+        </c:if>
+    </div>
+</header>
 
         <c:if test="${empty posts}">
             <section class="empty-state">
