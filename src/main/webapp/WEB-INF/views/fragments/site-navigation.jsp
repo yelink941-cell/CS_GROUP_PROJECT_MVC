@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+  <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <style>
@@ -147,10 +147,11 @@
                             </div>
                         </div>
 
-                        <a class="nav-link" href="${pageContext.request.contextPath}/user/posts">My Posts</a>
-                        <a class="nav-link" href="${pageContext.request.contextPath}/user/posts/new">Create Post</a>
-                        <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/logout">Logout</a>
-                    </c:when>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/user/posts">My Posts</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/user/posts/new">Create Post</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/user/posts/bookmark">My Bookmarks</a>
+                    <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/logout">Logout</a>
+                </c:when>
 
                     <c:otherwise>
                         <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>

@@ -71,6 +71,7 @@
             <label>Bio:</label>
             <form:textarea path="bio" rows="3" placeholder="မိမိအကြောင်းအကျဉ်းချုပ်ရေးရန်..." />
         </div>
+        
 
         <div class="form-group">
             <label>Birthday (မွေးနေ့):</label>

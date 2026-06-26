@@ -1,6 +1,7 @@
 package com.hibernate.service;
 
 import com.hibernate.entity.Category;
+import com.hibernate.entity.Comment;
 import com.hibernate.entity.Post;
 import com.hibernate.entity.PostContent;
 import com.hibernate.entity.Tag;
@@ -9,6 +10,7 @@ import com.hibernate.entity.enums.ContentType;
 import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.entity.enums.PostVisibility;
 import com.hibernate.repository.CategoryRepository;
+import com.hibernate.repository.CommentRepository;
 import com.hibernate.repository.PostContentRepository;
 import com.hibernate.repository.PostRepository;
 import com.hibernate.repository.TagRepository;
@@ -29,6 +31,8 @@ public class PostServiceImpl implements PostService {
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final PostLikeService postLikeService;
 
     @Override
     public Post createPost(
@@ -263,5 +267,36 @@ public class PostServiceImpl implements PostService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    @Override
+    public void toggleLike(Integer postId, Long userId) {
+        // 🟢 PostLikeService ထဲရှိ toggleLike(Integer, Long) သို့ တိုက်ရိုက် လွှဲပေးခြင်း
+        postLikeService.toggleLike(postId, userId);
+    }
+
+    @Override
+    public void addComment(Integer postId, Long userId, String text) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found."));
+        User user = userRepository.getUserById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found.");
+        }
+
+        Comment comment = new Comment();
+        comment.setPost(post);
+        comment.setUser(user);
+        
+        // Entity ထဲမှ တကယ်ပါဝင်သော content field ၏ setter ကို အသုံးပြုခြင်း
+        comment.setContent(text); 
+        
+        commentRepository.save(comment);
+    }
+
+    @Override
+    public boolean hasUserLiked(Integer postId, Long userId) {
+        // 🟢 လိုအပ်သော Override method အား တိကျစွာ ရေးသားခြင်း
+        return postLikeService.hasUserLiked(postId, userId);
     }
 }

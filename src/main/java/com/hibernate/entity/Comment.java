@@ -61,4 +61,11 @@ public class Comment {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    @Column(name = "is_reported")
+    private Boolean isReported = false;
+    
+    @Column(name = "report_reason")
+    private String reportReason;
+    
 }
