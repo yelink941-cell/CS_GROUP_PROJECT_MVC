@@ -1,6 +1,4 @@
 package com.hibernate.entity;
-
-// ❌ jakarta.persistence အားလုံးကို ဖျက်ပါ သို့မဟုတ် Replace လုပ်ပါ
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -62,4 +60,13 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserProfile profile;
+    
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserPreference preferences;
+    
+    @Column(name = "reset_token", length = 100)
+    private String resetToken;
+
+    @Column(name = "token_expiry_date")
+    private java.time.LocalDateTime tokenExpiryDate;
 }
