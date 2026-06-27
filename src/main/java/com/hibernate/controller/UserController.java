@@ -89,10 +89,13 @@ public class UserController {
         User loggedInUser = userService.authenticateUser(email, password);
         
         if (loggedInUser != null) {
-            session.setAttribute("currentUser", loggedInUser);
-            session.setAttribute("userId", loggedInUser.getId());
+            // 🟢 userId အား Long Object (သို့) primitive long ဖြင့် အတိအကျ Cast/Box လုပ်၍ သိမ်းဆည်းပေးခြင်း
+            Long userIdLong = Long.valueOf(loggedInUser.getId()); 
             
-            // FIXED: Clean, type-safe comparison with Enum literals
+            session.setAttribute("user", loggedInUser);          // ➔ Interceptor အတွက်
+            session.setAttribute("currentUser", loggedInUser); // ➔ Admin Dashboard အတွက်
+            session.setAttribute("userId", userIdLong);        // ➔ Post/Comment/Like API များအတွက် (Long type)
+            
             if (Role.ADMIN.equals(loggedInUser.getRole())) {
                 return "redirect:/admin-dashboard";
             } else {

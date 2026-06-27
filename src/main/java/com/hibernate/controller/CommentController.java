@@ -1,7 +1,9 @@
 package com.hibernate.controller;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.hibernate.entity.Comment;
 import com.hibernate.entity.Post;
@@ -20,43 +23,47 @@ import com.hibernate.service.PostService;
 
 @Controller
 @RequestMapping("/comments")
+@RequiredArgsConstructor
 public class CommentController {
 
-    @Autowired
-    private PostService postService;
-    
-    @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
-    private CommentRepository commentRepository; 
-    
-    @Autowired
-    private CommentService commentService; 
+    private final PostService postService;
+    private final UserRepository userRepository;
+    private final CommentRepository commentRepository; 
+    private final CommentService commentService; 
 
-    // 🔴 AJAX ဖြင့် အလုပ်လုပ်ရန် ResponseEntity သုံးပြီး ပြင်ဆင်ထားသည် 🔴
     @PostMapping("/add")
-    public ResponseEntity<String> addComment(@RequestParam("postId") Integer postId,
-                                             @RequestParam("commentText") String content, // ➔ JSP ထဲရှိ name="commentText" နှင့် ကိုက်ညီစေရန် ပြောင်းသည်
-                                             HttpSession session) {
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addComment(@RequestParam("postId") Integer postId,
+                                                          @RequestParam("commentText") String content,
+                                                          HttpSession session) {
 
         Long userId = (Long) session.getAttribute("userId");
+        Map<String, Object> response = new HashMap<>();
+        
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login ဝင်ရန်လိုအပ်ပါသည်။");
+            response.put("status", "error");
+            response.put("message", "Login ဝင်ရန်လိုအပ်ပါသည်။");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
         if (content == null || content.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Comment အလွတ်ဖြစ်နေပါသည်။");
+            response.put("status", "error");
+            response.put("message", "Comment အလွတ်ဖြစ်နေပါသည်။");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         Post post = postService.getPostById(postId).orElse(null);
         if (post == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post မရှိတော့ပါ။");
+            response.put("status", "error");
+            response.put("message", "Post မရှိတော့ပါ။");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         User dbUser = userRepository.findById(userId).orElse(null);
         if (dbUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User မတွေ့ပါ။");
+            response.put("status", "error");
+            response.put("message", "User မတွေ့ပါ။");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
         Comment comment = new Comment();
@@ -66,28 +73,38 @@ public class CommentController {
 
         commentService.saveComment(comment);
 
-        // ➔ Page reload မဖြစ်စေရန် အောင်မြင်ကြောင်း JSON / String တန်ဖိုး တိုက်ရိုက်ပြန်သည်
-        return ResponseEntity.ok("Comment added successfully");
+        response.put("status", "success");
+        response.put("message", "Comment added successfully");
+        return ResponseEntity.ok(response);
     }
     
     @PostMapping("/reply")
-    public ResponseEntity<String> addReply(@RequestParam("postId") Integer postId,
-                                           @RequestParam(value = "parentId", required = false) Integer parentId, 
-                                           @RequestParam("content") String replyContent, 
-                                           HttpSession session) {
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addReply(@RequestParam("postId") Integer postId,
+                                                        @RequestParam(value = "parentId", required = false) Integer parentId, 
+                                                        @RequestParam("content") String replyContent, 
+                                                        HttpSession session) {
 
         Long userId = (Long) session.getAttribute("userId");
+        Map<String, Object> response = new HashMap<>();
+        
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login ဝင်ရန်လိုအပ်ပါသည်။");
+            response.put("status", "error");
+            response.put("message", "Login ဝင်ရန်လိုအပ်ပါသည်။");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
         if (replyContent == null || replyContent.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Reply အလွတ်ဖြစ်နေပါသည်။");
+            response.put("status", "error");
+            response.put("message", "Reply အလွတ်ဖြစ်နေပါသည်။");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         Post post = postService.getPostById(postId).orElse(null);
         if (post == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post မတွေ့ပါ။");
+            response.put("status", "error");
+            response.put("message", "Post မတွေ့ပါ။");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         
         Comment parent = null;
@@ -97,7 +114,9 @@ public class CommentController {
 
         User dbUser = userRepository.findById(userId).orElse(null);
         if (dbUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User မတွေ့ပါ။");
+            response.put("status", "error");
+            response.put("message", "User မတွေ့ပါ။");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
         Comment reply = new Comment();
@@ -108,51 +127,65 @@ public class CommentController {
 
         commentService.saveComment(reply);
 
-        // AJAX ဖြင့် အလုပ်လုပ်ရန် Page Reload မလုပ်ဘဲ အောင်မြင်ကြောင်း string ပြန်သည်
-        return ResponseEntity.ok("Reply added successfully");
+        response.put("status", "success");
+        response.put("message", "Reply added successfully");
+        return ResponseEntity.ok(response);
     }
     
     @PostMapping("/delete/{id}")
-    public ResponseEntity<String> deleteComment(@PathVariable("id") Integer id, HttpSession session) {
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteComment(@PathVariable("id") Integer id, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
+        Map<String, Object> response = new HashMap<>();
+        
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+            response.put("status", "error");
+            response.put("message", "Unauthorized");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
         
         Comment comment = commentRepository.findById(id).orElse(null);
-        // User ID တူညီမှသာ ဖျက်ခွင့်ပေးသည်
         if (comment != null && comment.getUser().getId().equals(userId)) {
             commentService.deleteComment(id);
-            return ResponseEntity.ok("Deleted successfully");
+            response.put("status", "success");
+            response.put("message", "Deleted successfully");
+            return ResponseEntity.ok(response);
         }
         
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+        response.put("status", "error");
+        response.put("message", "Forbidden");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
    
- // 🟢 User ဘက်မှ Comment တစ်ခုကို Report နှိပ်လိုက်သောအခါ အလုပ်လုပ်မည့် API
     @PostMapping("/report/{id}")
-    public ResponseEntity<String> reportComment(@PathVariable("id") Integer id, 
-                                                @RequestParam("reason") String reason, 
-                                                HttpSession session) {
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> reportComment(@PathVariable("id") Integer id, 
+                                                            @RequestParam("reason") String reason, 
+                                                            HttpSession session) {
         
         Long userId = (Long) session.getAttribute("userId");
+        Map<String, Object> response = new HashMap<>();
+        
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login ဝင်ရန်လိုအပ်ပါသည်။");
+            response.put("status", "error");
+            response.put("message", "Login ဝင်ရန်လိုအပ်ပါသည်။");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
         
-        // Comment ကို ID ဖြင့် ရှာဖွေခြင်း
         Comment comment = commentRepository.findById(id).orElse(null);
         if (comment != null) {
-            // Report အခြေအနေနှင့် အကြောင်းရင်းကို သတ်မှတ်ခြင်း
             comment.setIsReported(true);
             comment.setReportReason(reason); 
             
-            // Database တွင် အပ်ဒိတ်လုပ် သိမ်းဆည်းခြင်း
             commentService.saveComment(comment); 
             
-            return ResponseEntity.ok("Comment reported successfully");
+            response.put("status", "success");
+            response.put("message", "Comment reported successfully");
+            return ResponseEntity.ok(response);
         }
         
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Comment မတွေ့ပါ။");
+        response.put("status", "error");
+        response.put("message", "Comment မတွေ့ပါ။");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }

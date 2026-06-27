@@ -6,6 +6,8 @@ import java.util.Optional;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus; // 🟢 ထည့်သွင်းပါ
+import org.springframework.http.ResponseEntity; // 🟢 ထည့်သွင်းပါ
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,17 +36,18 @@ public class LikeRestController {
     @PostMapping("/api/toggle-like")
     @ResponseBody
     @Transactional
-    public Map<String, Object> toggleLike(@RequestParam Integer postId, HttpSession session) { // 🟢 Integer သို့ ပြောင်းလဲခြင်း
+    // 🟢 Return type ကို ResponseEntity<Map<String, Object>> သို့ ပြောင်းပါ
+    public ResponseEntity<Map<String, Object>> toggleLike(@RequestParam Integer postId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         Map<String, Object> response = new HashMap<>();
         
+        // 🟢 User မရှိ/Login မဝင်ထားလျှင် 401 Status ကုဒ်နှင့်တကွ ပြန်ပို့ခြင်း
         if (userId == null) {
             response.put("status", "error");
             response.put("message", "Login လိုအပ်ပါသည်။");
-            return response;
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        // Integer ဖြစ်သွားပြီဖြစ်သောကြောင့် .intValue() ထပ်ထည့်ရန် မလိုတော့ပါ
         boolean hasLiked = postLikeRepository.existsByPostIdAndUserId(postId, userId);
                 
         if (hasLiked) {
@@ -68,6 +71,7 @@ public class LikeRestController {
         response.put("status", "success");
         response.put("totalLikes", totalLikes);
 
-        return response;
+        // 🟢 အောင်မြင်သည့်အခါ 200 OK ဖြင့် ပြန်ပို့ခြင်း
+        return ResponseEntity.ok(response);
     }
 }
