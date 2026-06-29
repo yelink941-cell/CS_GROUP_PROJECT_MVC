@@ -1,8 +1,10 @@
 package com.hibernate.repository;
 
-import com.hibernate.entity.User;
 import java.util.List;
 import java.util.Optional;
+
+import com.hibernate.entity.User;
+import com.hibernate.entity.UserProfile;
 
 public interface UserRepository {
     void saveUser(User user);
@@ -14,6 +16,10 @@ public interface UserRepository {
     User getUserById(Long id);
 
     User getUserByEmail(String email);
+
+    void updateProfile(UserProfile profile);
+
+    UserProfile getUserProfileByUserId(int userId);
 
     Optional<User> findByEmail(String email);
 

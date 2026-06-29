@@ -1,41 +1,38 @@
 package com.hibernate.repository;
-import com.hibernate.entity.User;
-import com.hibernate.entity.UserProfile;
+
+import java.util.List;
+import java.util.Optional;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.Optional;
+
+import com.hibernate.entity.User;
+import com.hibernate.entity.UserProfile;
 
 @Repository
 @Transactional
 public class UserRepositoryImpl implements UserRepository {
-	@Autowired
+    @Autowired
     private SessionFactory sessionFactory;
 
-	private Session getSession() {
+    private Session getSession() {
         return sessionFactory.getCurrentSession();
     }
-   
+
     @Override
     public void saveUser(User user) {
-        getSession().persist(user); 
-    }
-    
-    @Override
-    public void saveUser(User user) {
-        getCurrentSession().persist(user);
+        getSession().persist(user);
     }
 
     @Override
     public User save(User user) {
         if (user.getId() == null) {
-            getCurrentSession().save(user);
+            getSession().save(user);
         } else {
-            getCurrentSession().update(user);
+            getSession().update(user);
         }
 
         return user;
@@ -43,7 +40,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean isEmailExists(String email) {
-        Long count = getCurrentSession()
+        Long count = getSession()
                 .createQuery("select count(u) from User u where u.email = :email", Long.class)
                 .setParameter("email", email)
                 .uniqueResult();
@@ -52,15 +49,28 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User getUserById(Long id) {
-        return getCurrentSession().get(User.class, id);
+        return getSession().get(User.class, id);
     }
 
     @Override
     public User getUserByEmail(String email) {
-        return getCurrentSession()
+        return getSession()
                 .createQuery("from User u where u.email = :email", User.class)
                 .setParameter("email", email)
                 .uniqueResult();
+    }
+
+    @Override
+    public UserProfile getUserProfileByUserId(int userId) {
+        return getSession()
+                .createQuery("FROM UserProfile up WHERE up.user.id = :userId", UserProfile.class)
+                .setParameter("userId", Long.valueOf(userId))
+                .uniqueResult();
+    }
+
+    @Override
+    public void updateProfile(UserProfile profile) {
+        getSession().merge(profile);
     }
 
     @Override
@@ -70,7 +80,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        User user = getCurrentSession()
+        User user = getSession()
                 .createQuery("from User u where u.username = :username", User.class)
                 .setParameter("username", username)
                 .uniqueResult();
@@ -85,7 +95,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<User> searchByUsername(String keyword, Long excludeUserId, int limit) {
-        return getCurrentSession()
+        return getSession()
                 .createQuery(
                         "from User u where u.deletedAt is null "
                                 + "and u.id <> :excludeId "

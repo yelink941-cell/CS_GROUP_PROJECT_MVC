@@ -60,4 +60,13 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserProfile profile;
+    
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserPreference preferences;
+    
+    @Column(name = "reset_token", length = 100)
+    private String resetToken;
+
+    @Column(name = "token_expiry_date")
+    private java.time.LocalDateTime tokenExpiryDate;
 }

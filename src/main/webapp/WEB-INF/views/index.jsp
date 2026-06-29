@@ -1,24 +1,21 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Home - CheatSheet Hub</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            margin: 0; 
-            background: #f8fafc; 
-            min-height: 100vh; 
-            color: #1e293b;
-        }
-        main { 
+        /* 🟢 FIXED: Kept layout styling clean without overriding system global body rules */
+        .home-main-content { 
             padding: 40px 20px; 
-            max-width: 900px; 
+            max-width: 960px; 
             margin: 0 auto; 
+            width: 100%;
         }
         
         .welcome-msg { 
@@ -27,7 +24,7 @@
             border: 1px solid #ccfbf1;
             padding: 12px 20px;
             border-radius: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             font-weight: 500;
         }
 
@@ -119,7 +116,7 @@
             margin-bottom: 16px;
         }
 
-        /* Chat Float Navigation Button */
+        /* Floating Action Chat Button */
         .chat-fab {
             position: fixed;
             bottom: 30px;
@@ -148,7 +145,7 @@
 
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
-    <main class="page-container">
+    <main class="page-container home-main-content">
         
         <c:if test="${not empty message}">
             <div class="welcome-msg">
@@ -159,11 +156,10 @@
         <c:choose>
             <%-- CONDITION A: INLINE SEARCH RESULTS VIEW SCREEN --%>
             <c:when test="${isSearching}">
-            
                 <div class="results-container">
                     <h3 style="color: #0f172a; font-size: 20px; margin-bottom: 20px;">Search Results for "${searchedKeyword}"</h3>
                     
-                    <%-- 1. Cheat Sheets (Posts) Section --%>
+                    <%-- 1. Cheat Sheets Section --%>
                     <c:if test="${not empty postResults}">
                         <div class="result-section">
                             <div class="section-title" style="color: #4038ff; border-bottom: 2px solid #f3f1ff;">📄 Cheat Sheets</div>
@@ -186,7 +182,7 @@
                         </div>
                     </c:if>
 
-                    <%-- 2. Folders (Collections) Section --%>
+                    <%-- 2. Folders Section --%>
                     <c:if test="${not empty collectionResults}">
                         <div class="result-section">
                             <div class="section-title" style="color: #f59e0b; border-bottom: 2px solid #fef3c7;">📁 Folders (Collections)</div>
@@ -231,8 +227,8 @@
                                 <div class="result-item">
                                     <div>
                                         <c:choose>
-                                            <c:when test="${isLoggedIn}">
-                                                <a href="${pageContext.request.contextPath}/user/profile?id=${u.id}" 
+                                            <c:when test="${not empty sessionScope.currentUser}">
+                                                <a href="${pageContext.request.contextPath}/profile?id=${u.id}" 
                                                    style="text-decoration: none; color: #0f766e; font-weight: 600;">
                                                     @<c:out value="${u.username}"/>
                                                 </a>
