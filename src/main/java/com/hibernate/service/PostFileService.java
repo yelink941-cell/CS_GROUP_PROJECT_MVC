@@ -14,6 +14,8 @@ public interface PostFileService {
 
     PostFile uploadFile(Integer postId, MultipartFile file) throws IOException;
 
+    Optional<PostFile> getById(Integer fileId);
+
     Optional<PostFile> getFile(Integer postId, Integer fileId);
 
     Path resolveFile(PostFile postFile);

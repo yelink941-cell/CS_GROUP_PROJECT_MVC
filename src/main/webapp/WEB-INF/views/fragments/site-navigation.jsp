@@ -133,46 +133,44 @@
                         <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/logout">Logout</a>
                     </c:when>
 
-                    <c:when test="${sessionScope.role == 'USER'}">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+                    
 
-                        <div class="nav-item nav-dropdown">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/posts/public">View Posts</a>
-                            <div class="nav-dropdown-menu">
-                                <a href="${pageContext.request.contextPath}/posts/public">📄 All Public Posts</a>
-                                <a href="${pageContext.request.contextPath}/posts/categories">📚 Cheat Sheets by Category</a>
-                                <a href="${pageContext.request.contextPath}/posts/tags">🏷 Cheat Sheets by Tag</a>
-                                <a href="${pageContext.request.contextPath}/posts/popular">⭐ Popular Cheat Sheets</a>
-                                <a href="${pageContext.request.contextPath}/posts/new">🆕 New Cheat Sheets</a>
-                            </div>
+                <c:when test="${sessionScope.role == 'USER'}">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+                    <div class="nav-item nav-dropdown">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/posts/public">View Posts</a>
+                        <div class="nav-dropdown-menu">
+                            <a href="${pageContext.request.contextPath}/posts/public">&#128196; All Public Posts</a>
+                            <a href="${pageContext.request.contextPath}/posts/categories">&#128218; Cheat Sheets by Category</a>
+                            <a href="${pageContext.request.contextPath}/posts/tags">&#127991; Cheat Sheets by Tag</a>
+                            <a href="${pageContext.request.contextPath}/posts/popular">&#11088; Popular Cheat Sheets</a>
+                            <a href="${pageContext.request.contextPath}/posts/trending">&#128293; Trending Cheat Sheets</a>
+                            <a href="${pageContext.request.contextPath}/posts/new">&#127381; New Cheat Sheets</a>
                         </div>
-
+                    </div>
                     <a class="nav-link" href="${pageContext.request.contextPath}/user/posts">My Posts</a>
                     <a class="nav-link" href="${pageContext.request.contextPath}/user/posts/new">Create Post</a>
                     <a class="nav-link" href="${pageContext.request.contextPath}/user/posts/bookmark">My Bookmarks</a>
                     <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/logout">Logout</a>
                 </c:when>
 
-                    <c:otherwise>
-                        <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
-
-                        <div class="nav-item nav-dropdown">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/posts/public">View Posts</a>
-                            <div class="nav-dropdown-menu">
-                                <a href="${pageContext.request.contextPath}/posts/public">📄 All Public Posts</a>
-                                <a href="${pageContext.request.contextPath}/posts/categories">📚 Cheat Sheets by Category</a>
-                                <a href="${pageContext.request.contextPath}/posts/tags">🏷 Cheat Sheets by Tag</a>
-                                <a href="${pageContext.request.contextPath}/posts/popular">⭐ Popular Cheat Sheets</a>
-                                <a href="${pageContext.request.contextPath}/posts/new">🆕 New Cheat Sheets</a>
-                            </div>
+                <c:otherwise>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+                    <div class="nav-item nav-dropdown">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/posts/public">View Posts</a>
+                        <div class="nav-dropdown-menu">
+                            <a href="${pageContext.request.contextPath}/posts/public">&#128196; All Public Posts</a>
+                            <a href="${pageContext.request.contextPath}/posts/categories">&#128218; Cheat Sheets by Category</a>
+                            <a href="${pageContext.request.contextPath}/posts/tags">&#127991; Cheat Sheets by Tag</a>
+                            <a href="${pageContext.request.contextPath}/posts/popular">&#11088; Popular Cheat Sheets</a>
+                            <a href="${pageContext.request.contextPath}/posts/trending">&#128293; Trending Cheat Sheets</a>
+                            <a href="${pageContext.request.contextPath}/posts/new">&#127381; New Cheat Sheets</a>
                         </div>
-
-                        <a class="nav-link" href="${pageContext.request.contextPath}/login">Login</a>
-                        <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/register">Register</a>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-            
+                    </div>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/login">Login</a>
+                    <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/register">Register</a>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 </nav>

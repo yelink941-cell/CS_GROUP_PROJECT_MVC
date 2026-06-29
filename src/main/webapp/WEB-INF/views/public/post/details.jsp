@@ -191,6 +191,7 @@
             <div class="post-meta">
                 <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
                 <span><strong>Author:</strong> <c:out value="${post.author.username}" /></span>
+                <span><strong>Views:</strong> <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /></span>
             </div>
 
             <div class="badge-row" style="margin-top: 18px;">
@@ -279,6 +280,11 @@
             </c:forEach>
         </div>
     </div>
+            <div class="card-actions" style="margin-top: 20px;">
+                <a class="button" href="${pageContext.request.contextPath}/posts/${post.slug}/download-pdf">
+                    Download Full PDF
+                </a>
+            </div>
         </article>
 
         <section class="public-content-section">
@@ -339,9 +345,8 @@
                     <c:forEach var="postFile" items="${postFiles}">
                         <li>
                             <a class="button button-secondary"
-                               href="${pageContext.request.contextPath}/posts/${post.slug}/files/${postFile.id}"
-                               target="_blank">
-                                <c:out value="${postFile.fileName}" />
+                               href="${pageContext.request.contextPath}/posts/files/${postFile.id}/download">
+                                Download <c:out value="${postFile.fileName}" />
                             </a>
                         </li>
                     </c:forEach>

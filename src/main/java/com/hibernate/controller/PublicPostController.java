@@ -5,16 +5,23 @@ import com.hibernate.entity.Post;
 import com.hibernate.entity.Tag;
 import com.hibernate.service.CategoryService;
 import com.hibernate.service.CollectionService; // 🎯 Added import for CollectionService
+import com.hibernate.service.PostContentService;
+import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostService;
+import com.hibernate.service.PostViewService;
 import com.hibernate.service.TagService;
 import java.util.List;
  // 🎯 Added import for HttpSession
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -24,6 +31,9 @@ public class PublicPostController {
     private final CategoryService categoryService;
     private final TagService tagService;
     private final CollectionService collectionService; // 🎯 Injected CollectionService
+    private final PostContentService postContentService;
+    private final PostFileService postFileService;
+    private final PostViewService postViewService;
 
     @GetMapping("/public")
     public String allPublicPosts(Model model) {
@@ -44,7 +54,7 @@ public class PublicPostController {
     }
 
     @GetMapping("/categories/{categoryId}")
-    public String postsByCategory(@PathVariable Integer categoryId, Model model) {
+    public String postsByCategory(@PathVariable("categoryId") Integer categoryId, Model model) {
         Category category = categoryService.getCategoryById(categoryId).orElse(null);
         if (category == null) {
             return "redirect:/posts/categories";
@@ -65,7 +75,7 @@ public class PublicPostController {
     }
 
     @GetMapping("/tags/{tagId}")
-    public String postsByTag(@PathVariable Integer tagId, Model model) {
+    public String postsByTag(@PathVariable("tagId") Integer tagId, Model model) {
         Tag tag = tagService.getTagById(tagId).orElse(null);
         if (tag == null) {
             return "redirect:/posts/tags";
@@ -81,12 +91,14 @@ public class PublicPostController {
 
     @GetMapping("/popular")
     public String popularPosts(Model model) {
-        return showPosts(
-                model,
-                postService.getPopularPublishedPublicPosts(),
-                "Popular Cheat Sheets",
-                "Explore public cheat sheets ordered by total views.",
-                "No popular posts are available yet.");
+        model.addAttribute("posts", postService.getPopularPublishedPublicPosts());
+        return "public/post/popular";
+    }
+
+    @GetMapping("/trending")
+    public String trendingPosts(Model model) {
+        model.addAttribute("trendingPosts", postViewService.getTrendingPublishedPublicPosts());
+        return "public/post/trending";
     }
 
     @GetMapping("/new")
@@ -97,6 +109,44 @@ public class PublicPostController {
                 "New Cheat Sheets",
                 "Discover the latest public cheat sheets.",
                 "No new posts are available yet.");
+    }
+
+    @GetMapping("/public/details")
+    public String legacyPublicPostDetails(
+            @RequestParam("slug") String slug,
+            Model model,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        return publicPostDetails(slug, model, request, response);
+    }
+
+    @GetMapping("/{slug}")
+    public String publicPostDetails(
+            @PathVariable("slug") String slug,
+            Model model,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        Long viewerUserId = getViewerUserId(request);
+
+        return postService.getPostBySlug(slug)
+                .map(post -> {
+                    postViewService.recordView(post, viewerUserId, request, response);
+                    model.addAttribute("post", post);
+                    model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
+                    model.addAttribute("postFiles", postFileService.getFilesByPostId(post.getId()));
+                    return "public/post/details";
+                })
+                .orElse("redirect:/posts/public");
+    }
+
+    private Long getViewerUserId(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+
+        Object userId = session.getAttribute("userId");
+        return userId instanceof Number ? ((Number) userId).longValue() : null;
     }
 
     private String showPosts(

@@ -7,6 +7,7 @@
     <title>Home - CheatSheet Hub</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-list.css?v=8">
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
@@ -181,6 +182,44 @@
                                         </div>
                                     </div>
                                     <span class="badge" style="background: #f3f1ff; color: #4038ff;">CheatSheet</span>
+        <c:if test="${empty posts}">
+            <section class="empty-state">
+                <h2>No public posts yet</h2>
+                <p>Published public posts will appear here after admin approval.</p>
+            </section>
+        </c:if>
+
+        <c:if test="${not empty posts}">
+            <section class="library-grid" aria-label="Published public posts">
+                <c:forEach var="post" items="${posts}">
+                    <c:url var="detailsUrl" value="/posts/${post.slug}" />
+
+                    <article class="library-card">
+                        <div class="card-content">
+                            <div class="card-topline">
+                                <span class="category-label"><c:out value="${post.category.name}" /></span>
+                                <span class="card-state">
+                                    <span class="public-label">Public</span>
+                                    <span class="view-count-text"><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
+                                </span>
+                            </div>
+
+                            <a class="card-title" href="${detailsUrl}"><c:out value="${post.title}" /></a>
+
+                            <p class="card-excerpt">
+                                <c:choose>
+                                    <c:when test="${not empty post.excerpt}"><c:out value="${post.excerpt}" /></c:when>
+                                    <c:otherwise>A concise guide designed for fast learning and everyday reference.</c:otherwise>
+                                </c:choose>
+                            </p>
+
+                            <div class="card-meta">
+                                <span class="author-initial"><c:out value="${fn:substring(post.author.username, 0, 1)}" /></span>
+                                <div>
+                                    <strong><c:out value="${post.author.username}" /></strong>
+                                    <c:if test="${not empty post.createdAt}">
+                                        <small><c:out value="${fn:substring(post.createdAt, 0, 10)}" /></small>
+                                    </c:if>
                                 </div>
                             </c:forEach>
                         </div>
