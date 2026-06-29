@@ -2,9 +2,15 @@ package com.hibernate.controller;
 
 import com.hibernate.dto.RegistrationDto;
 import com.hibernate.entity.User;
+import com.hibernate.entity.UserPreference;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
+import com.hibernate.entity.enums.UserStatus;
 import com.hibernate.service.UserService;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Random;
 
 import javax.servlet.http.HttpSession;
 
@@ -19,6 +25,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam; 
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class UserController {
@@ -203,9 +210,23 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public String showUserProfilePage(HttpSession session, Model model) {
+    public String showUserProfilePage(
+            @RequestParam(value = "id", required = false) Integer targetUserId, 
+            HttpSession session, 
+            Model model) {
+            
         User currentUser = (User) session.getAttribute("currentUser");
-        UserProfile profile = userService.getUserProfileByUserId(currentUser.getId());
+        
+        Long profileOwnerId;
+        if (targetUserId != null) {
+            profileOwnerId = Long.valueOf(targetUserId);
+        } else if (currentUser != null) {
+            profileOwnerId = currentUser.getId();
+        } else {
+            return "redirect:/login"; 
+        }
+        
+        UserProfile profile = userService.getUserProfileByUserId(profileOwnerId);
         
         if (profile != null && profile.getAvatar() != null) {
             String base64Avatar = java.util.Base64.getEncoder().encodeToString(profile.getAvatar());
@@ -213,50 +234,96 @@ public class UserController {
         }
         
         model.addAttribute("userProfile", profile);
+        model.addAttribute("currentUser", currentUser);
+
+       
+        boolean isFollowing = false;
+        
+        if (currentUser != null && !currentUser.getId().equals(profileOwnerId)) {
+            isFollowing = userService.isFollowing(currentUser.getId(), profileOwnerId.intValue());
+        }
+        model.addAttribute("isFollowing", isFollowing);
+
         return "profile/profile"; 
     }
 
     @GetMapping("/profile/edit")
     public String showEditProfilePage(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         UserProfile profile = userService.getUserProfileByUserId(currentUser.getId());
+        model.addAttribute("currentUser", currentUser);
         model.addAttribute("userProfile", profile);
         return "profile/edit-profile"; 
     }
 
     @PostMapping("/profile/update")
-    public String processUpdateProfile(
-            @ModelAttribute("userProfile") UserProfile updatedProfile,
-            @RequestParam("avatarFile") MultipartFile avatarFile,
+    public String handleProfileUpdate(
+            @ModelAttribute("userProfile") UserProfile formProfile,
+            @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
+            @RequestParam(value = "currentPassword", required = false) String currentPassword,
+            @RequestParam(value = "newPassword", required = false) String newPassword,
+            @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
             HttpSession session,
-            Model model) {
-        
+            RedirectAttributes redirectAttributes) {
+       
         User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+        
+        boolean hasCurrentPwd = currentPassword != null && !currentPassword.trim().isEmpty();
+        boolean hasNewPwd = newPassword != null && !newPassword.trim().isEmpty();
+        
+        if (hasCurrentPwd || hasNewPwd) {
+            if (!userService.checkPassword(currentUser, currentPassword)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Incorrect current password!");
+                return "redirect:/profile/edit";
+            }
+            
+            if (newPassword == null || !newPassword.equals(confirmPassword)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "New passwords do not match!");
+                return "redirect:/profile/edit";
+            }
+           
+            User liveUser = userService.getUserById(currentUser.getId());            
+            if (liveUser != null) {
+                // 2. Pass the live database entity to update the credentials
+                userService.updatePassword(liveUser, newPassword);
+                
+                // 3. Sync both the local pointer and session context with the newly hashed password
+                currentUser.setPasswordHash(liveUser.getPasswordHash());
+                session.setAttribute("currentUser", currentUser);
+            }
+        }
 
         try {
             UserProfile existingProfile = userService.getUserProfileByUserId(currentUser.getId());
             
             if (existingProfile != null) {
-                updatedProfile.setUser(existingProfile.getUser());
-                updatedProfile.setId(existingProfile.getId());
+                existingProfile.setFullName(formProfile.getFullName());
+                existingProfile.setBio(formProfile.getBio());
                 
                 if (avatarFile != null && !avatarFile.isEmpty()) {
-                    updatedProfile.setAvatar(avatarFile.getBytes());
-                } else {
-                    updatedProfile.setAvatar(existingProfile.getAvatar());
+                    existingProfile.setAvatar(avatarFile.getBytes());
                 }
+                
+                userService.updateUserProfile(existingProfile);
             } else {
-                updatedProfile.setUser(currentUser);
+                if (avatarFile != null && !avatarFile.isEmpty()) {
+                    formProfile.setAvatar(avatarFile.getBytes());
+                }
+                formProfile.setUser(currentUser);
+                userService.updateUserProfile(formProfile);
             }
             
-            userService.updateUserProfile(updatedProfile);
-            
         } catch (Exception e) {
-            e.printStackTrace();
-            model.addAttribute("error", "Failed to update profile settings.");
-            return "profile/edit-profile";
+            redirectAttributes.addFlashAttribute("errorMessage", "Error updating profile details.");
+            return "redirect:/profile/edit";
         }
-        
+
         return "redirect:/profile";
     }
     
@@ -297,6 +364,15 @@ public class UserController {
     @PostMapping("/user/follow")
     public String followAction(@RequestParam("targetId") int targetId, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
+        
+        if (current == null) {
+            return "redirect:/login";
+        }
+        
+        if (current.getId().longValue() == targetId) {
+            return "redirect:/profile?id=" + targetId;
+        }
+        
         userService.followUser(current.getId(), targetId);
         return "redirect:/profile?id=" + targetId;
     }
@@ -304,15 +380,16 @@ public class UserController {
     @PostMapping("/user/unfollow")
     public String unfollowAction(@RequestParam("targetId") int targetId, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
+        
+        if (current == null) {
+            return "redirect:/login";
+        }
+        
         userService.unfollowUser(current.getId(), targetId);
         return "redirect:/profile?id=" + targetId;
     }
 
-    @GetMapping("/admin/dashboard")
-    public String showAdminDashboard() {
-        return "admin/admin-dashboard"; 
-    }
-
+    
     @GetMapping("/admin/users")
     public String listAllUsers(Model model) {
         List<User> userList = userService.getAllUsers();
@@ -331,7 +408,7 @@ public class UserController {
     }
 
     @GetMapping("/admin/users/edit")
-    public String showAdminEditUserPage(@RequestParam("id") int userId, Model model) {
+    public String showAdminEditUserPage(@RequestParam("id") Long userId, Model model) {
         model.addAttribute("targetUser", userService.getUserById(userId));
         return "admin/admin-edit-user";
     }
@@ -347,18 +424,15 @@ public class UserController {
         session.invalidate();
         SecurityContextHolder.clearContext();
         return "redirect:/?logout=true";
-    @GetMapping("/admin-dashboard")
+    }
+    @GetMapping("/admin/dashboard")
     public String showAdminDashboard(HttpSession session) {
         User adminUser = (User) session.getAttribute("currentUser");
         if (adminUser == null || !Role.ADMIN.equals(adminUser.getRole())) {
             return "redirect:/login"; 
         }
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
-    }
+    
 }

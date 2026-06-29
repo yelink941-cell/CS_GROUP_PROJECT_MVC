@@ -1,126 +1,87 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Cheatography Reference Engine</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Login - CheatSheet Hub</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; }
-        
-        /* Matching Global Header Structure */
-        header { background-color: #0f172a; padding: 16px 48px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .logo { color: #ffffff; font-size: 24px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-        .logo span { border-bottom: 3px solid #f39c12; padding-bottom: 2px; }
-        .btn-nav { text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; color: #ffffff; background: #e67e22; transition: all 0.2s; }
-        .btn-nav:hover { background: #d35400; }
-
-        /* Auth Layout Panel Box */
-        .auth-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
-        .auth-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; max-width: 420px; width: 100%; padding: 40px 32px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
-        .auth-header { text-align: center; margin-bottom: 32px; }
-        .auth-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
-        .auth-subtitle { color: #64748b; font-size: 14px; }
-
-        /* Input Form Assemblies */
-        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px; }
-        .form-label { font-size: 14px; font-weight: 600; color: #334155; }
-        .input-wrapper { position: relative; display: flex; align-items: center; }
-        .input-wrapper i { position: absolute; left: 16px; color: #94a3b8; font-size: 16px; }
-        .form-input { width: 100%; padding: 12px 16px 12px 44px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; outline: none; transition: all 0.2s ease; color: #1e293b; }
-        .form-input:focus { border-color: #e67e22; box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.15); }
-
-        /* Action Controls */
-        .action-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 14px; }
-        .forgot-link { color: #e67e22; font-weight: 500; text-decoration: none; }
-        .forgot-link:hover { text-decoration: underline; }
-        .btn-submit { width: 100%; background: #0f172a; color: #ffffff; padding: 14px; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; transition: background 0.2s; margin-bottom: 20px; }
-        .btn-submit:hover { background: #1e293b; }
-        .switch-prompt { text-align: center; font-size: 14px; color: #64748b; }
-        .switch-prompt a { color: #e67e22; font-weight: 600; text-decoration: none; }
-
-        /* Error/Info Alerts inside Cards */
-        .alert { padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-        .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
-        .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-    </style>
 </head>
-<body class="auth-page">
+<body>
+
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
-    <header>
-        <a href="${pageContext.request.contextPath}/" class="logo">
-            <i class="fa-solid fa-bolt" style="color: #f39c12;"></i> <span>Cheatography</span>
-        </a>
-        <a href="${pageContext.request.contextPath}/register" class="btn-nav">Register Instead</a>
-    </header>
-
-    <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <h2 class="auth-title">Welcome Back</h2>
-                <p class="auth-subtitle">Access your personal technical references</p>
+    <main class="page-container" style="display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 160px); padding-top: 20px;">
+        
+        <div class="empty-state" style="max-width: 440px; width: 100%; padding: 40px 32px; text-align: left; color: var(--text);">
+            
+            <div style="text-align: center; margin-bottom: 32px;">
+                <h2 style="margin: 0 0 8px 0; font-size: 1.75rem; font-weight: 800; color: var(--text);">Welcome Back</h2>
+                <p style="margin: 0; font-size: 0.92rem; color: var(--muted);">Access your personal technical references</p>
             </div>
 
-            <% if (request.getParameter("error") != null) { %>
-                <div id="authAlert" class="alert alert-error">
+            <c:if test="${param.error != null}">
+                <div id="authAlert" class="form-message-error" style="margin-bottom: 24px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-triangle-exclamation"></i> Invalid credentials. Please try again.
                 </div>
-            <% } %>
-            <% if (request.getParameter("resetSuccess") != null) { %>
-                <div id="authAlert" class="alert alert-success">
-                    <i class="fa-solid fa-circle-check"></i> Password has been updated successfully!
+            </c:if>
+            
+            <c:if test="${param.resetSuccess != null}">
+                <div id="authAlert" style="padding: 12px 14px; color: #166534; background: #dcfce7; border-radius: 8px; margin-bottom: 24px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-circle-check"></i> Password updated successfully!
                 </div>
-            <% } %>
+            </c:if>
 
             <form action="${pageContext.request.contextPath}/login" method="POST">
-                <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-envelope"></i>
-                        <input type="email" name="email" class="form-input" placeholder="name@example.com" required autocomplete="username">
+                <div style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px;">
+                    <label style="font-size: 0.88rem; font-weight: 700; color: var(--text);">Email Address</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <i class="fa-solid fa-envelope" style="position: absolute; left: 16px; color: var(--muted); font-size: 15px;"></i>
+                        <input type="email" name="email" placeholder="name@example.com" required autocomplete="username"
+                               style="width: 100%; padding: 12px 16px 12px 46px; border: 1px solid var(--border); border-radius: 9px; font-size: 0.95rem; font-family: inherit; outline: none; color: var(--text); background: var(--background);">
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                <div style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px;">
+                    <label style="font-size: 0.88rem; font-weight: 700; color: var(--text);">Password</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <i class="fa-solid fa-lock" style="position: absolute; left: 16px; color: var(--muted); font-size: 15px;"></i>
+                        <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password"
+                               style="width: 100%; padding: 12px 16px 12px 46px; border: 1px solid var(--border); border-radius: 9px; font-size: 0.95rem; font-family: inherit; outline: none; color: var(--text); background: var(--background);">
                     </div>
                 </div>
 
-                <div class="action-row">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; font-size: 0.88rem;">
                     <div></div>
-                    <a href="${pageContext.request.contextPath}/forgot-password" class="forgot-link">Forgot Password?</a>
+                    <a href="${pageContext.request.contextPath}/forgot-password" style="color: var(--primary); font-weight: 600; text-decoration: none;">Forgot Password?</a>
                 </div>
 
-                <button type="submit" class="btn-submit">Login Account</button>
+                <button type="submit" class="button" style="width: 100%; min-height: 46px; font-size: 0.95rem; margin-bottom: 24px;">Login Account</button>
             </form>
 
-            <div class="switch-prompt">
-                Don't have an account? <a href="${pageContext.request.contextPath}/register">Create one here</a>
+            <div style="text-align: center; font-size: 0.9rem; color: var(--muted);">
+                Don't have an account? <a href="${pageContext.request.contextPath}/register" style="color: var(--primary); font-weight: 700; text-decoration: none;">Register here</a>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        // Clean url param flags after a brief display timeout window
+        // Automatically hide alert notifications cleanly after 4 seconds
         window.addEventListener('DOMContentLoaded', () => {
             const alertBox = document.getElementById('authAlert');
-            if (alertBox && (window.location.search.includes('error=true') || window.location.search.includes('resetSuccess=true'))) {
+            if (alertBox) {
                 setTimeout(() => {
-                    alertBox.style.transition = "opacity 0.5s ease";
+                    alertBox.style.transition = "opacity 0.4s ease, transform 0.4s ease";
                     alertBox.style.opacity = "0";
+                    alertBox.style.transform = "translateY(-4px)";
                     setTimeout(() => {
                         alertBox.style.display = "none";
                         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
                         window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
-                    }, 500);
+                    }, 400);
                 }, 4000);
             }
         });

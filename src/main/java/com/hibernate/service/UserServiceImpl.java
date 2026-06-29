@@ -103,6 +103,11 @@ public class UserServiceImpl implements UserService {
         query.setParameter("now", LocalDateTime.now());
         return query.uniqueResult();
     }
+    @Override
+    @Transactional(readOnly = true)
+    public boolean checkPassword(User user, String rawPassword) {
+        return user != null && BCrypt.checkpw(rawPassword, user.getPasswordHash());
+    }
 
     @Override
     @Transactional
@@ -121,7 +126,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserProfile getUserProfileByUserId(int userId) {
+    public UserProfile getUserProfileByUserId(Long userId) {
         return getCurrentSession()
                 .createQuery(
                     "FROM UserProfile up " +
@@ -139,13 +144,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public User getUserById(int userId) {
+    public User getUserById(Long userId) {
         return getCurrentSession().get(User.class, userId);
     }
     
     @Override
     @Transactional(readOnly = true)
-    public UserPreference getUserPreferenceByUserId(int userId) {
+    public UserPreference getUserPreferenceByUserId(Long userId) {
         return getCurrentSession()
                 .createQuery("FROM UserPreference up WHERE up.user.id = :userId", UserPreference.class)
                 .setParameter("userId", userId)
@@ -160,35 +165,36 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isFollowing(int followerId, int followingId) {
+    public boolean isFollowing(Long followerId, int followingId) {
         Long count = getCurrentSession()
                 .createQuery("SELECT count(f) FROM Follower f WHERE f.follower.id = :fId AND f.following.id = :gId", Long.class)
                 .setParameter("fId", followerId)
-                .setParameter("gId", followingId)
+                .setParameter("gId", Long.valueOf(followingId))
                 .uniqueResult();
-        return count > 0;
+        return count != null && count > 0;
     }
 
     @Override
     @Transactional
-    public void followUser(int followerId, int followingId) {
+    public void followUser(Long followerId, int followingId) {
         if (isFollowing(followerId, followingId)) return; 
         
         Session session = getCurrentSession();
         Follower edge = new Follower();
-        edge.setFollower(session.get(User.class, followerId));
-        edge.setFollowing(session.get(User.class, followingId));
+       
+        edge.setFollower(session.load(User.class, followerId));
+        edge.setFollowing(session.load(User.class, Long.valueOf(followingId)));
         
         session.persist(edge);
     }
 
     @Override
     @Transactional
-    public void unfollowUser(int followerId, int followingId) {
+    public void unfollowUser(Long followerId, int followingId) {
         getCurrentSession()
                 .createQuery("DELETE FROM Follower f WHERE f.follower.id = :fId AND f.following.id = :gId")
                 .setParameter("fId", followerId)
-                .setParameter("gId", followingId)
+                .setParameter("gId", Long.valueOf(followingId))
                 .executeUpdate();
     }
 

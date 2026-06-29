@@ -30,8 +30,12 @@
             
         
 
-        <security:logout logout-url="/perform_security_logout" logout-success-url="/?logout=true" invalidate-session="true" />
+        <security:logout 
+            logout-url="/logout" 
+            logout-success-url="/?logout=true" 
+            invalidate-session="true" />
         <security:csrf disabled="true"/>
+        
     </security:http>
 
     <security:authentication-manager>
@@ -42,6 +46,6 @@
 
     <bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
 
-    <bean id="customSuccessHandler" class="com.hibernate.controller.CustomAuthenticationSuccessHandler" />
+    <bean id="customSuccessHandler" class="com.hibernate.security.CustomAuthenticationSuccessHandler" />
 
 </beans>
