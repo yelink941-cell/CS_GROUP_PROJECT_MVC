@@ -31,11 +31,27 @@ public class PostFileRepositoryImpl implements PostFileRepository {
     }
 
     @Override
+    public Optional<PostFile> findById(Integer fileId) {
+        PostFile postFile = sessionFactory.getCurrentSession()
+                .createQuery(
+                        "select pf from PostFile pf "
+                                + "join fetch pf.post p "
+                                + "join fetch p.author "
+                                + "where pf.id = :fileId",
+                        PostFile.class)
+                .setParameter("fileId", fileId)
+                .uniqueResult();
+
+        return Optional.ofNullable(postFile);
+    }
+
+    @Override
     public Optional<PostFile> findByIdAndPostId(Integer id, Integer postId) {
         PostFile postFile = sessionFactory.getCurrentSession()
                 .createQuery(
                         "select pf from PostFile pf "
-                                + "join fetch pf.post "
+                                + "join fetch pf.post p "
+                                + "join fetch p.author "
                                 + "where pf.id = :id and pf.post.id = :postId",
                         PostFile.class)
                 .setParameter("id", id)

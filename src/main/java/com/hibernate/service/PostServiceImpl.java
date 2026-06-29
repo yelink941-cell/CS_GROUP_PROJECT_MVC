@@ -105,6 +105,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public Optional<Post> getActivePostBySlug(String slug) {
+        return postRepository.findActiveBySlug(slug);
+    }
+
+    @Override
     public boolean existsBySlug(String slug) {
         return postRepository.existsBySlug(slug);
     }
