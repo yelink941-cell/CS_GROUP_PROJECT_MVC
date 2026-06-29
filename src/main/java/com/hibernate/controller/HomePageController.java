@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.ui.Model;
 
 @Controller
@@ -29,7 +30,8 @@ import org.springframework.ui.Model;
 public class HomePageController {
     private final PostService postService;
     private final PostFileService postFileService;
-    private final CollectionService collectionService; // 🎯 Injected CollectionService via Lombok
+    private final CollectionService collectionService; 
+    private final PostContentService postContentService;// 🎯 Injected CollectionService via Lombok
 
     @GetMapping("/")
     public String homePage(Model model) {
@@ -47,6 +49,7 @@ public class HomePageController {
         return postService.getPostBySlug(slug)
                 .map(post -> {
                     model.addAttribute("post", post);
+                 // PostContentService (စာလုံးအကြီး) နေရာတွင် postContentService (စာလုံးအသေး) ကို သုံးပါ
                     model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
                     model.addAttribute("postFiles", postFileService.getFilesByPostId(post.getId()));
                     

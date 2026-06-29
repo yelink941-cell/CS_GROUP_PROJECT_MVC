@@ -111,7 +111,7 @@ public class PublicPostController {
                 "No new posts are available yet.");
     }
 
-    @GetMapping("/public/details")
+    @GetMapping("/posts/public/details-v2")
     public String legacyPublicPostDetails(
             @RequestParam("slug") String slug,
             Model model,
@@ -120,7 +120,8 @@ public class PublicPostController {
         return publicPostDetails(slug, model, request, response);
     }
 
-    @GetMapping("/{slug}")
+    @GetMapping("/public/posts/{slug}")
+    
     public String publicPostDetails(
             @PathVariable("slug") String slug,
             Model model,

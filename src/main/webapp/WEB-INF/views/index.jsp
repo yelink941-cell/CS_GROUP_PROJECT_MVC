@@ -159,71 +159,38 @@
 
         <c:choose>
             <%-- CONDITION A: INLINE SEARCH RESULTS VIEW SCREEN --%>
-            <c:when test="${isSearching}">
+           <c:when test="${isSearching}">
+    <div class="results-container">
+        <h3 style="color: #0f172a; font-size: 20px; margin-bottom: 20px;">Search Results for "${searchedKeyword}"</h3>
+        
+        <%-- 1. Cheat Sheets (Posts) Section --%>
+        <div class="result-section">
+            <div class="section-title" style="color: #4038ff; border-bottom: 2px solid #f3f1ff;">📄 Cheat Sheets</div>
             
-                <div class="results-container">
-                    <h3 style="color: #0f172a; font-size: 20px; margin-bottom: 20px;">Search Results for "${searchedKeyword}"</h3>
-                    
-                    <%-- 1. Cheat Sheets (Posts) Section --%>
-                    <c:if test="${not empty postResults}">
-                        <div class="result-section">
-                            <div class="section-title" style="color: #4038ff; border-bottom: 2px solid #f3f1ff;">📄 Cheat Sheets</div>
-                            <c:forEach var="p" items="${postResults}">
-                                <div class="result-item">
-                                    <div>
-                                        <a href="${pageContext.request.contextPath}/posts/${p.slug}" 
-                                           style="text-decoration: none; color: #4038ff; font-weight: 700; font-size: 16px;"
-                                           onmouseover="this.style.textDecoration='underline'" 
-                                           onmouseout="this.style.textDecoration='none'">
-                                            <c:out value="${p.title}" />
-                                        </a>
-                                        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
-                                            <c:out value="${not empty p.excerpt ? p.excerpt : 'No description available.'}" />
-                                        </div>
-                                    </div>
-                                    <span class="badge" style="background: #f3f1ff; color: #4038ff;">CheatSheet</span>
-        <c:if test="${empty posts}">
-            <section class="empty-state">
-                <h2>No public posts yet</h2>
-                <p>Published public posts will appear here after admin approval.</p>
-            </section>
-        </c:if>
-
-        <c:if test="${not empty posts}">
-            <section class="library-grid" aria-label="Published public posts">
-                <c:forEach var="post" items="${posts}">
-                    <c:url var="detailsUrl" value="/posts/${post.slug}" />
-
-                    <article class="library-card">
-                        <div class="card-content">
-                            <div class="card-topline">
-                                <span class="category-label"><c:out value="${post.category.name}" /></span>
-                                <span class="card-state">
-                                    <span class="public-label">Public</span>
-                                    <span class="view-count-text"><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
-                                </span>
-                            </div>
-
-                            <a class="card-title" href="${detailsUrl}"><c:out value="${post.title}" /></a>
-
-                            <p class="card-excerpt">
-                                <c:choose>
-                                    <c:when test="${not empty post.excerpt}"><c:out value="${post.excerpt}" /></c:when>
-                                    <c:otherwise>A concise guide designed for fast learning and everyday reference.</c:otherwise>
-                                </c:choose>
-                            </p>
-
-                            <div class="card-meta">
-                                <span class="author-initial"><c:out value="${fn:substring(post.author.username, 0, 1)}" /></span>
-                                <div>
-                                    <strong><c:out value="${post.author.username}" /></strong>
-                                    <c:if test="${not empty post.createdAt}">
-                                        <small><c:out value="${fn:substring(post.createdAt, 0, 10)}" /></small>
-                                    </c:if>
+            <c:choose>
+                <c:when test="${not empty postResults}">
+                    <c:forEach var="p" items="${postResults}">
+                        <div class="result-item">
+                            <div>
+                                <a href="${pageContext.request.contextPath}/posts/${p.slug}" 
+                                   style="text-decoration: none; color: #4038ff; font-weight: 700; font-size: 16px;"
+                                   onmouseover="this.style.textDecoration='underline'" 
+                                   onmouseout="this.style.textDecoration='none'">
+                                    <c:out value="${p.title}" />
+                                </a>
+                                <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
+                                    <c:out value="${not empty p.excerpt ? p.excerpt : 'No description available.'}" />
                                 </div>
-                            </c:forEach>
+                            </div>
+                            <span class="badge" style="background: #f3f1ff; color: #4038ff;">CheatSheet</span>
                         </div>
-                    </c:if>
+                    </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <div style="padding: 10px; color: #64748b;">No cheat sheets found.</div>
+                </c:otherwise>
+            </c:choose>
+        </div>
 
                     <%-- 2. Folders (Collections) Section --%>
                     <c:if test="${not empty collectionResults}">
