@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <security:http pattern="/resources/**" security="none"/>
+
+    <security:http auto-config="true" use-expressions="true">
+    	<security:intercept-url pattern="/" access="permitAll" />
+        <security:intercept-url pattern="/login" access="permitAll" />
+        <security:intercept-url pattern="/register" access="permitAll" />
+        <security:intercept-url pattern="/forgot-password" access="permitAll" />
+        <security:intercept-url pattern="/verify-otp" access="permitAll" />
+        
+        <security:intercept-url pattern="/reset-password" access="permitAll" />
+        
+        <security:intercept-url pattern="/admin/**" access="hasRole('ADMIN')" />
+
+        <security:intercept-url pattern="/**" access="isAuthenticated()" />
+
+        <security:form-login 
+            login-page="/login" 
+            authentication-success-handler-ref="customSuccessHandler" 
+            authentication-failure-url="/login?error=true" 
+            username-parameter="email" 
+            password-parameter="password" />
+            
+        
+
+        <security:logout 
+            logout-url="/logout" 
+            logout-success-url="/?logout=true" 
+            invalidate-session="true" />
+        <security:csrf disabled="true"/>
+        
+    </security:http>
+
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="customUserDetailsService">
+            <security:password-encoder ref="passwordEncoder"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+    <bean id="customSuccessHandler" class="com.hibernate.security.CustomAuthenticationSuccessHandler" />
+
+</beans>
