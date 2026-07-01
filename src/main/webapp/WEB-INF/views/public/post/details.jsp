@@ -253,12 +253,12 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                    <div class="star-rating" style="pointer-events: none;">
-                        <label style="color: ${averageRating >= 1 ? '#ffc107' : '#ccc'};">★</label>
-                        <label style="color: ${averageRating >= 2 ? '#ffc107' : '#ccc'};">★</label>
-                        <label style="color: ${averageRating >= 3 ? '#ffc107' : '#ccc'};">★</label>
-                        <label style="color: ${averageRating >= 4 ? '#ffc107' : '#ccc'};">★</label>
-                        <label style="color: ${averageRating >= 5 ? '#ffc107' : '#ccc'};">★</label>
+                    <div class="star-rating" onclick="alert('Rating ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။'); window.location.href='${pageContext.request.contextPath}/login';" style="cursor: pointer;" title="Rating ပြုလုပ်ရန် နှိပ်ပါ။">
+                        <label style="color: ${averageRating >= 1 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 2 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 3 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 4 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 5 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
                     </div>
                 </c:otherwise>
             </c:choose>
@@ -284,7 +284,7 @@
                 </c:when>
                 <c:otherwise>
                     <button type="button" onclick="alert('Like ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။'); window.location.href='${pageContext.request.contextPath}/login';" class="button unliked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
-                        
+                        👍🏻 Like
                     </button>
                 </c:otherwise>
             </c:choose>
@@ -302,6 +302,7 @@
                 </c:when>
                 <c:otherwise>
                     <button type="button" onclick="alert('Bookmark ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။'); window.location.href='${pageContext.request.contextPath}/login';" class="button unbookmarked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
+                        ⭐ Bookmark
                     </button>
                 </c:otherwise>
             </c:choose>
@@ -324,11 +325,11 @@
             </c:if>
             
             <c:if test="${empty userLoggedIn}">
-                <p style="color: #666;"><a href="${pageContext.request.contextPath}/login"></a></p>
+                <p style="color: #666;">Comment ရေးသားရန် <a href="${pageContext.request.contextPath}/login">Login</a> ဝင်ပါ။</p>
             </c:if>
-
+ 
             <c:if test="${empty comments}">
-                <p style="color: #888;"></p>
+                <p style="color: #888;" id="noCommentsMessage">ကွန်မန့် မရှိသေးပါ။</p>
             </c:if>
             
             <c:if test="${not empty comments}">
@@ -446,322 +447,549 @@
 </main>
 
     <script>
-    function checkFolderStatus() {
-        var selectBox = document.getElementById("collectionSelect");
-        var actionBtn = document.getElementById("addFolderBtn");
-        
-        if (!selectBox || !actionBtn) return;
-        
-        var selectedOption = selectBox.options[selectBox.selectedIndex];
-        var isSaved = selectedOption.getAttribute("data-saved");
+/* =========================
+   🔐 CSRF HELPER (NEW)
+========================= */
+function getCsrfHeaders(contentType = 'application/json') {
+    const csrfHeaderMeta = document.querySelector("meta[name='_csrf_header']");
+    const csrfMeta = document.querySelector("meta[name='_csrf']");
 
-        if (selectBox.value === "") {
-            actionBtn.innerHTML = "➕ Add to Folder";
-            actionBtn.disabled = false;
-        } 
-        else if (isSaved === "true") {
-            actionBtn.innerHTML = "✓ Saved";
-            actionBtn.disabled = true;
-        } 
-        else {
-            actionBtn.innerHTML = "➕ Add to Folder";
-            actionBtn.disabled = false;
+    const headers = {
+        'Content-Type': contentType,
+        'X-Requested-With': 'XMLHttpRequest'
+    };
+
+    if (csrfHeaderMeta && csrfMeta) {
+        const headerName = csrfHeaderMeta.getAttribute("content");
+        const tokenValue = csrfMeta.getAttribute("content");
+        if (headerName && tokenValue && !headerName.startsWith('$')) {
+            headers[headerName] = tokenValue;
         }
     }
 
-    document.getElementById('commentForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const postId = document.querySelector('#commentForm input[id="postId"]').value;
-        const commentText = document.getElementById('commentText').value;
+    return headers;
+}
 
-        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
-        const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
-
-        fetch('${pageContext.request.contextPath}/comments/add', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest', // 🟢 Added Header
-                [csrfHeader]: csrfToken
-            },
-            body: 'postId=' + postId + '&commentText=' + encodeURIComponent(commentText)
-        })
-        .then(response => {
-            if (response.status === 401) throw new Error('Unauthorized');
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                sessionStorage.setItem('isCommentsOpen', 'true');
-                window.location.href = window.location.pathname + window.location.search + '#commentsToggleWrapper';
-                location.reload();
-            } else {
-                alert('Comment သိမ်းဆည်းရာတွင် အမှားအယွင်းဖြစ်သွားပါသည်။');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Session ပြတ်တောက်သွားပါသည် (သို့) Login ဝင်ရန် လိုအပ်ပါသည်။');
-            window.location.href = '${pageContext.request.contextPath}/login';
-        });
-    });
-
-    function toggleReplyForm(uniqueId) {
-        const replyForm = document.getElementById('replyFormContainer-' + uniqueId);
-        if (replyForm) {
-            const isVisible = (replyForm.style.display === "block");
-            const allForms = document.querySelectorAll('[id^="replyFormContainer-"]');
-            allForms.forEach(form => form.style.display = "none");
-            
-            if (!isVisible) {
-                replyForm.style.display = "block";
-            }
-        }
+function getCleanUrl(path) {
+    let ctx = '${pageContext.request.contextPath}';
+    if (ctx === '/') {
+        ctx = '';
     }
+    return ctx + path;
+}
 
-    function submitReply(e, uniqueId, parentId, formPostId) {
-        e.preventDefault();
-        const replyTextArea = document.getElementById('replyText-' + uniqueId);
-        const replyContent = replyTextArea.value;
-        const postId = formPostId || document.querySelector('#commentForm input[id="postId"]').value;
-
-        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
-        const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
-
-        fetch('${pageContext.request.contextPath}/comments/reply', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest', // 🟢 Added Header
-                [csrfHeader]: csrfToken
-            },
-            body: 'postId=' + encodeURIComponent(postId) + 
-                  '&parentId=' + encodeURIComponent(parentId) + 
-                  '&content=' + encodeURIComponent(replyContent)
-        })
-        .then(response => {
-            if (response.ok) {
-                sessionStorage.setItem('isCommentsOpen', 'true');
-                window.location.href = window.location.pathname + window.location.search + '#commentsToggleWrapper';
-                location.reload();
-            } else {
-                alert('Reply သိမ်းဆည်းရာတွင် အမှားအယွင်းဖြစ်သွားပါသည်။');
-            }
-        })
-        .catch(error => console.error('Error:', error));
+/* =========================
+   🔗 URL HASH HELPER (No-reload)
+   action လုပ်တိုင်း URL hash (#like, #comment, #rating, #bookmark) ပြောင်းပေးမည်။
+   history.replaceState သုံးထားသဖြ့င့် page reload / scroll jump မဖြစ်ပါ။
+========================= */
+function updateUrlHash(hash) {
+    try {
+        history.replaceState(null, '', '#' + hash);
+    } catch (e) {
+        // ignore
     }
+}
 
-    function deleteComment(commentId) {
-        if (!confirm('ဤ comment ကို အမှန်တကယ် ဖျက်မှာလား?')) return;
-        
-        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
-        const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
-
-        fetch('${pageContext.request.contextPath}/comments/delete/' + commentId, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest', // 🟢 Added Header
-                [csrfHeader]: csrfToken
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                sessionStorage.setItem('isCommentsOpen', 'true');
-                window.location.href = window.location.pathname + window.location.search + '#commentsToggleWrapper';
-                location.reload();
-            } else {
-                alert('ဖျက်ဆီးရာတွင် အမှားအယွင်းဖြစ်သွားပါသည်။');
-            }
-        })
-        .catch(error => console.error('Error:', error));
+function showCommentsSection() {
+    const el = document.getElementById('commentsToggleWrapper');
+    if (el) {
+        el.style.display = 'block';
     }
+}
 
-    document.addEventListener("DOMContentLoaded", function() {
-        checkFolderStatus();
+/* =========================
+   🔡 HTML ESCAPE HELPER
+   Backend မှ user input (username/content) ကို DOM ထဲထည့်ခါက XSS ကာကွယ်ရန်
+========================= */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('tab');
+/* =========================
+   📁 Folder Check
+========================= */
+function checkFolderStatus() {
+    var selectBox = document.getElementById("collectionSelect");
+    var actionBtn = document.getElementById("addFolderBtn");
+    if (!selectBox || !actionBtn) return;
 
-        if (activeTab) {
-            if (activeTab === 'comment') {
-                const commentWrapper = document.getElementById('commentsToggleWrapper');
-                if (commentWrapper) {
-                    commentWrapper.style.display = 'block';
-                    commentWrapper.scrollIntoView({ behavior: 'smooth' });
-                }
-            } else if (activeTab === 'rating') {
-                const ratingSection = document.querySelector('.rating-section');
-                if (ratingSection) {
-                    ratingSection.scrollIntoView({ behavior: 'smooth' });
-                }
-            } else if (activeTab === 'like') {
-                const likeSection = document.querySelector('.like-section');
-                if (likeSection) {
-                    likeSection.scrollIntoView({ behavior: 'smooth' });
-                }
+    var selectedOption = selectBox.options[selectBox.selectedIndex];
+    var isSaved = selectedOption.getAttribute("data-saved");
+
+    if (selectBox.value === "") {
+        actionBtn.innerHTML = "➕ Add to Folder";
+        actionBtn.disabled = false;
+    } else if (isSaved === "true") {
+        actionBtn.innerHTML = "✓ Saved";
+        actionBtn.disabled = true;
+    } else {
+        actionBtn.innerHTML = "➕ Add to Folder";
+        actionBtn.disabled = false;
+    }
+}
+
+/* =========================
+   💬 COMMENT SUBMIT (event delegation - form is inside hidden div)
+========================= */
+let commentFormListenerAttached = false;
+function attachCommentFormListener() {
+    if (commentFormListenerAttached) return;
+    const commentForm = document.getElementById('commentForm');
+    if (!commentForm) return;
+    commentFormListenerAttached = true;
+commentForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+	
+    const postId = document.querySelector('#postId').value;
+    const commentText = document.getElementById('commentText').value;
+
+    fetch(getCleanUrl('/comments/add'), {
+        method: 'POST',
+        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+        body: 'postId=' + postId + '&commentText=' + encodeURIComponent(commentText)
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            // 🟢 No-reload: backend မှ ပြန်လာတဲ့ data နဲ့ comment DOM အသစ်တည်ဆောက်ပြီး
+            //    comment list အပေါ်ဆုံးမှာ တိုက်ရိုက်ထည့်မည်။ (နေရာမှာပဲနေမည်)
+            const commentText = document.getElementById('commentText');
+            commentText.value = '';
+
+            let container = document.getElementById('commentListContainer');
+            if (!container) {
+                // ပထမဆုံး comment ဖြစ်နေလျှင် container အသစ်တည်ဆောက်
+                container = document.createElement('div');
+                container.id = 'commentListContainer';
+                container.className = 'comment-list';
+                container.style.cssText = 'display: flex; flex-direction: column; gap: 16px;';
+                document.getElementById('commentsToggleWrapper').appendChild(container);
             }
-        }
 
-        if (sessionStorage.getItem('isCommentsOpen') === 'true') {
-            const commentWrapper = document.getElementById('commentsToggleWrapper');
-            if (commentWrapper) {
-                commentWrapper.style.display = 'block';
-            }
-            sessionStorage.removeItem('isCommentsOpen');
-        }
-    });
+            const newComment = document.createElement('div');
+            newComment.className = 'comment-item';
+            newComment.id = 'comment-' + data.commentId;
+            newComment.style.cssText = 'border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;';
 
-    function toggleLikePost(postId, buttonElement) {
-        const csrfMeta = document.querySelector("meta[name='_csrf']");
-        const csrfHeaderMeta = document.querySelector("meta[name='_csrf_header']");
-        const csrfToken = csrfMeta ? csrfMeta.getAttribute("content") : "";
-        const csrfHeader = csrfHeaderMeta ? csrfHeaderMeta.getAttribute("content") : "";
+            const safeUser = escapeHtml(data.username);
+            const safeContent = escapeHtml(data.content);
+            const safeDate = escapeHtml(data.createdAt);
 
-        fetch('${pageContext.request.contextPath}/api/toggle-like', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest',
-                [csrfHeader]: csrfToken
-            },
-            body: 'postId=' + encodeURIComponent(postId)
-        })
-        .then(response => {
-            if (response.status === 401) throw new Error('Unauthorized');
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                const likeCountSpan = document.getElementById('likeCount-' + postId);
-                if (likeCountSpan) {
-                    likeCountSpan.innerText = data.totalLikes;
-                }
-                
-                const iconSpan = document.getElementById('likeIcon-' + postId);
-                if (iconSpan) {
-                    if (data.isLiked) {
-                        iconSpan.innerHTML = "👍 Unlike";
-                        buttonElement.className = "button liked-btn";
-                    } else {
-                        iconSpan.innerHTML = "👍🏻 Like";
-                        buttonElement.className = "button unliked-btn";
+            newComment.innerHTML =
+                '<div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">' +
+                    '<strong>' + safeUser + '</strong>' +
+                    '<span>' + safeDate + '</span>' +
+                '</div>' +
+                '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
+                '<div style="display: flex; gap: 12px; margin-bottom: 8px;">' +
+                    '<button type="button" class="button-link" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">Reply</button>' +
+                    '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.commentId + ')">Delete</button>' +
+                '</div>' +
+                '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
+                    '<form onsubmit="submitReply(event, \'c-' + data.commentId + '\', ' + data.commentId + ', ${post.id})">' +
+                        '<textarea id="replyText-c-' + data.commentId + '" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
+                        '<br>' +
+                        '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Reply ပို့မည်</button>' +
+                    '</form>' +
+                '</div>' +
+                '<div id="replyListContainer-' + data.commentId + '"></div>';
+
+            container.prepend(newComment);
+
+            // 🟢 Comment count တိုး
+            const header = document.getElementById('commentCountHeader');
+            if (header) {
+                const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
+                header.setAttribute('data-count', newCount);
+                header.innerText = ' Comments (' + newCount + ')';
+                const topBtn = document.querySelector('.like-section .button-secondary');
+                // Comments (n) ခလုတ်လည်း update
+                document.querySelectorAll('.like-section button').forEach(function (b) {
+                    if (b.innerText && b.innerText.indexOf('Comments') !== -1) {
+                        b.innerText = '💬 Comments (' + newCount + ')';
                     }
-                }
-            } else {
-                alert(data.message || "Operation failed.");
+                });
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Session ပြတ်တောက်သွားပါသည် (သို့) Login ဝင်ရန် လိုအပ်ပါသည်။');
+
+            showCommentsSection();
+
+            updateUrlHash('comment');
+        } else {
+            alert('Comment error: ' + (data.message || ''));
+        }
+    })
+    .catch(err => {
+        console.error('Comment request failed:', err);
+        if (err.message && err.message.includes('401')) {
             window.location.href = '${pageContext.request.contextPath}/login';
-        });
-    }
+        } else {
+            alert('Comment ပို့၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။');
+        }
+    });
+});
+}
 
-    function updateCommentCount(change) {
-        const countHeader = document.getElementById('commentCountHeader');
-        if (!countHeader) return;
-        const currentCount = parseInt(countHeader.getAttribute('data-count') || '0', 10);
-        const newCount = Math.max(0, currentCount + change);
-        countHeader.setAttribute('data-count', newCount);
-        countHeader.textContent = 'Comments (' + newCount + ')';
-    }
+/* =========================
+   🔁 REPLY TOGGLE (FIXED BUG)
+========================= */
+function toggleReplyForm(commentId) {
+    const replyForm = document.getElementById('replyFormContainer-' + commentId);
 
-    function escapeHtml(string) {
-        return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
+    if (!replyForm) return;
 
-    function toggleCommentsSection() {
-        const commentWrapper = document.getElementById('commentsToggleWrapper');
-        if (commentWrapper) {
-            if (commentWrapper.style.display === 'none' || commentWrapper.style.display === '') {
-                commentWrapper.style.display = 'block';
+    const isVisible = replyForm.style.display === "block";
+
+    document.querySelectorAll('[id^="replyFormContainer-"]')
+        .forEach(f => f.style.display = "none");
+
+    replyForm.style.display = isVisible ? "none" : "block";
+}
+
+/* =========================
+   🔁 SUBMIT REPLY (FIXED)
+========================= */
+function submitReply(e, commentId, parentId, postId) {
+    e.preventDefault();
+
+    const replyText = document.getElementById('replyText-' + commentId).value;
+
+    fetch(getCleanUrl('/comments/reply'), {
+        method: 'POST',
+        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+        body:
+            'postId=' + postId +
+            '&parentId=' + parentId +
+            '&content=' + encodeURIComponent(replyText)
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if (data.status !== 'success') {
+            alert('Reply error: ' + (data.message || ''));
+            return;
+        }
+
+        // 🟢 No-reload: textarea ရှင်း
+        const replyInput = document.getElementById('replyText-' + commentId);
+        if (replyInput) replyInput.value = '';
+
+        // reply ထည့်ရမည့် list container ကို ရှာရန်
+        // parentId ကို အသုံးပြုသည် (main comment အောက် reply ဖြစ်စေ, nested reply ဖြစ်စေ)
+        const realParentId = data.parentId || parentId;
+        let listContainer = document.getElementById('replyListContainer-' + realParentId)
+                         || document.getElementById('replySubListContainer-' + realParentId);
+
+        // မရှိသေးလျှင် အသစ်တည်ဆောက်
+        if (!listContainer) {
+            const parentReplyItem = document.getElementById('reply-item-' + realParentId);
+            const newSub = document.createElement('ul');
+            newSub.id = 'replySubListContainer-' + realParentId;
+            newSub.style.cssText = 'margin-left:20px; list-style-type: none; padding-left: 0;';
+            if (parentReplyItem) {
+                parentReplyItem.appendChild(newSub);
+                listContainer = newSub;
             } else {
-                commentWrapper.style.display = 'none';
+                // main comment အောက်တွင် reply container ဖန်တီး
+                const mainComment = document.getElementById('comment-' + realParentId);
+                if (mainComment) {
+                    const wrap = document.createElement('div');
+                    wrap.id = 'replyListContainer-' + realParentId;
+                    mainComment.appendChild(wrap);
+                    const sub = document.createElement('ul');
+                    sub.id = 'replySubListContainer-' + realParentId;
+                    sub.style.cssText = 'margin-left:20px; list-style-type: none; padding-left: 0;';
+                    wrap.appendChild(sub);
+                    listContainer = sub;
+                } else {
+                    listContainer = newSub;
+                }
             }
         }
-    }
 
-    function submitRating(postId, ratingValue) {
-        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
-        const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+        const safeUser = escapeHtml(data.username);
+        const safeContent = escapeHtml(data.content);
+        const safeDate = escapeHtml(data.createdAt);
 
-        fetch('${pageContext.request.contextPath}/api/toggle-rating', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest', // 🟢 Added Header
-                [csrfHeader]: csrfToken
-            },
-            body: 'postId=' + postId + '&rating=' + ratingValue
-        })
-        .then(response => {
-            if (response.status === 401) throw new Error('Unauthorized');
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                const avgRatingSpan = document.getElementById('avgRatingValue');
-                if (avgRatingSpan) avgRatingSpan.innerText = data.averageRating;
-                
-                const totalRatingSpan = document.getElementById('totalRatingCount');
-                if (totalRatingSpan) totalRatingSpan.innerText = data.totalRatings;
-                
-                alert('Rating ပေးခြင်း အောင်မြင်ပါသည်။');
-            } else {
-                alert(data.message || 'Rating သိမ်းဆည်းရာတွင် အမှားအယွင်းဖြစ်သွားပါသည်။');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Session ပြတ်တောက်သွားပါသည် (သို့) Login ဝင်ရန် လိုအပ်ပါသည်။');
+        const replyEl = document.createElement('li');
+        replyEl.id = 'reply-item-' + data.replyId;
+        replyEl.style.cssText = 'margin-bottom: 8px; list-style-type: none;';
+        replyEl.innerHTML =
+            '<strong>' + safeUser + ':</strong> ' + safeContent +
+            '<br><small>' + safeDate + '</small><br>' +
+            '<button type="button" class="button-link" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">Reply</button>' +
+            '<button type="button" class="button-link" style="color: #dc3545; margin-left: 8px;" onclick="deleteComment(' + data.replyId + ')">Delete</button>' +
+            '<div id="replyFormContainer-r-' + data.replyId + '" style="display: none; margin-top: 8px; margin-left: 20px;">' +
+                '<form onsubmit="submitReply(event, \'r-' + data.replyId + '\', ' + data.replyId + ', ${post.id})">' +
+                    '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
+                    '<br>' +
+                    '<button type="submit" class="button button-secondary" style="font-size: 12px; padding: 4px 10px; margin-top: 4px;">Submit Reply</button>' +
+                '</form>' +
+            '</div>';
+
+        listContainer.appendChild(replyEl);
+
+        // 🟢 reply form ပိတ်ရန်
+        const replyForm = document.getElementById('replyFormContainer-' + commentId);
+        if (replyForm) replyForm.style.display = 'none';
+
+        // 🟢 Comment count တိုး
+        const header = document.getElementById('commentCountHeader');
+        if (header) {
+            const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
+            header.setAttribute('data-count', newCount);
+            header.innerText = ' Comments (' + newCount + ')';
+        }
+
+        showCommentsSection();
+        updateUrlHash('reply');
+    })
+    .catch(err => {
+        console.error('Reply request failed:', err);
+        if (err.message && err.message.includes('401')) {
             window.location.href = '${pageContext.request.contextPath}/login';
-        });
-    }
+        } else {
+            alert('Reply failed');
+        }
+    });
+}
 
-    function toggleBookmark(postId, buttonElement) {
-        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
-        const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+/* =========================
+   🗑 DELETE COMMENT (No-reload)
+========================= */
+function deleteComment(commentId) {
+    if (!confirm('Delete?')) return;
 
-        fetch('${pageContext.request.contextPath}/api/toggle-bookmark', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest', // 🟢 Added Header
-                [csrfHeader]: csrfToken
-            },
-            body: 'postId=' + postId
-        })
-        .then(response => {
-            if (response.status === 401) throw new Error('Unauthorized');
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                const iconSpan = document.getElementById('bookmarkIcon-' + postId);
-                if (iconSpan) {
-                    if (data.isBookmarked) {
-                        iconSpan.innerHTML = "⭐ Bookmarked";
-                        buttonElement.className = "button bookmarked-btn";
-                    } else {
-                        iconSpan.innerHTML = "⭐ Bookmark";
-                        buttonElement.className = "button unbookmarked-btn";
-                    }
+    fetch(getCleanUrl('/comments/delete/') + commentId, {
+        method: 'POST',
+        headers: getCsrfHeaders()
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if (data.status !== 'success') {
+            alert('Delete failed: ' + (data.message || ''));
+            return;
+        }
+
+        // 🟢 No-reload: main comment ဖြစ်စေ, reply ဖြစ်စေ DOM မှ တိုက်ရိုက်ဖယ်
+        const mainEl = document.getElementById('comment-' + commentId);
+        const replyEl = document.getElementById('reply-item-' + commentId);
+        if (mainEl) {
+            mainEl.remove();
+        } else if (replyEl) {
+            replyEl.remove();
+        }
+
+        // 🟢 Comment count လျှော့
+        const header = document.getElementById('commentCountHeader');
+        if (header) {
+            let newCount = parseInt(header.getAttribute('data-count') || '0') - 1;
+            if (newCount < 0) newCount = 0;
+            header.setAttribute('data-count', newCount);
+            header.innerText = ' Comments (' + newCount + ')';
+            document.querySelectorAll('.like-section button').forEach(function (b) {
+                if (b.innerText && b.innerText.indexOf('Comments') !== -1) {
+                    b.innerText = '💬 Comments (' + newCount + ')';
                 }
-                const bookmarkCountSpan = document.getElementById('bookmarkCount-' + postId);
-                if (bookmarkCountSpan) {
-                    bookmarkCountSpan.innerText = data.totalBookmarks;
-                }
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Session ပြတ်တောက်သွားပါသည် (သို့) Login ဝင်ရန် လိုအပ်ပါသည်။');
+            });
+        }
+    })
+    .catch(err => {
+        console.error('Delete request failed:', err);
+        if (err.message && err.message.includes('401')) {
             window.location.href = '${pageContext.request.contextPath}/login';
-        });
+        } else {
+            alert('Delete failed');
+        }
+    });
+}
+
+/* =========================
+   👍 LIKE
+========================= */
+function toggleLikePost(postId, btn) {
+    console.log("toggleLikePost called, postId:", postId);
+
+    var url = getCleanUrl('/api/toggle-like');
+    console.log("Fetching URL:", url);
+    console.log("CSRF headers:", JSON.stringify(getCsrfHeaders('application/x-www-form-urlencoded')));
+
+    fetch(url, {
+        method: 'POST',
+        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+        body: 'postId=' + postId
+    })
+    .then(function(r) {
+        console.log("HTTP Status =", r.status, r.statusText);
+        if (!r.ok) {
+            return r.text().then(function(txt) {
+                console.log("Error body:", txt);
+                throw new Error('HTTP ' + r.status + ': ' + txt);
+            });
+        }
+        return r.json();
+    })
+    .then(function(data) {
+        console.log("Response data =", JSON.stringify(data));
+
+        if (data.status === 'success') {
+
+            var countEl = document.getElementById('likeCount-' + postId);
+            if (countEl) countEl.innerText = data.totalLikes;
+
+            var icon = document.getElementById('likeIcon-' + postId);
+
+            if (data.isLiked) {
+                icon.innerHTML = "👍 Unlike";
+                btn.className = "button liked-btn";
+            } else {
+                icon.innerHTML = "👍🏻 Like";
+                btn.className = "button unliked-btn";
+            }
+
+            updateUrlHash('like');
+        } else {
+            console.warn("Server returned non-success:", data);
+            alert('Like မအောင်မြင်ပါ: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(function(err) {
+        console.error('Like request failed:', err);
+        if (err.message && err.message.includes('401')) {
+            window.location.href = '${pageContext.request.contextPath}/login';
+        } else {
+            alert('Like ပြုလုပ်၍မရပါ။ Error: ' + err.message);
+        }
+    });
+}
+
+/* =========================
+   ⭐ RATING
+========================= */
+function submitRating(postId, rating) {
+    console.log("submitRating called, postId:", postId, "rating:", rating);
+    fetch(getCleanUrl('/api/toggle-rating'), {
+        method: 'POST',
+        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+        body:
+            'postId=' + postId +
+            '&rating=' + rating
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if(data.status === 'success'){
+            document.getElementById("avgRatingValue").innerText = data.averageRating;
+            document.getElementById("totalRatingCount").innerText = data.totalRatings;
+
+            // 🟢 toggle off (rating ပြန်ဖျက်) ဖြစ်သွားလျှင် star selection reset
+            const starInputs = document.querySelectorAll('.star-rating input[name="rating"]');
+            starInputs.forEach(function (input) {
+                if (!data.hasRated) {
+                    input.checked = false;
+                } else if (parseInt(input.value) === rating) {
+                    input.checked = true;
+                }
+            });
+
+            updateUrlHash('rating');
+        } else {
+            alert('Rating error: ' + (data.message || ''));
+        }
+    })
+    .catch(err => {
+        console.error('Rating request failed:', err);
+        if (err.message && err.message.includes('401')) {
+            window.location.href = '${pageContext.request.contextPath}/login';
+        } else {
+            alert('Rating ပြုလုပ်၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။');
+        }
+    });
+}
+
+/* =========================
+   🔖 BOOKMARK (FIXED LOGIN CHECK)
+========================= */
+function toggleBookmark(postId, btn) {
+    console.log("toggleBookmark called, postId:", postId);
+	const isLoggedIn = "${sessionScope.userId != null}" === "true";
+
+    if (!isLoggedIn) {
+        console.log("toggleBookmark: user not logged in, redirecting to login");
+        window.location.href = '${pageContext.request.contextPath}/login';
+        return;
     }
+
+    fetch(getCleanUrl('/api/toggle-bookmark'), {
+        method: 'POST',
+        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+        body: 'postId=' + postId
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            const icon = document.getElementById('bookmarkIcon-' + postId);
+
+            if (data.isBookmarked) {
+                icon.innerHTML = "⭐ Bookmarked";
+                btn.className = "button bookmarked-btn";
+            } else {
+                icon.innerHTML = "⭐ Bookmark";
+                btn.className = "button unbookmarked-btn";
+            }
+            updateUrlHash('bookmark');
+        } else {
+            alert('Bookmark error: ' + (data.message || ''));
+        }
+    })
+    .catch(err => {
+        console.error('Bookmark request failed:', err);
+        if (err.message && err.message.includes('401')) {
+            window.location.href = '${pageContext.request.contextPath}/login';
+        } else {
+            alert('Bookmark ပြုလုပ်၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။');
+        }
+    });
+}
+
+/* =========================
+   💬 TOGGLE COMMENTS
+========================= */
+function toggleCommentsSection() {
+    const el = document.getElementById('commentsToggleWrapper');
+    if (!el) return;
+    const willShow = el.style.display !== 'block';
+    el.style.display = willShow ? 'block' : 'none';
+    if (willShow) {
+        updateUrlHash('comment');
+        // Attach comment form listener when section becomes visible
+        attachCommentFormListener();
+    }
+}
+if (window.location.hash === '#comment' || window.location.hash === '#reply') {
+    showCommentsSection();
+    attachCommentFormListener();
+}
 </script>
 </body>
 </html>

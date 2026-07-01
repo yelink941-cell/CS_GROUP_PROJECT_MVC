@@ -28,18 +28,37 @@ public class CommentController {
 
     private final PostService postService;
     private final UserRepository userRepository;
-    private final CommentRepository commentRepository; 
-    private final CommentService commentService; 
+    private final CommentRepository commentRepository;
+    private final CommentService commentService;
 
-    @PostMapping("/add")
+    @PostMapping({"/add", "/comment"})
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addComment(@RequestParam("postId") Integer postId,
                                                           @RequestParam("commentText") String content,
                                                           HttpSession session) {
 
-        Long userId = (Long) session.getAttribute("userId");
+        Object sessionUserId = session.getAttribute("userId");
+        Long userId = null;
+        if (sessionUserId instanceof Number) {
+            userId = ((Number) sessionUserId).longValue();
+        } else if (sessionUserId != null) {
+            userId = Long.valueOf(sessionUserId.toString());
+        }
+
+        // Fallback Logic
+        if (userId == null) {
+            com.hibernate.entity.User sessionUser = (com.hibernate.entity.User) session.getAttribute("user");
+            if (sessionUser == null) {
+                sessionUser = (com.hibernate.entity.User) session.getAttribute("currentUser");
+            }
+            if (sessionUser != null) {
+                userId = Long.valueOf(sessionUser.getId());
+                session.setAttribute("userId", userId);
+            }
+        }
+
         Map<String, Object> response = new HashMap<>();
-        
+
         if (userId == null) {
             response.put("status", "error");
             response.put("message", "Login ဝင်ရန်လိုအပ်ပါသည်။");
@@ -75,19 +94,40 @@ public class CommentController {
 
         response.put("status", "success");
         response.put("message", "Comment added successfully");
+        response.put("commentId", comment.getId());
+        response.put("username", dbUser.getUsername());
+        response.put("content", comment.getContent());
+        response.put("createdAt", comment.getCreatedAt() != null ? comment.getCreatedAt().toString() : "just now");
+        response.put("isOwner", true);
         return ResponseEntity.ok(response);
     }
-    
+
     @PostMapping("/reply")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addReply(@RequestParam("postId") Integer postId,
-                                                        @RequestParam(value = "parentId", required = false) Integer parentId, 
-                                                        @RequestParam("content") String replyContent, 
+                                                        @RequestParam(value = "parentId", required = false) Integer parentId,
+                                                        @RequestParam("content") String replyContent,
                                                         HttpSession session) {
 
-        Long userId = (Long) session.getAttribute("userId");
+        Object sessionUserId = session.getAttribute("userId");
+        Long userId = null;
+        if (sessionUserId instanceof Number) {
+            userId = ((Number) sessionUserId).longValue();
+        } else if (sessionUserId != null) {
+            userId = Long.valueOf(sessionUserId.toString());
+        }
+        if (userId == null) {
+            com.hibernate.entity.User sessionUser = (com.hibernate.entity.User) session.getAttribute("user");
+            if (sessionUser == null) {
+                sessionUser = (com.hibernate.entity.User) session.getAttribute("currentUser");
+            }
+            if (sessionUser != null) {
+                userId = Long.valueOf(sessionUser.getId());
+                session.setAttribute("userId", userId);
+            }
+        }
         Map<String, Object> response = new HashMap<>();
-        
+
         if (userId == null) {
             response.put("status", "error");
             response.put("message", "Login ဝင်ရန်လိုအပ်ပါသည်။");
@@ -106,10 +146,10 @@ public class CommentController {
             response.put("message", "Post မတွေ့ပါ။");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-        
+
         Comment parent = null;
         if (parentId != null) {
-            parent = commentRepository.findById(parentId).orElse(null); 
+            parent = commentRepository.findById(parentId).orElse(null);
         }
 
         User dbUser = userRepository.findById(userId).orElse(null);
@@ -120,30 +160,43 @@ public class CommentController {
         }
 
         Comment reply = new Comment();
-        reply.setContent(replyContent); 
+        reply.setContent(replyContent);
         reply.setPost(post);
-        reply.setUser(dbUser); 
-        reply.setParent(parent); 
+        reply.setUser(dbUser);
+        reply.setParent(parent);
 
         commentService.saveComment(reply);
 
         response.put("status", "success");
         response.put("message", "Reply added successfully");
+        response.put("replyId", reply.getId());
+        response.put("parentId", parentId);
+        response.put("parentType", parentId != null ? "c" : null);
+        response.put("username", dbUser.getUsername());
+        response.put("content", reply.getContent());
+        response.put("createdAt", reply.getCreatedAt() != null ? reply.getCreatedAt().toString() : "just now");
+        response.put("isOwner", true);
         return ResponseEntity.ok(response);
     }
-    
+
     @PostMapping("/delete/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteComment(@PathVariable("id") Integer id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Object sessionUserId = session.getAttribute("userId");
+        Long userId = null;
+        if (sessionUserId instanceof Number) {
+            userId = ((Number) sessionUserId).longValue();
+        } else if (sessionUserId != null) {
+            userId = Long.valueOf(sessionUserId.toString());
+        }
         Map<String, Object> response = new HashMap<>();
-        
+
         if (userId == null) {
             response.put("status", "error");
             response.put("message", "Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
-        
+
         Comment comment = commentRepository.findById(id).orElse(null);
         if (comment != null && comment.getUser().getId().equals(userId)) {
             commentService.deleteComment(id);
@@ -151,39 +204,45 @@ public class CommentController {
             response.put("message", "Deleted successfully");
             return ResponseEntity.ok(response);
         }
-        
+
         response.put("status", "error");
         response.put("message", "Forbidden");
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
-   
+
     @PostMapping("/report/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> reportComment(@PathVariable("id") Integer id, 
-                                                            @RequestParam("reason") String reason, 
+    public ResponseEntity<Map<String, Object>> reportComment(@PathVariable("id") Integer id,
+                                                            @RequestParam("reason") String reason,
                                                             HttpSession session) {
-        
-        Long userId = (Long) session.getAttribute("userId");
+
+        Object sessionUserId = session.getAttribute("userId");
+        Long userId = null;
+        if (sessionUserId instanceof Number) {
+            userId = ((Number) sessionUserId).longValue();
+        } else if (sessionUserId != null) {
+            userId = Long.valueOf(sessionUserId.toString());
+        }
         Map<String, Object> response = new HashMap<>();
-        
+
         if (userId == null) {
             response.put("status", "error");
             response.put("message", "Login ဝင်ရန်လိုအပ်ပါသည်။");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
-        
+
         Comment comment = commentRepository.findById(id).orElse(null);
         if (comment != null) {
             comment.setIsReported(true);
-            comment.setReportReason(reason); 
-            
-            commentService.saveComment(comment); 
-            
+            comment.setReportReason(reason);
+
+            commentService.saveComment(comment);
+
             response.put("status", "success");
             response.put("message", "Comment reported successfully");
             return ResponseEntity.ok(response);
         }
-        
+
         response.put("status", "error");
         response.put("message", "Comment မတွေ့ပါ။");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

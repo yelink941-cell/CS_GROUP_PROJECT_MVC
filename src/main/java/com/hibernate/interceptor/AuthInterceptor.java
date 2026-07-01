@@ -9,92 +9,88 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 public class AuthInterceptor implements HandlerInterceptor {
 
-	@Override
-	public boolean preHandle(
-	        HttpServletRequest request,
-	        HttpServletResponse response,
-	        Object handler) throws Exception {
-	    
-	    // 🟢 ၁။ ပထမဆုံး Session ရှိ/မရှိကို အရင်စစ်ဆေးပြီး User data ကို Normalize လုပ်ပေးပါ (API အတွက်ပါ Session ဖမ်းမိစေရန်)
-	    HttpSession session = request.getSession(false);
-	    User user = normalizeSession(session);
-	    
-	    // 🟢 ၂။ ထို့နောက်မှ လမ်းကြောင်းများကို စစ်ဆေးပါ
-	    String requestPath = getPath(request);
-	    String requestedWith = request.getHeader("X-Requested-With");
-	    
-	    if ("/login".equals(requestPath) || 
-	        requestPath.startsWith("/resources/") || 
-	        "XMLHttpRequest".equals(requestedWith) ||
-	        requestPath.startsWith("/api/") || 
-	        requestPath.startsWith("/comments/") || 
-	        requestPath.startsWith("/user/posts/like") || 
-	        requestPath.startsWith("/user/posts/comment/add")) {
-	        
-	        return true; 
-	    }
-	    
-	    String path = getPath(request);
+    @Override
+    public boolean preHandle(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Object handler) throws Exception {
+    
+    	String requestedWith = request.getHeader("X-Requested-With");
+        if ("XMLHttpRequest".equals(requestedWith)) {
+            return true; 
+        }
+        HttpSession session = request.getSession(false);
+        User user = normalizeSession(session);
+        
+        String requestPath = request.getServletPath();
 
-	    if (isAdminPath(path)) {
-	        if (user == null) {
-	            redirect(request, response, "/login");
-	            return false;
-	        }
+        if ("/login".equals(requestPath) || 
+            "/register".equals(requestPath) ||
+            requestPath.startsWith("/posts/") ||
+            requestPath.startsWith("/resources/") ||
+            requestPath.startsWith("/css/") ||
+            requestPath.startsWith("/js/") ||
+            requestPath.startsWith("/images/")) {
+            
+            return true; 
+        }
+        
+        // Web page များအတွက်သာ အောက်ပါအတိုင်း စစ်ဆေးပါ
+        if (isAdminPath(requestPath)) {
+            if (user == null) {
+                redirect(request, response, "/login");
+                return false;
+            }
+            if (!Role.ADMIN.equals(user.getRole())) {
+                redirect(request, response, "/");
+                return false;
+            }
+        }
 
-	        if (!Role.ADMIN.equals(user.getRole())) {
-	            redirect(request, response, "/");
-	            return false;
-	        }
-	    }
+        if (isUserPath(requestPath)) {
+            if (user == null) {
+                redirect(request, response, "/login");
+                return false;
+            }
+            if (Role.ADMIN.equals(user.getRole())) {
+                redirect(request, response, "/admin-dashboard");
+                return false;
+            }
+        }
 
-	    if (isUserPath(path)) {
-	        if (user == null) {
-	            redirect(request, response, "/login");
-	            return false;
-	        }
-
-	        if (Role.ADMIN.equals(user.getRole())) {
-	            redirect(request, response, "/admin-dashboard");
-	            return false;
-	        }
-	    }
-
-	    return true;
-	}
+        return true;
+    }
 
     private User normalizeSession(HttpSession session) {
         if (session == null) {
             return null;
         }
 
+        // Session ထဲမှ user အချက်အလက်ကို သေချာပြန်ထုတ်ယူပါ
         User user = (User) session.getAttribute("user");
 
         if (user == null) {
             user = (User) session.getAttribute("currentUser");
         }
 
-        if (user != null) {
-            session.setAttribute("user", user);
-            session.setAttribute("currentUser", user);
-            session.setAttribute("userId", user.getId());
-            session.setAttribute("role", user.getRole().name());
-        }
-
         return user;
     }
 
-    private String getPath(HttpServletRequest request) {
-        return request.getRequestURI().substring(request.getContextPath().length());
-    }
-
     private boolean isAdminPath(String path) {
-        return "/admin-dashboard".equals(path) || path.startsWith("/admin/");
+        boolean isApi = path.contains("/api/") || path.contains("/rest/");
+        return ("/admin-dashboard".equals(path) || path.startsWith("/admin/")) && !isApi;
     }
 
     private boolean isUserPath(String path) {
-        // 🟢 API နှင့် AJAX လမ်းကြောင်းများကို လုံးဝဖယ်ရှားပြီး User ၏ Web Page လမ်းကြောင်းများကိုသာ စစ်ဆေးရန်
-        return path.startsWith("/user/");
+        // Web page လမ်းကြောင်းများသာဖြစ်ပြီး API လမ်းကြောင်းများနှင့် မသက်ဆိုင်ကြောင်း အတိအကျ သတ်မှတ်ပေးခြင်း
+        boolean isApiOrAction = path.startsWith("/api/") || 
+                                path.startsWith("/comments/") || 
+                                path.contains("/like") || 
+                                path.contains("/add") || 
+                                path.contains("/bookmark") || 
+                                path.contains("/rating");
+                                
+        return path.startsWith("/user/") && !isApiOrAction;
     }
 
     private void redirect(

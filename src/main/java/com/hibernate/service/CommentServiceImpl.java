@@ -45,15 +45,7 @@ public class CommentServiceImpl implements CommentService {
     private void initializeReplies(Comment comment) {
         if (comment.getReplies() != null) {
             Hibernate.initialize(comment.getReplies());
-            
-            // Reply များကိုပါ Active ဖြစ်သော replies များကိုသာ Filter စစ်ထုတ်ပြီး initialize လုပ်ပေးခြင်း
-            List<Comment> activeReplies = comment.getReplies().stream()
-                    .filter(r -> r.getDeletedAt() == null)
-                    .collect(Collectors.toList());
-            
-            comment.setReplies(activeReplies);
-
-            for (Comment reply : activeReplies) {
+            for (Comment reply : comment.getReplies()) {
                 initializeReplies(reply);
             }
         }

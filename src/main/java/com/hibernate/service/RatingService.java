@@ -5,4 +5,5 @@ public interface RatingService {
     Double getAverageRating(Integer postId);
     long getRatingCount(Integer postId);
     boolean hasUserRated(Integer postId, Long userId);
+    Integer getUserRating(Integer postId, Long userId);
 }

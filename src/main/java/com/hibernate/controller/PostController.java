@@ -275,8 +275,7 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
         
-        postLikeService.toggleLike(postId, userId); 
-        boolean isLikedNow = postLikeService.hasUserLiked(postId, userId); 
+        boolean isLikedNow = postLikeService.toggleLike(postId, userId);
         long totalLikes = postLikeService.getLikeCount(postId);
         
         response.put("status", "success");

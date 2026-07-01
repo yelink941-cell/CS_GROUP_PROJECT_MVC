@@ -2,15 +2,18 @@ package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
 import com.hibernate.entity.PostFile;
-import com.hibernate.service.CollectionService; // 🎯 Added import for CollectionService
+import com.hibernate.service.BookmarkService;
+import com.hibernate.service.CollectionService;
+import com.hibernate.service.CommentService;
 import com.hibernate.service.PostContentService;
 import com.hibernate.service.PostFileService;
+import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
+import com.hibernate.service.RatingService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import javax.servlet.http.HttpSession; // 🎯 Session သုံးရန် Import ထည့်ပေးထားသည်
+import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -31,11 +34,24 @@ public class HomePageController {
     private final PostService postService;
     private final PostContentService postContentService;
     private final PostFileService postFileService;
-    private final CollectionService collectionService; // 🎯 Injected CollectionService via Lombok
+    private final CollectionService collectionService;
+    private final CommentService commentService;
+    private final PostLikeService postLikeService;
+    private final BookmarkService bookmarkService;
+    private final RatingService ratingService;
 
     @GetMapping("/")
-    public String homePage(Model model) {
+    public String homePage(Model model, HttpSession session) {
         model.addAttribute("posts", postService.getPublishedPublicPosts());
+
+        Object currentUser = session.getAttribute("currentUser");
+        if (currentUser == null) {
+            currentUser = session.getAttribute("user");
+        }
+        if (currentUser != null) {
+            model.addAttribute("currentUser", currentUser);
+            model.addAttribute("user", currentUser);
+        }
         return "index";
     }
 
@@ -51,15 +67,44 @@ public class HomePageController {
                     model.addAttribute("post", post);
                     model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
                     model.addAttribute("postFiles", postFileService.getFilesByPostId(post.getId()));
-                    
-                    // 🎯 ဤလိုင်းလေးကို အသစ်တိုးပေးလိုက်ပါဗျာ (JSP ထဲ တိုက်ရိုက်သယ်ယူနိုင်ရန်)
-                    model.addAttribute("currentPostSlug", slug); 
-                    
+
+                    model.addAttribute("currentPostSlug", slug);
+
+                    // 🟢 userId ကို session ထဲကနေ ထုတ်ယူပြီး fallback လုပ်ပေးခြင်း
                     Long userId = (Long) session.getAttribute("userId");
-                    if (userId != null) {
-                        model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
+
+                    if (userId == null) {
+                        com.hibernate.entity.User sessionUser = (com.hibernate.entity.User) session.getAttribute("user");
+                        if (sessionUser == null) {
+                            sessionUser = (com.hibernate.entity.User) session.getAttribute("currentUser");
+                        }
+
+                        if (sessionUser != null) {
+                            userId = Long.valueOf(sessionUser.getId());
+                            session.setAttribute("userId", userId);
+                        }
                     }
-                    
+
+                    // 🟢 Comments (parent + nested replies) - comment box ပေါ်ရန် လိုအပ်ပါသည်
+                    model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
+                    model.addAttribute("totalComments", commentService.getTotalActiveComments(post.getId()));
+
+                    // 🟢 Like count
+                    model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
+
+                    // 🟢 Rating data
+                    model.addAttribute("averageRating", ratingService.getAverageRating(post.getId()));
+                    model.addAttribute("totalRatings", ratingService.getRatingCount(post.getId()));
+
+                    if (userId != null) {
+                        // 🟢 Logged-in user ၏ state များ - comment box / rating stars / button color အတွက်
+                        model.addAttribute("userLoggedIn", userId);
+                        model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
+                        model.addAttribute("hasUserLiked", postLikeService.hasUserLiked(post.getId(), userId));
+                        model.addAttribute("hasUserBookmarked", bookmarkService.hasUserBookmarked(userId, post.getId()));
+                        model.addAttribute("userRating", ratingService.getUserRating(post.getId(), userId));
+                    }
+
                     return "public/post/details";
                 })
                 .orElse("redirect:/posts/public");

@@ -270,9 +270,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void toggleLike(Integer postId, Long userId) {
-        // 🟢 PostLikeService ထဲရှိ toggleLike(Integer, Long) သို့ တိုက်ရိုက် လွှဲပေးခြင်း
-        postLikeService.toggleLike(postId, userId);
+    public boolean toggleLike(Integer postId, Long userId) {
+        return postLikeService.toggleLike(postId, userId);
     }
 
     @Override

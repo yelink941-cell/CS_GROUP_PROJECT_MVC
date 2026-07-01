@@ -89,12 +89,12 @@ public class UserController {
         User loggedInUser = userService.authenticateUser(email, password);
         
         if (loggedInUser != null) {
-            // 🟢 userId အား Long Object (သို့) primitive long ဖြင့် အတိအကျ Cast/Box လုပ်၍ သိမ်းဆည်းပေးခြင်း
-            Long userIdLong = Long.valueOf(loggedInUser.getId()); 
-            
-            session.setAttribute("user", loggedInUser);          // ➔ Interceptor အတွက်
-            session.setAttribute("currentUser", loggedInUser); // ➔ Admin Dashboard အတွက်
-            session.setAttribute("userId", userIdLong);        // ➔ Post/Comment/Like API များအတွက် (Long type)
+        	Long userIdLong = Long.valueOf(loggedInUser.getId()); 
+
+        	session.setAttribute("user", loggedInUser);          
+        	session.setAttribute("currentUser", loggedInUser); 
+        	session.setAttribute("userId", userIdLong); // 🟢 ဤနေရာတွင် variable ကို ပြန်လည် အသုံးပြုပေးခြင်း
+        	session.setAttribute("role", loggedInUser.getRole().name());
             
             if (Role.ADMIN.equals(loggedInUser.getRole())) {
                 return "redirect:/admin-dashboard";
@@ -109,7 +109,14 @@ public class UserController {
 
     @GetMapping("/admin-dashboard")
     public String showAdminDashboard(HttpSession session) {
-        User adminUser = (User) session.getAttribute("currentUser");
+        // 🟢 ပြင်ဆင်ချက်- currentUser အစား ပိုမိုကျယ်ပြန့်သော user ကိုပါ ထည့်သွင်းစစ်ဆေးပေးခြင်း 
+        // (Interceptor သို့မဟုတ် Intercept အချို့ကြောင့် session key တစ်ခုခု ပြတ်တောက်သွားလျှင်ပင် အခြားတစ်ခုဖြင့် ဆက်ဖမ်းနိုင်ရန်)
+        User adminUser = (User) session.getAttribute("user");
+        
+        if (adminUser == null) {
+            adminUser = (User) session.getAttribute("currentUser");
+        }
+        
         if (adminUser == null || !Role.ADMIN.equals(adminUser.getRole())) {
             return "redirect:/login"; 
         }
