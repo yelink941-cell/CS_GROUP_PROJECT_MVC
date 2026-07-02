@@ -30,7 +30,10 @@ public class ConversationParticipant {
     @Enumerated(EnumType.STRING)
     @Column(length = 50, nullable = false)
     private ParticipantRole role = ParticipantRole.MEMBER;
-
+    
     @Column(name = "joined_at", updatable = false, nullable = false)
     private LocalDateTime joinedAt = LocalDateTime.now();
+
+    @Column(name = "hidden_at", columnDefinition = "DATETIME(6)")
+    private LocalDateTime hiddenAt;
 }

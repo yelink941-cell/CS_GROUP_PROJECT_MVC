@@ -17,8 +17,8 @@
             --accent-gray: #f5f6f6;
             --text-main: #111111;
             --text-muted: #707579; /* Telegram Style Secondary Muted */
-            --bubble-me: #111111;
-            --bubble-me-text: #ffffff;
+          --bubble-me: #ffffff; /* အဖြူရောင် ပြောင်းလိုက်သည် */
+--bubble-me-text: #111111; /* စာလုံးကို အနက်ရောင် ပြောင်းလိုက်သည် */
             --bubble-other: #f5f6f6;
             --bubble-other-text: #111111;
             --success-color: #00c853;
@@ -105,6 +105,89 @@
             padding: 2px 6px; 
             border-radius: 6px; 
             font-weight: 600;
+        }
+
+        .header-menu-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header-menu-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: #ffffff;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 1px;
+            transition: background 0.2s;
+        }
+
+        .header-menu-btn:hover,
+        .header-menu-btn.active {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .header-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 180px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 6px 0;
+            z-index: 120;
+            animation: menuPop 0.15s ease-out;
+            overflow: hidden;
+        }
+
+        .header-dropdown.active {
+            display: block;
+        }
+
+        .header-dropdown button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 10px 18px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--error-color);
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .header-dropdown button:hover {
+            background: var(--accent-gray);
+        }
+
+        .header-dropdown .menu-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .header-dropdown-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 119;
+            background: transparent;
+        }
+
+        .header-dropdown-backdrop.active {
+            display: block;
         }
 
         /* Circular Clean Avatar */
@@ -199,6 +282,8 @@
             position: relative;
             font-size: 14px;
             line-height: 1.5;
+            cursor: pointer;
+            user-select: none;
         }
 
         .bubble.me { 
@@ -223,8 +308,7 @@
             font-weight: 600;
         }
 
-        .bubble.me .bubble-meta { color: rgba(255, 255, 255, 0.7); }
-        .bubble.other .bubble-meta { color: var(--text-muted); }
+.bubble.me .bubble-meta { color: var(--accent-black); }        .bubble.other .bubble-meta { color: var(--text-muted); }
 
         .bubble-time {
             font-size: 9px;
@@ -236,8 +320,115 @@
             margin-top: 4px;
         }
 
-        .bubble.me .bubble-time { color: rgba(255, 255, 255, 0.6); }
-        .bubble.other .bubble-time { color: var(--text-muted); }
+.bubble.me .bubble-time { color: var(--text-muted); }        .bubble.other .bubble-time { color: var(--text-muted); }
+
+        .reply-preview {
+            border-left: 3px solid var(--accent-black);
+            padding: 4px 8px;
+            margin-bottom: 6px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .reply-bar {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--accent-gray);
+            border-top: 1px solid var(--border-clean);
+            font-size: 12px;
+        }
+
+        .reply-bar.active { display: flex; }
+
+        .reply-bar-text {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-muted);
+        }
+
+        .msg-context-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: transparent;
+        }
+        .msg-context-backdrop.active { display: block; }
+
+        .msg-context-menu {
+            display: none;
+            position: fixed;
+            z-index: 201;
+            min-width: 180px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 6px 0;
+            animation: menuPop 0.15s ease-out;
+            overflow: hidden;
+        }
+        .msg-context-menu.active { display: block; }
+
+        .msg-context-menu button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 10px 18px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: left;
+        }
+        .msg-context-menu button:hover {
+            background: var(--accent-gray);
+        }
+        .msg-context-menu button.danger {
+            color: var(--error-color);
+        }
+        .msg-context-menu .menu-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+            opacity: 0.85;
+        }
+        .msg-context-menu .menu-divider {
+            height: 1px;
+            background: var(--border-clean);
+            margin: 4px 0;
+        }
+
+        @keyframes menuPop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .bubble-media-container video {
+            cursor: default;
+        }
+
+        .read-receipt {
+            font-size: 10px;
+            margin-left: 4px;
+            color: var(--success-color);
+        }
+
+        .edited-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-left: 4px;
+        }
 
         /* Clean Minimalist Input Area */
         .footer { 
@@ -436,7 +627,7 @@
                 <c:choose>
                     <c:when test="${isGroup}">📁 ${conversationTitle}</c:when>
                     <c:otherwise>
-                        ${conversationTitle}
+                        <c:out value="${conversationTitle}" />
                         <c:if test="${partnerRole == 'ADMIN'}"><span class="badge-admin">Admin</span></c:if>
                     </c:otherwise>
                 </c:choose>
@@ -444,9 +635,20 @@
             <div class="status-container">
                 <span id="statusDot" class="status-dot connecting"></span>
                 <span id="statusText" class="status-text">Connecting...</span>
+                <span id="typingIndicator" class="status-text" style="color: var(--success-color); font-weight: 500; margin-left: 4px;"></span>
+            </div>
+        </div>
+        <div class="header-menu-wrap">
+            <button type="button" id="btnHeaderMenu" class="header-menu-btn" title="More options" aria-label="More options">&#8942;</button>
+            <div id="headerDropdown" class="header-dropdown">
+                <button type="button" id="btnDeleteChat">
+                    <span class="menu-icon">🗑</span>
+                    Delete chat
+                </button>
             </div>
         </div>
     </div>
+    <div id="headerDropdownBackdrop" class="header-dropdown-backdrop"></div>
 
     <div id="chatBox"></div>
 
@@ -456,6 +658,12 @@
         </div>
 
         <div id="attachmentPreview" class="attachment-preview-container"></div>
+
+        <div id="replyBar" class="reply-bar">
+            <span>↩ Reply:</span>
+            <span id="replyBarText" class="reply-bar-text"></span>
+            <button type="button" id="btnCancelReply" style="background:transparent;border:none;cursor:pointer;">✕</button>
+        </div>
 
         <div class="input-row">
             <input type="file" id="mediaFile" accept="image/*,video/*" multiple>
@@ -470,20 +678,33 @@
     <img class="lightbox-content" id="lightboxTargetImg" alt="Enlarged Chat Frame">
 </div>
 <button type="button" id="btnScrollBottom" class="scroll-bottom-btn">↓</button>
+<div id="msgContextBackdrop" class="msg-context-backdrop"></div>
+<div id="msgContextMenu" class="msg-context-menu"></div>
 
 <script>
     const ctx = '${ctx}';
     const chatId = '${conversationId}';
     const myUserId = '${currentUser.id}';
+    const canModerate = ${canModerate};
+    const partnerDisplayName = '<c:out value="${conversationTitle}" />';
     
     let socket = null;
     let isReconnecting = false;
     let selectedFiles = [];
+    let replyToMessage = null;
+    let editingMessageId = null;
+    let contextMenuMessage = null;
 
     $(document).ready(function() {
+        // DEBUG: စစ်ဆေးရန် - chatId နဲ့ myUserId ကို console တွင် ကြည့်ပါ
+        console.log('[DEBUG] chatId:', chatId, '| myUserId:', myUserId, '| ctx:', ctx);
+        if (!chatId || chatId === '' || chatId === 'null') {
+            $('#chatBox').html('<div style="padding:20px;color:red;">❌ ERROR: conversationId မရှိပါ (chatId=' + chatId + ')</div>');
+            return;
+        }
         loadChatHistory();
         connectWebSocket();
-
+        
         $('#btnSend').click(handleSend);
         $('#btnAttach').click(function() { $('#mediaFile').click(); });
         $('#mediaFile').change(handleFileSelect);
@@ -491,6 +712,47 @@
         $('#messageText').keypress(function(e) {
             if (e.which === 13) handleSend();
         });
+     // စာရိုက်ရပ်နားမှု အချိန်တွက်ရန် variable
+        let typingTimeout;
+
+        $('#messageText').on('input', function() {
+            // WebSocket အလုပ်လုပ်နေမှသာ ပို့မည်
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                // စာရိုက်နေကြောင်း Server ထံ ပို့ခြင်း
+                socket.send(JSON.stringify({
+                    type: 'user_typing',
+                    conversationId: chatId,
+                    senderId: myUserId
+                }));
+            }
+
+            // အရင်ရှိနေတဲ့ Timer ကို ဖျက်ထုတ်ပါ
+            clearTimeout(typingTimeout);
+
+            // ၁.၅ စက္ကန့်အတွင်း ဘာစာမှ ထပ်မရိုက်တော့လျှင် စာရိုက်ရပ်သွားပြီဟု သတ်မှတ်မည်
+            typingTimeout = setTimeout(function() {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({
+                        type: 'user_stopped_typing',
+                        conversationId: chatId,
+                        senderId: myUserId
+                    }));
+                }
+            }, 1500);
+        });
+
+        // စာရိုက်တဲ့ Textbox ထဲကနေ မောက်စ် (Mouse pointer) အပြင်ထုတ်လိုက်ရင် ချက်ချင်း ပျောက်စေရန်
+        $('#messageText').blur(function() {
+            clearTimeout(typingTimeout);
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'user_stopped_typing',
+                    conversationId: chatId,
+                    senderId: myUserId
+                }));
+            }
+        });
+        $('#btnCancelReply').click(cancelReply);
      // User က အပေါ်ကို Scroll ဆွဲလိုက်ရင် Floating Button ပြပေးရန်
         $('#chatBox').scroll(function() {
             if ($(this).scrollTop() + $(this).innerHeight() < $(this)[0].scrollHeight - 100) {
@@ -516,6 +778,48 @@
         $('#imageLightbox, .lightbox-close').click(function() {
             $('#imageLightbox').hide();
             $('#lightboxTargetImg').attr('src', ''); 
+        });
+
+        $(document).on('click', '.bubble', function(e) {
+            if ($(e.target).closest('.bubble-media-container img, .bubble-media-container video').length) return;
+            if ($(e.target).is('a, button, input, video')) return;
+            var row = $(this).closest('.message-row');
+            var msg = row.data('msg');
+            if (msg) openMessageContextMenu(msg, this);
+        });
+
+        $('#msgContextBackdrop').click(closeMessageContextMenu);
+
+        $('#msgContextMenu').on('click', 'button', function(e) {
+            e.stopPropagation();
+            var action = $(this).data('action');
+            var msg = contextMenuMessage;
+            closeMessageContextMenu();
+            if (!msg) return;
+            if (action === 'reply') startReply(msg);
+            else if (action === 'edit') startEdit(msg);
+            else if (action === 'report') reportMessage(msg);
+            else if (action === 'delete') deleteMessage(msg);
+        });
+
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape') {
+                closeMessageContextMenu();
+                closeHeaderMenu();
+            }
+        });
+
+        $('#btnHeaderMenu').click(function(e) {
+            e.stopPropagation();
+            toggleHeaderMenu();
+        });
+
+        $('#headerDropdownBackdrop').click(closeHeaderMenu);
+
+        $('#btnDeleteChat').click(function(e) {
+            e.stopPropagation();
+            closeHeaderMenu();
+            deleteChat();
         });
 
     });
@@ -562,11 +866,56 @@
                 const data = JSON.parse(event.data);
                 if (data.type === 'error') return;
 
-                const msgChatId = String(data.conversationId);
+                // === စာရိုက်ခြင်းဆိုင်ရာ Event များ ဖမ်းရန် ===
+                if (data.type === 'user_typing') {
+                    if (data.payload && String(data.payload.conversationId) === String(chatId) && String(data.payload.senderId) !== String(myUserId)) {
+                        const senderName = data.payload.senderName || 'User';
+                        $('#typingIndicator').text(senderName + ' is typing...');
+                    }
+                    return;
+                }
+
+                if (data.type === 'user_stopped_typing') {
+                    if (data.payload && String(data.payload.conversationId) === String(chatId)) {
+                        $('#typingIndicator').text('');
+                    }
+                    return;
+                }
+                // ===========================================
+
+                if (data.type === 'message_edited' && data.payload) {
+                    updateMessageDom(data.payload);
+                    return;
+                }
+
+                if (data.type === 'message_deleted' && data.payload) {
+                    if (String(data.payload.conversationId) === String(chatId)) {
+                        removeMessageDom(data.payload.messageId);
+                    }
+                    return;
+                }
+
+                if (data.type === 'conversation_cleared' && data.payload) {
+                    if (String(data.payload.conversationId) === String(chatId)) {
+                        clearChatBox();
+                    }
+                    return;
+                }
+
+                if (data.type === 'messages_read' && data.payload) {
+                    applyReadReceipt(data.payload);
+                    return;
+                }
+
+                const msg = data.type === 'message' ? data.payload : data;
+                if (!msg || !msg.conversationId) return;
+
+                const msgChatId = String(msg.conversationId);
                 if (msgChatId === String(chatId)) {
-                    if ($('#msg-' + data.id).length === 0) {
-                        appendMessage(data);
+                    if ($('#msg-' + msg.id).length === 0) {
+                        appendMessage(msg);
                         scrollToBottom();
+                        markReadUpTo(msg.id);
                     }
                 }
             } catch (e) {
@@ -589,54 +938,266 @@
     }
 
     function loadChatHistory() {
+        console.log('[DEBUG] loadChatHistory() called, URL:', ctx + '/api/chat/history?conversationId=' + chatId);
         $.ajax({
             url: ctx + '/api/chat/history',
             type: 'GET',
             data: { conversationId: chatId },
             success: function(messages) {
+                console.log('[DEBUG] history loaded:', messages.length, 'messages', messages);
                 $('#chatBox').empty();
-                messages.reverse().forEach(appendMessage);
-                scrollToBottom();
+                if (messages.length === 0) {
+/*                     $('#chatBox').html('<div style="text-align:center;padding:40px;color:var(--text-muted);">စာမပေးပို့ရသေးပါ။ ပထမဆုံး message ပေးပို့ပါ 👋</div>');
+ */
+                	$('#chatBox').html(
+                		    '<div id="emptyChat" style="text-align:center;padding:40px;color:var(--text-muted);">စာမပေးပို့ရသေးပါ။ ပထမဆုံး message ပေးပို့ပါ 👋</div>'
+                		);
+                
+                } else {
+                    messages.reverse().forEach(appendMessage);
+                    scrollToBottom();
+                    markReadUpTo(messages[messages.length - 1].id);
+                }
             },
             error: function(xhr) {
-                console.error('Failed to load history:', xhr.responseText);
+                console.error('[DEBUG] history error:', xhr.status, xhr.responseText);
+                $('#chatBox').html('<div style="padding:20px;color:red;">❌ Messages load မအောင်မြင်ပါ (' + xhr.status + '): ' + xhr.responseText + '</div>');
             }
         });
     }
 
-    function handleSend() {
+     function handleSend() {
         const text = $('#messageText').val().trim();
+        if (editingMessageId) {
+            submitEdit(text);
+            return;
+        }
         if (selectedFiles.length > 0) {
             sendMedia(text);
             return;
         }
         if (!text) return;
 
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            const payload = { conversationId: Number(chatId), text: text };
-            socket.send(JSON.stringify(payload));
-            $('#messageText').val('');
-        } else {
-            sendTextFallback(text);
+        // Always use REST fallback for reliable message delivery and display
+        sendTextFallback(text);
+    } 
+    
+    function submitEdit(text) {
+        if (!text) return;
+        $.ajax({
+            url: ctx + '/api/chat/messages/' + editingMessageId,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ text: text }),
+            success: function(updated) {
+                updateMessageDom(updated);
+                cancelEdit();
+            },
+            error: function(xhr) {
+                alert('Edit failed: ' + xhr.responseText);
+            }
+        });
+    }
+
+    function startEdit(msg) {
+        editingMessageId = msg.id;
+        replyToMessage = null;
+        $('#replyBar').removeClass('active');
+        $('#messageText').val(msg.messageText || '').focus();
+        $('#btnSend').attr('title', 'Save edit');
+    }
+
+    function cancelEdit() {
+        editingMessageId = null;
+        $('#messageText').val('');
+        $('#btnSend').attr('title', 'Send');
+    }
+
+    function startReply(msg) {
+        editingMessageId = null;
+        replyToMessage = msg;
+        $('#replyBarText').text(msg.messageText || msg.parentMessagePreview || 'Message');
+        $('#replyBar').addClass('active');
+        $('#messageText').focus();
+    }
+
+    function cancelReply() {
+        replyToMessage = null;
+        $('#replyBar').removeClass('active');
+        $('#replyBarText').text('');
+    }
+
+    function markReadUpTo(messageId) {
+        $.ajax({
+            url: ctx + '/api/chat/messages/read',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ conversationId: Number(chatId), upToMessageId: messageId })
+        });
+    }
+
+    function applyReadReceipt(payload) {
+        if (!payload || String(payload.conversationId) !== String(chatId)) return;
+        $('[data-sender-me="true"]').each(function() {
+            const row = $(this);
+            if (Number(row.attr('data-msg-id')) <= Number(payload.upToMessageId)) {
+                row.find('.read-receipt').text('✓✓');
+            }
+        });
+    }
+
+    function updateMessageDom(msg) {
+        const row = $('#msg-' + msg.id);
+        if (!row.length) return;
+        row.data('msg', msg);
+        row.find('.bubble-text').text(msg.messageText || '');
+        row.find('.edited-label').toggle(!!msg.edited);
+        row.find('.reply-preview').remove();
+        if (msg.parentMessagePreview) {
+            row.find('.bubble').prepend('<div class="reply-preview">' + escapeHtml(msg.parentMessagePreview) + '</div>');
         }
     }
 
+    function escapeHtml(text) {
+        return $('<div/>').text(text).html();
+    }
+
+    function getMessageActions(msg) {
+        var isMe = String(msg.senderId) === String(myUserId);
+        var hasText = msg.messageText && msg.messageText.trim().length > 0;
+        var actions = [{ id: 'reply', label: 'Reply', icon: '↩' }];
+        if (isMe) {
+            if (hasText) actions.push({ id: 'edit', label: 'Edit', icon: '✎' });
+            actions.push({ id: 'delete', label: 'Delete', icon: '🗑', danger: true });
+        } else {
+            actions.push({ id: 'report', label: 'Report', icon: '⚠' });
+            if (canModerate) actions.push({ id: 'delete', label: 'Delete', icon: '🗑', danger: true });
+        }
+        return actions;
+    }
+
+    function openMessageContextMenu(msg, anchorEl) {
+        closeMessageContextMenu();
+        contextMenuMessage = msg;
+        var menu = $('#msgContextMenu');
+        menu.empty();
+
+        getMessageActions(msg).forEach(function(action, idx) {
+            if (action.danger && idx > 0) {
+                menu.append('<div class="menu-divider"></div>');
+            }
+            var btn = $('<button type="button"></button>')
+                .addClass(action.danger ? 'danger' : '')
+                .html('<span class="menu-icon">' + action.icon + '</span>' + action.label)
+                .data('action', action.id);
+            menu.append(btn);
+        });
+
+        menu.addClass('active');
+        var rect = anchorEl.getBoundingClientRect();
+        var menuW = menu.outerWidth();
+        var menuH = menu.outerHeight();
+        var top = rect.top - menuH - 8;
+        if (top < 8) top = rect.bottom + 8;
+        var left = String(msg.senderId) === String(myUserId) ? rect.right - menuW : rect.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - menuW - 8));
+        menu.css({ top: top + 'px', left: left + 'px' });
+        $('#msgContextBackdrop').addClass('active');
+    }
+
+    function closeMessageContextMenu() {
+        contextMenuMessage = null;
+        $('#msgContextMenu').removeClass('active').empty();
+        $('#msgContextBackdrop').removeClass('active');
+    }
+
+    function reportMessage(msg) {
+        $.ajax({
+            url: ctx + '/api/chat/messages/' + msg.id + '/report',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ reason: 'TEXT', description: 'Reported from chat UI' }),
+            success: function() { alert('Report submitted.'); },
+            error: function(xhr) { alert('Report failed: ' + xhr.responseText); }
+        });
+    }
+
+    function deleteMessage(msg) {
+        if (!confirm('ဒီမက်ဆေ့ချ်ကို ဖျက်မှာသေချာလား?')) return;
+        $.ajax({
+            url: ctx + '/api/chat/messages/' + msg.id,
+            type: 'DELETE',
+            success: function() { removeMessageDom(msg.id); },
+            error: function(xhr) { alert('Delete failed: ' + xhr.responseText); }
+        });
+    }
+
+    function removeMessageDom(messageId) {
+        $('#msg-' + messageId).fadeOut(200, function() { $(this).remove(); });
+    }
+
+    function clearChatBox() {
+        $('#chatBox').empty().html(
+            '<div style="text-align:center;padding:40px;color:var(--text-muted);">စကားမရှိသေးပါ။ ပထမဆုံး message ပေးပို့ပါ 👋</div>'
+        );
+    }
+
+    function toggleHeaderMenu() {
+        var isOpen = $('#headerDropdown').hasClass('active');
+        if (isOpen) {
+            closeHeaderMenu();
+        } else {
+            closeMessageContextMenu();
+            $('#headerDropdown').addClass('active');
+            $('#headerDropdownBackdrop').addClass('active');
+            $('#btnHeaderMenu').addClass('active');
+        }
+    }
+
+    function closeHeaderMenu() {
+        $('#headerDropdown').removeClass('active');
+        $('#headerDropdownBackdrop').removeClass('active');
+        $('#btnHeaderMenu').removeClass('active');
+    }
+
+    function deleteChat() {
+        if (!confirm('ဒီ chat ကို inbox မှ ဖျက်မှာသေချာလား?')) return;
+        $.ajax({
+            url: ctx + '/api/chat/conversations/' + chatId,
+            type: 'DELETE',
+            success: function() {
+                window.location.href = ctx + '/chat';
+            },
+            error: function(xhr) {
+                alert('Chat delete failed: ' + xhr.responseText);
+            }
+        });
+    }
+
     function sendTextFallback(text) {
+        console.log('[DEBUG] sendTextFallback(), chatId:', chatId, 'text:', text);
         $('#btnSend').prop('disabled', true);
         $.ajax({
             url: ctx + '/api/chat/messages',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ conversationId: Number(chatId), text: text }),
+            data: JSON.stringify({
+                conversationId: Number(chatId),
+                text: text,
+                parentMessageId: replyToMessage ? replyToMessage.id : null
+            }),
             success: function(newMsg) {
+                console.log('[DEBUG] message sent OK:', newMsg);
                 if ($('#msg-' + newMsg.id).length === 0) {
                     appendMessage(newMsg);
                     scrollToBottom();
                 }
                 $('#messageText').val('');
+                cancelReply();
             },
             error: function(xhr) {
-                alert('စာပို့ခြင်း မအောင်မြင်ပါ: ' + xhr.responseText);
+                console.error('[DEBUG] send error:', xhr.status, xhr.responseText);
+                alert('❌ Message ပို့မအောင်မြင်ပါ (' + xhr.status + '): ' + xhr.responseText);
             },
             complete: function() { $('#btnSend').prop('disabled', false); }
         });
@@ -725,7 +1286,7 @@
                 clearAttachmentPreview();
             },
             error: function(xhr) {
-                alert('Media ပို့ခြင်း မအောင်မြင်ပါ:\n' + xhr.responseText);
+                alert('Media sending is fail\n' + xhr.responseText);
             },
             complete: function() {
                 $('#btnAttach, #btnSend').prop('disabled', false);
@@ -735,11 +1296,13 @@
     }
 
     function appendMessage(msg) {
+    	$('#emptyChat').remove();
         var isMe = String(msg.senderId) === String(myUserId);
         var cls = isMe ? 'me' : 'other';
-        var label = isMe ? 'You' : 'User ' + msg.senderId;
+        var label = isMe ? 'You' : (msg.senderDisplayName || partnerDisplayName || 'User');
 
-        var row = $('<div class="message-row ' + cls + '" id="msg-' + msg.id + '"></div>');
+        var row = $('<div class="message-row ' + cls + '" id="msg-' + msg.id + '" data-msg-id="' + msg.id + '" data-sender-me="' + isMe + '"></div>');
+        row.data('msg', msg);
         
         if (!isMe) {
             var senderAvatar = $('<div class="avatar" style="width:30px; height:30px; font-size:10px; box-shadow:none; flex-shrink:0; border-radius:50%; margin-bottom: 2px;">' +
@@ -756,9 +1319,12 @@
         meta.html('<span>' + label + '</span>');
         bubble.append(meta);
 
+        if (msg.parentMessagePreview) {
+            bubble.append('<div class="reply-preview">' + escapeHtml(msg.parentMessagePreview) + '</div>');
+        }
+
         if (msg.messageText) {
-            var textDiv = $('<div></div>').text(msg.messageText);
-            bubble.append(textDiv);
+            bubble.append($('<div class="bubble-text"></div>').text(msg.messageText));
         }
 
         // Clean Collage Design for Media Files
@@ -798,7 +1364,16 @@
                 }
             } catch(e) { console.error(e); }
         }
-        bubble.append('<span class="bubble-time">' + timeStr + '</span>');
+        var timeHtml = '<span class="bubble-time">' + timeStr;
+        if (msg.edited) {
+            timeHtml += '<span class="edited-label">edited</span>';
+        }
+        if (isMe) {
+            var readMark = (msg.readCount && msg.readCount > 0) ? '✓✓' : '✓';
+            timeHtml += '<span class="read-receipt">' + readMark + '</span>';
+        }
+        timeHtml += '</span>';
+        bubble.append(timeHtml);
 
         row.append(bubble);
         $('#chatBox').append(row);

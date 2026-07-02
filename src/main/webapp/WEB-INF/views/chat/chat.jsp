@@ -80,13 +80,82 @@
         /* Group Avatar - အစိမ်းမှ Dark Charcoal အမည်းရောင်သန်းသော အရောင်သို့ ပြောင်းလဲထားသည် */
         .avatar.group { background: #333333; color: #fff; }
         
-        .chat-row { display: flex; align-items: center; gap: 14px; padding: 14px 20px; text-decoration: none; color: inherit; border-bottom: 1px solid #f0f2f5; }
+        .chat-row { display: flex; align-items: center; gap: 8px; padding: 0; border-bottom: 1px solid #f0f2f5; position: relative; }
         .chat-row:hover { background: #f5f6f6; }
+        .chat-row-link { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; padding: 14px 0 14px 20px; text-decoration: none; color: inherit; }
+        .chat-row-link:hover { background: transparent; }
+        .chat-row-side { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px; padding: 14px 12px 14px 0; flex-shrink: 0; }
+        .chat-menu-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: #667781;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: background 0.2s, opacity 0.2s;
+        }
+        .chat-row:hover .chat-menu-btn,
+        .chat-menu-btn.active { opacity: 1; }
+        .chat-menu-btn:hover,
+        .chat-menu-btn.active { background: rgba(0, 0, 0, 0.06); color: #111; }
         .chat-meta { flex: 1; min-width: 0; }
         .chat-meta-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
         .chat-name { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-time { font-size: 12px; color: #667781; white-space: nowrap; }
         .chat-preview { font-size: 14px; color: #667781; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+
+        .chat-list-menu-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 150;
+            background: transparent;
+        }
+        .chat-list-menu-backdrop.active { display: block; }
+
+        .chat-list-menu {
+            display: none;
+            position: fixed;
+            z-index: 151;
+            min-width: 180px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 6px 0;
+            animation: menuPop 0.15s ease-out;
+            overflow: hidden;
+        }
+        .chat-list-menu.active { display: block; }
+        .chat-list-menu button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 10px 18px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-family: inherit;
+            color: #111;
+            cursor: pointer;
+            text-align: left;
+        }
+        .chat-list-menu button:hover { background: #f5f6f6; }
+        .chat-list-menu button.danger { color: #ef4444; }
+        .chat-list-menu .menu-icon { width: 20px; text-align: center; font-size: 15px; }
+        .chat-list-menu .menu-divider { height: 1px; background: #f0f2f5; margin: 4px 0; }
+
+        @keyframes menuPop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
         
         /* Badges - User Badge ကိုလည်း အမည်းရောင်သို့ ပြောင်းလဲထားသည် */
         .badge-admin { background: #ff9800; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
@@ -104,7 +173,9 @@
             .search-container input { padding: 6px 10px 6px 28px; font-size: 12px; }
             .search-icon { left: 10px; font-size: 11px; }
             .fab-group { font-size: 12px; padding: 6px 10px; }
-            .chat-row { padding: 12px 14px; }
+            .chat-row-link { padding: 12px 0 12px 14px; }
+            .chat-row-side { padding: 12px 8px 12px 0; }
+            .chat-menu-btn { opacity: 1; }
         }
     </style>
 </head>
@@ -130,35 +201,43 @@
 
     <div id="chatList" style="flex:1;">
         <c:forEach var="item" items="${inboxItems}">
-            <a href="${ctx}/chat/room?id=${item.conversationId}" class="chat-row">
-                <div class="avatar ${item.group ? 'group' : ''}">
-                    <c:choose>
-                        <c:when test="${item.group}">👥</c:when>
-                        <c:otherwise>
-                            <c:choose>
-                                <c:when test="${not empty item.displayName}">${item.displayName.substring(0,1).toUpperCase()}</c:when>
-                                <c:otherwise>?</c:otherwise>
-                            </c:choose>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
-                <div class="chat-meta">
-                    <div class="chat-meta-top">
-                        <div class="chat-name">
-                            <c:out value="${item.displayName}"/>
-                            <c:if test="${!item.group && item.displayRole == 'ADMIN'}">
-                                <span class="badge-admin">Admin</span>
-                            </c:if>
+            <div class="chat-row"
+                 data-conversation-id="${item.conversationId}"
+                 data-is-group="${item.group}"
+                 data-partner-id="${item.partnerUserId != null ? item.partnerUserId : ''}">
+                <a href="${ctx}/chat/room?id=${item.conversationId}" class="chat-row-link">
+                    <div class="avatar ${item.group ? 'group' : ''}">
+                        <c:choose>
+                            <c:when test="${item.group}">👥</c:when>
+                            <c:otherwise>
+                                <c:choose>
+                                    <c:when test="${not empty item.displayName}">${item.displayName.substring(0,1).toUpperCase()}</c:when>
+                                    <c:otherwise>?</c:otherwise>
+                                </c:choose>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="chat-meta">
+                        <div class="chat-meta-top">
+                            <div class="chat-name">
+                                <c:out value="${item.displayName}"/>
+                                <c:if test="${!item.group && item.displayRole == 'ADMIN'}">
+                                    <span class="badge-admin">Admin</span>
+                                </c:if>
+                            </div>
                         </div>
-                        <c:if test="${not empty item.lastMessageAt}">
-                            <span class="chat-time">${item.lastMessageAt.toString().substring(11,16)}</span>
-                        </c:if>
+                        <div class="chat-preview">
+                            <c:out value="${not empty item.lastMessagePreview ? item.lastMessagePreview : 'စကားမရှိသေးပါ'}"/>
+                        </div>
                     </div>
-                    <div class="chat-preview">
-                        <c:out value="${not empty item.lastMessagePreview ? item.lastMessagePreview : 'စကားမရှိသေးပါ'}"/>
-                    </div>
+                </a>
+                <div class="chat-row-side">
+                    <c:if test="${not empty item.lastMessageAt}">
+                        <span class="chat-time">${item.lastMessageAt.toString().substring(11,16)}</span>
+                    </c:if>
+                    <button type="button" class="chat-menu-btn" title="More options" aria-label="More options">&#8942;</button>
                 </div>
-            </a>
+            </div>
         </c:forEach>
 
         <c:if test="${empty inboxItems}">
@@ -171,9 +250,41 @@
     </div>
 </div>
 
+<div id="chatListMenuBackdrop" class="chat-list-menu-backdrop"></div>
+<div id="chatListMenu" class="chat-list-menu"></div>
+
 <script>
     const ctx = '${ctx}';
     let searchTimer;
+    let activeChatRow = null;
+
+    $(document).ready(function() {
+        $(document).on('click', '.chat-menu-btn', function(e) {
+       		     e.preventDefault();
+            e.stopPropagation();
+            openChatListMenu($(this).closest('.chat-row'), this);
+        });
+
+        $('#chatListMenuBackdrop').click(closeChatListMenu);
+
+        $('#chatListMenu').on('click', 'button', function(e) {
+            e.stopPropagation();
+            var action = $(this).data('action');
+            var row = activeChatRow;
+            closeChatListMenu();
+            if (!row) return;
+
+            if (action === 'delete') {
+                deleteChatFromList(row);
+            } else if (action === 'block') {
+                blockUserFromList(row);
+            }
+        });
+
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape') closeChatListMenu();
+        });
+    });
 
     $('#searchInput').on('input', function() {
         clearTimeout(searchTimer);
@@ -189,7 +300,97 @@
         if (!$(e.target).closest('.search-container').length) {
             $('#searchResults').hide();
         }
+        if (!$(e.target).closest('.chat-list-menu, .chat-menu-btn').length) {
+            closeChatListMenu();
+        }
     });
+
+    function openChatListMenu(row, anchorEl) {
+        closeChatListMenu();
+        activeChatRow = row;
+
+        var isGroup = row.data('is-group') === true || String(row.data('is-group')) === 'true';
+        var partnerId = row.data('partner-id');
+        var menu = $('#chatListMenu').empty();
+
+        menu.append(
+            '<button type="button" data-action="delete" class="danger">' +
+            '<span class="menu-icon">🗑</span>Delete chat</button>'
+        );
+
+        if (!isGroup && partnerId) {
+            menu.append('<div class="menu-divider"></div>');
+            menu.append(
+                '<button type="button" data-action="block" class="danger">' +
+                '<span class="menu-icon">🚫</span>Block user</button>'
+            );
+        }
+
+        menu.addClass('active');
+        var rect = anchorEl.getBoundingClientRect();
+        var menuW = menu.outerWidth();
+        var top = rect.bottom + 8;
+        var left = rect.right - menuW;
+        left = Math.max(8, Math.min(left, window.innerWidth - menuW - 8));
+
+        if (top + menu.outerHeight() > window.innerHeight - 8) {
+            top = rect.top - menu.outerHeight() - 8;
+        }
+
+        menu.css({ top: top + 'px', left: left + 'px' });
+        $('#chatListMenuBackdrop').addClass('active');
+        $(anchorEl).addClass('active');
+    }
+
+    function closeChatListMenu() {
+        activeChatRow = null;
+        $('.chat-menu-btn').removeClass('active');
+        $('#chatListMenu').removeClass('active').empty();
+        $('#chatListMenuBackdrop').removeClass('active');
+    }
+
+    function deleteChatFromList(row) {
+        var conversationId = row.data('conversation-id');
+        if (!confirm('ဒီ chat ကို inbox မှ ဖျက်မှာသေချာလား?')) return;
+
+        $.ajax({
+            url: ctx + '/api/chat/conversations/' + conversationId,
+            type: 'DELETE',
+            success: function() {
+                row.fadeOut(200, function() {
+                    $(this).remove();
+                    if ($('.chat-row').length === 0) {
+                        location.reload();
+                    }
+                });
+            },
+            error: function(xhr) {
+                alert('Chat delete failed: ' + xhr.responseText);
+            }
+        });
+    }
+
+    function blockUserFromList(row) {
+        var partnerId = row.data('partner-id');
+        if (!partnerId) return;
+        if (!confirm('ဒီ user ကို block လုပ်မှာသေချာလား? Chat လည်း inbox မှ ပျောက်သွားပါမည်။')) return;
+
+        $.ajax({
+            url: ctx + '/api/chat/users/' + partnerId + '/block',
+            type: 'POST',
+            success: function() {
+                row.fadeOut(200, function() {
+                    $(this).remove();
+                    if ($('.chat-row').length === 0) {
+                        location.reload();
+                    }
+                });
+            },
+            error: function(xhr) {
+                alert('Block failed: ' + xhr.responseText);
+            }
+        });
+    }
 
     function searchUsers(keyword) {
         $.get(ctx + '/api/chat/users/search', { q: keyword }, function(users) {
@@ -202,10 +403,11 @@
                 const badge = user.role === 'ADMIN'
                     ? '<span class="badge-admin">Admin</span>'
                     : '<span class="badge-user">User</span>';
+                const displayName = user.displayName || user.username;
                 const row = $('<div class="search-item"></div>');
                 row.html(
-                    '<div class="avatar" style="width:32px;height:32px;font-size:14px;">' + user.username.charAt(0).toUpperCase() + '</div>' +
-                    '<div style="font-size:14px;"><strong>' + escapeHtml(user.username) + '</strong> ' + badge + '</div>'
+                    '<div class="avatar" style="width:32px;height:32px;font-size:14px;">' + displayName.charAt(0).toUpperCase() + '</div>' +
+                    '<div style="font-size:14px;"><strong>' + escapeHtml(displayName) + '</strong> ' + badge + '</div>'
                 );
                 row.click(function() { startChat(user.id); });
                 box.append(row);

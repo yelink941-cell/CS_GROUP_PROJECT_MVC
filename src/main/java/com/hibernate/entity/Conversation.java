@@ -36,4 +36,5 @@ public class Conversation extends BaseEntity {
     @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY)
     @OrderBy("createdAt DESC")
     private List<Message> messages = new ArrayList<>();
+    
 }
