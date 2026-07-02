@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,7 +39,7 @@
         .form-textarea { padding-left: 16px; resize: none; min-height: 80px; }
         .form-input:focus, .form-textarea:focus { border-color: #e67e22; box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.15); }
 
-        /* ⚡ Styled Circle Radio Buttons Alignment */
+        /* âš¡ Styled Circle Radio Buttons Alignment */
         .radio-group-horizontal { display: flex; gap: 24px; margin-top: 6px; flex-wrap: wrap; }
         .radio-circle-label { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; color: #475569; cursor: pointer; user-select: none; }
         .radio-circle-label input[type="radio"] { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; border: 2px solid #cbd5e1; border-radius: 50%; background-color: #ffffff; outline: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-in-out; }
@@ -117,7 +117,7 @@
                         <label class="form-label">Password</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+                            <input type="password" name="password" class="form-input" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
                         </div>
                     </div>
 
@@ -125,7 +125,7 @@
                         <label class="form-label">Confirm Password</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-shield-halved"></i>
-                            <input type="password" name="confirmPassword" class="form-input" placeholder="••••••••" required>
+                            <input type="password" name="confirmPassword" class="form-input" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
                         </div>
                     </div>
 

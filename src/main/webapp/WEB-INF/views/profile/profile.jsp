@@ -5,6 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <title>User Profile</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4f46e5;
@@ -27,10 +30,14 @@
             background: var(--bg); 
             color: var(--text-main); 
             min-height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 20px; 
+        }
+
+        .profile-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+            width: 100%;
         }
 
         .card { 
@@ -43,7 +50,6 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
         }
 
-        /* Top Aesthetic Banner Cover */
         .card-cover {
             height: 100px;
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -60,7 +66,7 @@
             flex-direction: column; 
             align-items: center; 
             text-align: center; 
-            margin-top: -55px; /* Pulls the avatar up onto the cover banner */
+            margin-top: -55px; 
             margin-bottom: 24px; 
         }
 
@@ -96,7 +102,6 @@
             letter-spacing: -0.025em;
         }
 
-        /* Modern Flat Badges */
         .badge-container {
             display: flex;
             gap: 8px;
@@ -121,7 +126,6 @@
             color: #0369a1;
         }
         
-        /* Premium Buttons */
         .action-group { width: 100%; display: flex; flex-direction: column; gap: 10px; }
         
         .btn-ui { 
@@ -144,14 +148,7 @@
         
         .settings-btn { color: var(--text-main); background: var(--secondary-bg); }
         .settings-btn:hover { background: var(--secondary-hover); }
-        
-        .follow-btn { color: #ffffff; background: #2563eb; }
-        .follow-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
-        
-        .unfollow-btn { color: var(--text-main); background: var(--secondary-bg); border: 1px solid var(--border); }
-        .unfollow-btn:hover { background: var(--secondary-hover); }
 
-        /* Modern Quotation Bio Container */
         .bio { 
             color: #475569; 
             font-size: 14px; 
@@ -178,81 +175,83 @@
     </style>
 </head>
 <body>
-    <div class="card">
-        <!-- Top banner aesthetic asset -->
-        <div class="card-cover"></div>
+    <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
+    
+    <main class="profile-container">
+        <div class="card">
+            <div class="card-cover"></div>
 
-        <div class="card-body">
-            <c:choose>
-                <c:when test="${not empty userProfile}">
-                    <div class="profile-header">
-                        <c:choose>
-                            <c:when test="${not empty avatarImage}">
-                                <img src="data:image/jpeg;base64,${avatarImage}" class="avatar" alt="Avatar">
-                            </c:when>
-                            <c:otherwise>
-                                <div class="avatar-placeholder">
-                                    <c:out value="${not empty userProfile.fullName ? userProfile.fullName.substring(0,1).toUpperCase() : 'U'}" />
-                                </div>
-                            </c:otherwise>
-                        </c:choose>
-                        
-                        <div class="name"><c:out value="${userProfile.fullName}"/></div>
-                        
-                        <!-- Badges Segment Container -->
-                        <div class="badge-container">
-                            <span class="badge">✨ Verified User</span>
-                            <span class="badge badge-gender">🧬 ${userProfile.gender}</span>
-                        </div>
-                        
-                        <div class="action-group">
+            <div class="card-body">
+                <c:choose>
+                    <c:when test="${not empty userProfile}">
+                        <div class="profile-header">
                             <c:choose>
-                                <%-- CASE A: This is MY profile -> Show Edit and Settings Buttons --%>
-                                <c:when test="${currentUser.id == userProfile.user.id}">
-                                    <a href="${pageContext.request.contextPath}/profile/edit" class="btn-ui edit-btn">✏️ Edit Profile</a>
-                                    <a href="${pageContext.request.contextPath}/settings" class="btn-ui settings-btn">⚙️ Account Settings</a>
+                                <c:when test="${not empty avatarImage}">
+                                    <img src="data:image/jpeg;base64,${avatarImage}" class="avatar" alt="Avatar">
                                 </c:when>
-                                
-                                <%-- CASE B: This is SOMEONE ELSE'S profile -> Show Follow/Unfollow Button --%>
                                 <c:otherwise>
-                                    <c:choose>
-                                        <c:when test="${isFollowing}">
-                                            <form action="${pageContext.request.contextPath}/user/unfollow" method="POST" style="width:100%;">
-                                                <input type="hidden" name="targetId" value="${userProfile.user.id}" />
-                                                <button type="submit" class="btn-ui unfollow-btn">🤝 Unfollow</button>
-                                            </form>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <form action="${pageContext.request.contextPath}/user/follow" method="POST" style="width:100%;">
-                                                <input type="hidden" name="targetId" value="${userProfile.user.id}" />
-                                                <button type="submit" class="btn-ui follow-btn">➕ Follow</button>
-                                            </form>
-                                        </c:otherwise>
-                                    </c:choose>
+                                    <div class="avatar-placeholder">
+                                        <c:out value="${not empty userProfile.fullName ? userProfile.fullName.substring(0,1).toUpperCase() : 'U'}" />
+                                    </div>
                                 </c:otherwise>
                             </c:choose>
+                            
+                            <div class="name"><c:out value="${userProfile.fullName}"/></div>
+                            
+                            <div class="badge-container">
+                                <span class="badge">✨ Verified User</span>
+                                <span class="badge badge-gender">🧬 ${userProfile.gender}</span>
+                            </div>
+                            
+                            <div class="action-group">
+							    <c:choose>
+							        <%-- CASE A: This is MY profile -> Show settings options --%>
+							        <c:when test="${currentUser.id == userProfile.user.id}">
+							            <a href="${pageContext.request.contextPath}/profile/edit" class="btn-ui edit-btn">✏️ Edit Profile</a>
+							            <a href="${pageContext.request.contextPath}/settings" class="btn-ui settings-btn">⚙️ Account Settings</a>
+							        </c:when>
+							        
+							        <%-- CASE B: This is SOMEONE ELSE'S profile -> Render social buttons --%>
+							        <c:otherwise>
+							            <c:choose>
+							                <c:when test="${isFollowing}">
+							                    <form action="${pageContext.request.contextPath}/user/unfollow" method="POST" style="width:100%;">
+							                        <input type="hidden" name="targetId" value="${userProfile.user.id}" />
+							                        <button type="submit" class="btn-ui unfollow-btn">🤝 Unfollow</button>
+							                    </form>
+							                </c:when>
+							                <c:otherwise>
+							                    <form action="${pageContext.request.contextPath}/user/follow" method="POST" style="width:100%;">
+							                        <input type="hidden" name="targetId" value="${userProfile.user.id}" />
+							                        <button type="submit" class="btn-ui follow-btn">➕ Follow</button>
+							                    </form>
+							                </c:otherwise>
+							            </c:choose>
+							        </c:otherwise>
+							    </c:choose>
+							</div>
                         </div>
-                    </div>
-                    
-                    <p class="bio">"<c:out value="${userProfile.bio}" />"</p>
-                    
-                    <div class="info">
-                        <div class="info-row">
-                            <span class="info-label">Account Handle</span>
-                            <span class="info-value">@<c:out value="${userProfile.user.username}"/></span>
+                        
+                        <p class="bio">"<c:out value="${userProfile.bio}" />"</p>
+                        
+                        <div class="info">
+                            <div class="info-row">
+                                <span class="info-label">Account Handle</span>
+                                <span class="info-value">@<c:out value="${userProfile.user.username}"/></span>
+                            </div>
                         </div>
-                    </div>
-                </c:when>
-                <c:otherwise>
-                    <p style="text-align:center; color: var(--text-muted); padding: 40px 0;">No profile record resolved.</p>
-                </c:otherwise>
-            </c:choose>
-            
-            <div class="links-footer">
-                <a href="${pageContext.request.contextPath}/" class="footer-link">← Home</a>
-                <a href="${pageContext.request.contextPath}/logout" class="footer-link signout-link">Sign Out</a>
+                    </c:when>
+                    <c:otherwise>
+                        <p style="text-align:center; color: var(--text-muted); padding: 40px 0;">No profile record resolved.</p>
+                    </c:otherwise>
+                </c:choose>
+                
+                <div class="links-footer">
+                    <a href="${pageContext.request.contextPath}/" class="footer-link">← Home</a>
+                    <a href="${pageContext.request.contextPath}/logout" class="footer-link signout-link">Sign Out</a>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 </body>
 </html>

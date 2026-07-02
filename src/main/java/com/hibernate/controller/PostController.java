@@ -202,16 +202,27 @@ public class PostController {
     public String showPostDetail(@PathVariable String slug, Model model, HttpSession session) {
         return postService.getPostBySlug(slug).map(post -> {
             model.addAttribute("post", post);
-            
-            // Post ရဲ့ အသေးစိတ် Content များကိုပါ JSP ဆီ ပို့ပေးခြင်း
             model.addAttribute("contents", post.getContents());
             
             Long userId = (Long) session.getAttribute("userId");
             if (userId != null) {
-                // 📁 လက်ရှိ ယူဆာပိုင်ဆိုင်သော Collections များကို ဆွဲထုတ်ပြီး Model ထဲသို့ ထည့်ပေးခြင်း
+                // 🟢 အရေးကြီး: Refresh လုပ်တိုင်း အခြေအနေကို DB ကနေ ပြန်ယူပါ
+                boolean hasLiked = postLikeService.hasUserLiked(post.getId(), userId);
+                model.addAttribute("hasUserLiked", hasLiked);
+                
+                boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, post.getId());
+                model.addAttribute("hasUserBookmarked", hasBookmarked);
+                
+                // Collections တွေကိုလည်း ဆွဲထုတ်ပေးပါ
                 model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
             }
-            return "user/post/detail"; 
+            
+            // Count များကိုလည်း ပို့ပေးပါ
+            model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
+            model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(post.getId()));
+            model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
+            
+            return "public/post/details"; 
         }).orElse("redirect:/user/posts");
     }
 
@@ -314,8 +325,8 @@ public class PostController {
             return "redirect:/login";
         }
         if (userId != null) {
-            boolean hasLiked = postLikeService.hasUserLiked(id, userId);
-            model.addAttribute("hasUserLiked", hasLiked);
+        	boolean hasLiked = postLikeService.hasUserLiked(id, userId); // DB ကနေ စစ်မယ်
+        	model.addAttribute("hasUserLiked", hasLiked);
             
             // 🟢 အမှန်ပြင်ဆင်ရမည့်နေရာ - BookmarkService အစား bookmarkService (variable name) ကို သုံးပါ
             boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, id);

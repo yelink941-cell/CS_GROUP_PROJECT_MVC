@@ -5,31 +5,18 @@
          id="WebApp_ID" 
          version="4.0">
   
-    <!-- Global Context Parameters -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
-            /WEB-INF/spring-hibernate.xml
+            /WEB-INF/spring-hibernate.xml,
             /WEB-INF/spring-security.xml
         </param-value>
     </context-param>
 
-    <!-- Context Loader Listener -->
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
-    <!-- Spring Security Filter -->
-    <filter>
-        <filter-name>springSecurityFilterChain</filter-name>
-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>springSecurityFilterChain</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <!-- Hibernate OpenSessionInView Filter -->
     <filter>
         <filter-name>hibernateOpenSessionInViewFilter</filter-name>
         <filter-class>org.springframework.orm.hibernate5.support.OpenSessionInViewFilter</filter-class>
@@ -39,7 +26,15 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-    <!-- Spring DispatcherServlet -->
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <servlet>
         <servlet-name>spring</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -49,14 +44,12 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
         <multipart-config>
-            <!-- File size limits (50MB / 100MB) -->
             <max-file-size>52428800</max-file-size>
             <max-request-size>104857600</max-request-size>
             <file-size-threshold>0</file-size-threshold>
         </multipart-config>
     </servlet>
 
-    <!-- Servlet Mapping -->
     <servlet-mapping>
         <servlet-name>spring</servlet-name>
         <url-pattern>/</url-pattern>

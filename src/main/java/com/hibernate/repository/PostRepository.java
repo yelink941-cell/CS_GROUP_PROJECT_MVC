@@ -20,6 +20,8 @@ public interface PostRepository {
 
     Optional<Post> findBySlug(String slug);
 
+    Optional<Post> findActiveBySlug(String slug);
+
     boolean existsBySlug(String slug);
 
     List<Post> findByCategoryId(Integer categoryId);

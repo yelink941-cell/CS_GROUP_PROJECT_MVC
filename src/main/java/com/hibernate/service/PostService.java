@@ -32,6 +32,8 @@ public interface PostService {
 
     Optional<Post> getPostBySlug(String slug);
 
+    Optional<Post> getActivePostBySlug(String slug);
+
     boolean existsBySlug(String slug);
 
     List<Post> getPostsByCategoryId(Integer categoryId);
