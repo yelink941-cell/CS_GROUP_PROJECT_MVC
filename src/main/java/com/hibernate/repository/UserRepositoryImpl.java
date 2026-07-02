@@ -21,7 +21,6 @@ public class UserRepositoryImpl implements UserRepository {
 	private Session getSession() {
         return sessionFactory.getCurrentSession();
     }
-
    
     @Override
     public void saveUser(User user) {
