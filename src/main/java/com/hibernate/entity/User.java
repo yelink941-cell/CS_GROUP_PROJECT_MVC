@@ -48,6 +48,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private Role role = Role.USER;
+    
+ // ✅ အသစ်ထည့်ထားတဲ့ column နှစ်ခု
+    @Column(name = "is_online", nullable = false)
+    private Boolean isOnline = false;
+
+    @Column(name = "last_seen")
+    private LocalDateTime lastSeen = LocalDateTime.now();
+    
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -56,10 +64,5 @@ public class User {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private UserProfile profile;
+  
 }

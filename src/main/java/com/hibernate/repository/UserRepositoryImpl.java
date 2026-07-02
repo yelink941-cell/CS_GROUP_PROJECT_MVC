@@ -92,4 +92,17 @@ public class UserRepositoryImpl implements UserRepository {
                 .setMaxResults(limit)
                 .getResultList();
     }
+
+    @Override
+    public Optional<String> findFullNameByUserId(Long userId) {
+        String fullName = getCurrentSession()
+                .createQuery("select p.fullName from UserProfile p where p.user.id = :userId", String.class)
+                .setParameter("userId", userId)
+                .uniqueResult();
+
+        if (fullName == null || fullName.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(fullName.trim());
+    }
 }
