@@ -1,4 +1,6 @@
 package com.hibernate.repository;
+import com.hibernate.entity.User;
+import com.hibernate.entity.UserProfile;
 
 import com.hibernate.entity.User;
 import org.hibernate.Session;
@@ -16,12 +18,13 @@ public class UserRepositoryImpl implements UserRepository {
     @Autowired
     private SessionFactory sessionFactory;
 
-    private Session getCurrentSession() {
+	private Session getSession() {
         return sessionFactory.getCurrentSession();
     }
-
+   
     @Override
     public void saveUser(User user) {
+        getSession().persist(user); 
         getCurrentSession().persist(user);
     }
 
@@ -57,8 +60,39 @@ public class UserRepositoryImpl implements UserRepository {
                 .setParameter("email", email)
                 .uniqueResult();
     }
+    
 
     @Override
+    public boolean isEmailExists(String email) {
+        Long count = getSession()
+                .createQuery("select count(u) from User u where u.email = :email", Long.class)
+                .setParameter("email", email)
+                .uniqueResult();
+        return count > 0;
+    }
+    @Override
+    public User getUserByEmail(String email) {
+        return getSession()
+                .createQuery("from User u where u.email = :email", User.class)
+                .setParameter("email", email)
+                .uniqueResult();
+    }
+
+    @Override
+    public UserProfile getUserProfileByUserId(int userId) {
+        return getSession()
+               .createQuery("FROM UserProfile up WHERE up.user.id = :userId", UserProfile.class)
+               .setParameter("userId", userId)
+               .uniqueResult();
+    }
+
+    @Override
+    public void updateProfile(UserProfile profile) {
+        getSession().merge(profile);
+    }
+
+    
+}
     public Optional<User> findByEmail(String email) {
         return Optional.ofNullable(getUserByEmail(email));
     }
