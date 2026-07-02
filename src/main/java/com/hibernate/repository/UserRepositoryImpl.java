@@ -2,6 +2,7 @@ package com.hibernate.repository;
 import com.hibernate.entity.User;
 import com.hibernate.entity.UserProfile;
 
+import com.hibernate.entity.User;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +14,14 @@ import java.util.Optional;
 @Repository
 @Transactional
 public class UserRepositoryImpl implements UserRepository {
-	@Autowired
+    
+    @Autowired
     private SessionFactory sessionFactory;
 
 	private Session getSession() {
         return sessionFactory.getCurrentSession();
     }
+
    
     @Override
     public void saveUser(User user) {
@@ -123,5 +126,18 @@ public class UserRepositoryImpl implements UserRepository {
                 .setParameter("keyword", "%" + keyword + "%")
                 .setMaxResults(limit)
                 .getResultList();
+    }
+
+    @Override
+    public Optional<String> findFullNameByUserId(Long userId) {
+        String fullName = getCurrentSession()
+                .createQuery("select p.fullName from UserProfile p where p.user.id = :userId", String.class)
+                .setParameter("userId", userId)
+                .uniqueResult();
+
+        if (fullName == null || fullName.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(fullName.trim());
     }
 }
