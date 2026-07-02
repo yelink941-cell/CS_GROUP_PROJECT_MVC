@@ -2,9 +2,15 @@ package com.hibernate.controller;
 
 import com.hibernate.dto.RegistrationDto;
 import com.hibernate.entity.User;
+import com.hibernate.entity.UserPreference;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
+import com.hibernate.entity.enums.UserStatus;
 import com.hibernate.service.UserService;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Random;
 
 import javax.servlet.http.HttpSession;
 
@@ -33,7 +39,6 @@ public class UserController {
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
-        // Send a single DTO object to the view to avoid multi-binding mess
         model.addAttribute("registrationDto", new RegistrationDto());
         return "register";
     }
@@ -101,13 +106,11 @@ public class UserController {
         }
     }
 
-
     @GetMapping("/forgot-password")
     public String showForgotPasswordForm() {
         return "forgot-password"; 
     }
 
-   
     @PostMapping("/forgot-password")
     public String processForgotPassword(
             @RequestParam("email") String email, 
@@ -116,15 +119,12 @@ public class UserController {
         User user = userService.findUserByEmail(email);
         
         if (user == null) {
-           
             model.addAttribute("msg", "If that account exists, a secure verification step has been dispatched.");
             return "forgot-password";
         }
 
-       
         Random random = new Random();
         String otpCode = String.format("%06d", random.nextInt(900000) + 100000);
-        
         
         userService.createPasswordResetTokenForUser(user, otpCode);
         
@@ -147,7 +147,6 @@ public class UserController {
         }
     }
 
-    
     @PostMapping("/verify-otp")
     public String processOtpVerification(
             @RequestParam("email") String email,
@@ -161,24 +160,21 @@ public class UserController {
             return "forgot-password";
         }
         
-        if (user.getTokenExpiryDate().isBefore(java.time.LocalDateTime.now())) {
+        if (user.getTokenExpiryDate().isBefore(LocalDateTime.now())) {
             model.addAttribute("error", "The OTP code has expired. Please request a new one.");
             return "forgot-password";
         }
         
         if (user.getResetToken().equals(submittedOtp.trim())) {
-           
             model.addAttribute("token", submittedOtp.trim());
             return "reset-password"; 
         } else {
-           
             model.addAttribute("error", "Invalid OTP security code. Please check your email inbox again.");
             model.addAttribute("email", email); 
             return "verify-otp"; 
         }
     }
 
-   
     @PostMapping("/reset-password")
     public String processResetPassword(
             @RequestParam("token") String token,
@@ -295,14 +291,14 @@ public class UserController {
     }
     
     @PostMapping("/user/follow")
-    public String followAction(@RequestParam("targetId") int targetId, HttpSession session) {
+    public String followAction(@RequestParam("targetId") Long targetId, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
         userService.followUser(current.getId(), targetId);
         return "redirect:/profile?id=" + targetId;
     }
 
     @PostMapping("/user/unfollow")
-    public String unfollowAction(@RequestParam("targetId") int targetId, HttpSession session) {
+    public String unfollowAction(@RequestParam("targetId") Long targetId, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
         userService.unfollowUser(current.getId(), targetId);
         return "redirect:/profile?id=" + targetId;
@@ -322,7 +318,7 @@ public class UserController {
 
     @PostMapping("/admin/users/update-status")
     public String updateStatusAndRole(
-            @RequestParam("userId") int userId,
+            @RequestParam("userId") Long userId,
             @RequestParam("role") String roleStr,
             @RequestParam("status") String statusStr) {
             
@@ -331,13 +327,13 @@ public class UserController {
     }
 
     @GetMapping("/admin/users/edit")
-    public String showAdminEditUserPage(@RequestParam("id") int userId, Model model) {
+    public String showAdminEditUserPage(@RequestParam("id") Long userId, Model model) {
         model.addAttribute("targetUser", userService.getUserById(userId));
         return "admin/admin-edit-user";
     }
 
     @GetMapping("/admin/users/delete")
-    public String deleteUserAccount(@RequestParam("id") int userId) {
+    public String deleteUserAccount(@RequestParam("id") Long userId) {
         userService.softDeleteUser(userId);
         return "redirect:/admin/users";
     }
@@ -347,18 +343,5 @@ public class UserController {
         session.invalidate();
         SecurityContextHolder.clearContext();
         return "redirect:/?logout=true";
-    @GetMapping("/admin-dashboard")
-    public String showAdminDashboard(HttpSession session) {
-        User adminUser = (User) session.getAttribute("currentUser");
-        if (adminUser == null || !Role.ADMIN.equals(adminUser.getRole())) {
-            return "redirect:/login"; 
-        }
-        return "admin-dashboard";
-    }
-
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
     }
 }

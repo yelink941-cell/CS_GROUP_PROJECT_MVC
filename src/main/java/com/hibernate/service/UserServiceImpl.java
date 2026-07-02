@@ -13,9 +13,6 @@ import org.hibernate.SessionFactory;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.hibernate.repository.UserRepository;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.mindrot.jbcrypt.BCrypt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,7 +118,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserProfile getUserProfileByUserId(int userId) {
+    public UserProfile getUserProfileByUserId(Long userId) {
         return getCurrentSession()
                 .createQuery(
                     "FROM UserProfile up " +
@@ -139,13 +136,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public User getUserById(int userId) {
+    public User getUserById(Long userId) {
         return getCurrentSession().get(User.class, userId);
     }
     
     @Override
     @Transactional(readOnly = true)
-    public UserPreference getUserPreferenceByUserId(int userId) {
+    public UserPreference getUserPreferenceByUserId(Long userId) {
         return getCurrentSession()
                 .createQuery("FROM UserPreference up WHERE up.user.id = :userId", UserPreference.class)
                 .setParameter("userId", userId)
@@ -160,7 +157,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isFollowing(int followerId, int followingId) {
+    public boolean isFollowing(Long followerId, Long followingId) {
         Long count = getCurrentSession()
                 .createQuery("SELECT count(f) FROM Follower f WHERE f.follower.id = :fId AND f.following.id = :gId", Long.class)
                 .setParameter("fId", followerId)
@@ -171,7 +168,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void followUser(int followerId, int followingId) {
+    public void followUser(Long followerId, Long followingId) {
         if (isFollowing(followerId, followingId)) return; 
         
         Session session = getCurrentSession();
@@ -184,7 +181,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void unfollowUser(int followerId, int followingId) {
+    public void unfollowUser(Long followerId, Long followingId) {
         getCurrentSession()
                 .createQuery("DELETE FROM Follower f WHERE f.follower.id = :fId AND f.following.id = :gId")
                 .setParameter("fId", followerId)
@@ -202,7 +199,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserRoleAndStatus(int userId, Role role, UserStatus status) {
+    public void updateUserRoleAndStatus(Long userId, Role role, UserStatus status) {
         Session session = getCurrentSession();
         User user = session.get(User.class, userId);
         if (user != null) {
@@ -214,7 +211,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void softDeleteUser(int userId) {
+    public void softDeleteUser(Long userId) {
         Session session = getCurrentSession();
         User user = session.get(User.class, userId);
         if (user != null) {

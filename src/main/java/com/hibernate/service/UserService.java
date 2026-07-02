@@ -10,34 +10,23 @@ import com.hibernate.entity.enums.UserStatus;
 public interface UserService {
 	boolean registerNewUser(User user, UserProfile profile);
     User authenticateUser(String email, String plainPassword);
-    UserProfile getUserProfileByUserId(int userId);
+    UserProfile getUserProfileByUserId(Long userId);
     void updateUserProfile(UserProfile profile);
     
-    User getUserById(int userId);
+    User getUserById(Long userId);
     List<User> getAllUsers();
-    void updateUserRoleAndStatus(int userId, Role role, UserStatus status);
-    void softDeleteUser(int userId);
+    void updateUserRoleAndStatus(Long userId, Role role, UserStatus status);
+    void softDeleteUser(Long userId);
     
-    UserPreference getUserPreferenceByUserId(int userId);
+    UserPreference getUserPreferenceByUserId(Long userId);
     void saveUserPreference(UserPreference preference);
 
-    boolean isFollowing(int followerId, int followingId);
-    void followUser(int followerId, int followingId);
-    void unfollowUser(int followerId, int followingId);
+    boolean isFollowing(Long followerId, Long followingId);
+    void followUser(Long followerId, Long followingId);
+    void unfollowUser(Long followerId, Long followingId);
     
     User findUserByEmail(String email);
     void createPasswordResetTokenForUser(User user, String token);
     User findUserByResetToken(String token);
     void updatePassword(User user, String newPassword);
-}
-import com.hibernate.entity.UserProfile;
-
-public interface UserService {
-    boolean registerNewUser(User user, UserProfile profile);
-
-    User registerNewUser(RegistrationDto registrationDto);
-
-    User authenticateUser(String email, String plainPassword);
-
-    User loginUser(String email, String password);
 }
