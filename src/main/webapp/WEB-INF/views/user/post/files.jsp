@@ -63,9 +63,13 @@
                                 <span class="file-name"><c:out value="${postFile.fileName}" /></span>
                                 <span class="file-type"><c:out value="${postFile.fileType}" /></span>
                             </div>
-                            <a class="button button-secondary"
-                               href="${pageContext.request.contextPath}/user/posts/${postId}/files/${postFile.id}"
-                               target="_blank" rel="noopener">View / Download</a>
+                            <div class="card-actions" style="margin: 0;">
+                                <a class="button button-secondary"
+                                   href="${pageContext.request.contextPath}/user/posts/${postId}/files/${postFile.id}"
+                                   target="_blank" rel="noopener">View</a>
+                                <a class="button"
+                                   href="${pageContext.request.contextPath}/posts/files/${postFile.id}/download">Download</a>
+                            </div>
                         </li>
                     </c:forEach>
                 </ul>
