@@ -29,8 +29,8 @@ public class CommentController {
     private UserRepository userRepository;
     
     @Autowired
-    private CommentRepository commentRepository; 
-    
+    private CommentRepository commentRepository;
+
     @Autowired
     private CommentService commentService; 
 
@@ -128,31 +128,5 @@ public class CommentController {
         
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
     }
-   
- // 🟢 User ဘက်မှ Comment တစ်ခုကို Report နှိပ်လိုက်သောအခါ အလုပ်လုပ်မည့် API
-    @PostMapping("/report/{id}")
-    public ResponseEntity<String> reportComment(@PathVariable("id") Integer id, 
-                                                @RequestParam("reason") String reason, 
-                                                HttpSession session) {
-        
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login ဝင်ရန်လိုအပ်ပါသည်။");
-        }
-        
-        // Comment ကို ID ဖြင့် ရှာဖွေခြင်း
-        Comment comment = commentRepository.findById(id).orElse(null);
-        if (comment != null) {
-            // Report အခြေအနေနှင့် အကြောင်းရင်းကို သတ်မှတ်ခြင်း
-            comment.setIsReported(true);
-            comment.setReportReason(reason); 
-            
-            // Database တွင် အပ်ဒိတ်လုပ် သိမ်းဆည်းခြင်း
-            commentService.saveComment(comment); 
-            
-            return ResponseEntity.ok("Comment reported successfully");
-        }
-        
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Comment မတွေ့ပါ။");
-    }
+
 }

@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam; 
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class UserController {
@@ -50,7 +49,6 @@ public class UserController {
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
-        // Send a single DTO object to the view to avoid multi-binding mess
         model.addAttribute("registrationDto", new RegistrationDto());
         return "register";
     }
@@ -118,13 +116,11 @@ public class UserController {
         }
     }
 
-
     @GetMapping("/forgot-password")
     public String showForgotPasswordForm() {
         return "forgot-password"; 
     }
 
-   
     @PostMapping("/forgot-password")
     public String processForgotPassword(
             @RequestParam("email") String email, 
@@ -133,15 +129,12 @@ public class UserController {
         User user = userService.findUserByEmail(email);
         
         if (user == null) {
-           
             model.addAttribute("msg", "If that account exists, a secure verification step has been dispatched.");
             return "forgot-password";
         }
 
-       
         Random random = new Random();
         String otpCode = String.format("%06d", random.nextInt(900000) + 100000);
-        
         
         userService.createPasswordResetTokenForUser(user, otpCode);
         
@@ -164,7 +157,6 @@ public class UserController {
         }
     }
 
-    
     @PostMapping("/verify-otp")
     public String processOtpVerification(
             @RequestParam("email") String email,
@@ -178,24 +170,21 @@ public class UserController {
             return "forgot-password";
         }
         
-        if (user.getTokenExpiryDate().isBefore(java.time.LocalDateTime.now())) {
+        if (user.getTokenExpiryDate().isBefore(LocalDateTime.now())) {
             model.addAttribute("error", "The OTP code has expired. Please request a new one.");
             return "forgot-password";
         }
         
         if (user.getResetToken().equals(submittedOtp.trim())) {
-           
             model.addAttribute("token", submittedOtp.trim());
             return "reset-password"; 
         } else {
-           
             model.addAttribute("error", "Invalid OTP security code. Please check your email inbox again.");
             model.addAttribute("email", email); 
             return "verify-otp"; 
         }
     }
 
-   
     @PostMapping("/reset-password")
     public String processResetPassword(
             @RequestParam("token") String token,
@@ -220,23 +209,9 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public String showUserProfilePage(
-            @RequestParam(value = "id", required = false) Integer targetUserId, 
-            HttpSession session, 
-            Model model) {
-            
+    public String showUserProfilePage(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
-        
-        Long profileOwnerId;
-        if (targetUserId != null) {
-            profileOwnerId = Long.valueOf(targetUserId);
-        } else if (currentUser != null) {
-            profileOwnerId = currentUser.getId();
-        } else {
-            return "redirect:/login"; 
-        }
-        
-        UserProfile profile = userService.getUserProfileByUserId(profileOwnerId);
+        UserProfile profile = userService.getUserProfileByUserId(currentUser.getId());
         
         if (profile != null && profile.getAvatar() != null) {
             String base64Avatar = java.util.Base64.getEncoder().encodeToString(profile.getAvatar());
@@ -244,96 +219,50 @@ public class UserController {
         }
         
         model.addAttribute("userProfile", profile);
-        model.addAttribute("currentUser", currentUser);
-
-       
-        boolean isFollowing = false;
-        
-        if (currentUser != null && !currentUser.getId().equals(profileOwnerId)) {
-            isFollowing = userService.isFollowing(currentUser.getId(), profileOwnerId.intValue());
-        }
-        model.addAttribute("isFollowing", isFollowing);
-
         return "profile/profile"; 
     }
 
     @GetMapping("/profile/edit")
     public String showEditProfilePage(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
         UserProfile profile = userService.getUserProfileByUserId(currentUser.getId());
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("userProfile", profile);
         return "profile/edit-profile"; 
     }
 
     @PostMapping("/profile/update")
-    public String handleProfileUpdate(
-            @ModelAttribute("userProfile") UserProfile formProfile,
-            @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
-            @RequestParam(value = "currentPassword", required = false) String currentPassword,
-            @RequestParam(value = "newPassword", required = false) String newPassword,
-            @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
+    public String processUpdateProfile(
+            @ModelAttribute("userProfile") UserProfile updatedProfile,
+            @RequestParam("avatarFile") MultipartFile avatarFile,
             HttpSession session,
-            RedirectAttributes redirectAttributes) {
-       
+            Model model) {
+        
         User currentUser = (User) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
-        
-        boolean hasCurrentPwd = currentPassword != null && !currentPassword.trim().isEmpty();
-        boolean hasNewPwd = newPassword != null && !newPassword.trim().isEmpty();
-        
-        if (hasCurrentPwd || hasNewPwd) {
-            if (!userService.checkPassword(currentUser, currentPassword)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Incorrect current password!");
-                return "redirect:/profile/edit";
-            }
-            
-            if (newPassword == null || !newPassword.equals(confirmPassword)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "New passwords do not match!");
-                return "redirect:/profile/edit";
-            }
-           
-            User liveUser = userService.getUserById(currentUser.getId());            
-            if (liveUser != null) {
-                // 2. Pass the live database entity to update the credentials
-                userService.updatePassword(liveUser, newPassword);
-                
-                // 3. Sync both the local pointer and session context with the newly hashed password
-                currentUser.setPasswordHash(liveUser.getPasswordHash());
-                session.setAttribute("currentUser", currentUser);
-            }
-        }
 
         try {
             UserProfile existingProfile = userService.getUserProfileByUserId(currentUser.getId());
             
             if (existingProfile != null) {
-                existingProfile.setFullName(formProfile.getFullName());
-                existingProfile.setBio(formProfile.getBio());
+                updatedProfile.setUser(existingProfile.getUser());
+                updatedProfile.setId(existingProfile.getId());
                 
                 if (avatarFile != null && !avatarFile.isEmpty()) {
-                    existingProfile.setAvatar(avatarFile.getBytes());
+                    updatedProfile.setAvatar(avatarFile.getBytes());
+                } else {
+                    updatedProfile.setAvatar(existingProfile.getAvatar());
                 }
-                
-                userService.updateUserProfile(existingProfile);
             } else {
-                if (avatarFile != null && !avatarFile.isEmpty()) {
-                    formProfile.setAvatar(avatarFile.getBytes());
-                }
-                formProfile.setUser(currentUser);
-                userService.updateUserProfile(formProfile);
+                updatedProfile.setUser(currentUser);
             }
             
+            userService.updateUserProfile(updatedProfile);
+            
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error updating profile details.");
-            return "redirect:/profile/edit";
+            e.printStackTrace();
+            model.addAttribute("error", "Failed to update profile settings.");
+            return "profile/edit-profile";
         }
-
+        
         return "redirect:/profile";
     }
     
@@ -372,34 +301,24 @@ public class UserController {
     }
     
     @PostMapping("/user/follow")
-    public String followAction(@RequestParam("targetId") int targetId, HttpSession session) {
+    public String followAction(@RequestParam("targetId") Long targetId, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
-        
-        if (current == null) {
-            return "redirect:/login";
-        }
-        
-        if (current.getId().longValue() == targetId) {
-            return "redirect:/profile?id=" + targetId;
-        }
-        
         userService.followUser(current.getId(), targetId);
         return "redirect:/profile?id=" + targetId;
     }
 
     @PostMapping("/user/unfollow")
-    public String unfollowAction(@RequestParam("targetId") int targetId, HttpSession session) {
+    public String unfollowAction(@RequestParam("targetId") Long targetId, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
-        
-        if (current == null) {
-            return "redirect:/login";
-        }
-        
         userService.unfollowUser(current.getId(), targetId);
         return "redirect:/profile?id=" + targetId;
     }
 
-    
+    @GetMapping("/admin/dashboard")
+    public String showAdminDashboard() {
+        return "admin/admin-dashboard"; 
+    }
+
     @GetMapping("/admin/users")
     public String listAllUsers(Model model) {
         List<User> userList = userService.getAllUsers();
@@ -409,7 +328,7 @@ public class UserController {
 
     @PostMapping("/admin/users/update-status")
     public String updateStatusAndRole(
-            @RequestParam("userId") int userId,
+            @RequestParam("userId") Long userId,
             @RequestParam("role") String roleStr,
             @RequestParam("status") String statusStr) {
             
@@ -424,7 +343,7 @@ public class UserController {
     }
 
     @GetMapping("/admin/users/delete")
-    public String deleteUserAccount(@RequestParam("id") int userId) {
+    public String deleteUserAccount(@RequestParam("id") Long userId) {
         userService.softDeleteUser(userId);
         return "redirect:/admin/users";
     }
