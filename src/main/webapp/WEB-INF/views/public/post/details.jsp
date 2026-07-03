@@ -180,6 +180,90 @@
     color: #333333 !important;
     border: 1px solid #cccccc !important;
 }
+
+.comment-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    align-items: center;
+}
+
+/* ===========================
+   Comment Action Buttons
+=========================== */
+.comment-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:10px;
+}
+
+.comment-btn{
+    border:none;
+    background:#f5f7fb;
+    color:#4b5563;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.comment-btn:hover{
+    background:#4038ff;
+    color:#fff;
+    transform:translateY(-2px);
+}
+
+.delete-btn{
+    background:#fff2f2;
+    color:#dc3545;
+}
+
+.delete-btn:hover{
+    background:#dc3545;
+    color:white;
+}
+
+.reply-btn{
+    background:#eef2ff;
+    color:#4038ff;
+}
+
+.reply-btn:hover{
+    background:#4038ff;
+    color:white;
+}
+
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.btn-action {
+    background: #f1f5f9;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    background: #e2e8f0;
+}
+
+.btn-delete:hover {
+    background: #fee2e2;
+    color: #dc3545;
+}
+
 </style>
     
 </head>
@@ -336,18 +420,18 @@
                 <div id="commentListContainer" class="comment-list" style="display: flex; flex-direction: column; gap: 16px;">
                     <c:forEach var="comment" items="${comments}">
                         <div class="comment-item" id="comment-${comment.id}" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px;">
                                 <strong><c:out value="${comment.user.username}" /></strong>
                                 <span>${comment.createdAt}</span>
                             </div>
                             <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;"><c:out value="${comment.content}" /></p>
                             
-                            <div style="display: flex; gap: 12px; margin-bottom: 8px;">
-                                <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
-                                <c:if test="${sessionScope.userId == comment.user.id}">
-                                    <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
-                                </c:if>
-                            </div>
+                            <div class="comment-actions">
+    <button type="button" class="btn-action" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+    <c:if test="${sessionScope.userId == comment.user.id}">
+        <button type="button" class="btn-action btn-delete" onclick="deleteComment(${comment.id})">Delete</button>
+    </c:if>
+</div>
 
                             <%-- Main Comment Reply Form --%>
                             <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
@@ -725,12 +809,20 @@ function submitReply(e, commentId, parentId, postId) {
 
         const replyEl = document.createElement('li');
         replyEl.id = 'reply-item-' + data.replyId;
-        replyEl.style.cssText = 'margin-bottom: 8px; list-style-type: none;';
-        replyEl.innerHTML =
-            '<strong>' + safeUser + ':</strong> ' + safeContent +
-            '<br><small>' + safeDate + '</small><br>' +
-            '<button type="button" class="button-link" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">Reply</button>' +
-            '<button type="button" class="button-link" style="color: #dc3545; margin-left: 8px;" onclick="deleteComment(' + data.replyId + ')">Delete</button>' +
+        replyEl.className = 'comment-wrapper'; // အသစ်ထည့်လိုက်တဲ့ class
+        replyEl.style.cssText = 'list-style-type: none;';
+
+        replyEl.innerHTML = 
+            '<div class="comment-meta-header">' +
+                '<strong>' + safeUser + '</strong>' +
+                '<small>' + safeDate + '</small>' +
+            '</div>' +
+            '<div>' + safeContent + '</div>' +
+         // JavaScript ထဲက ခလုတ်နေရာ
+            '<div class="comment-actions">' +
+                '<button type="button" class="btn-action" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">Reply</button>' +
+                '<button type="button" class="btn-action btn-delete" onclick="deleteComment(' + data.replyId + ')">Delete</button>' +
+            '</div>' +
             '<div id="replyFormContainer-r-' + data.replyId + '" style="display: none; margin-top: 8px; margin-left: 20px;">' +
                 '<form onsubmit="submitReply(event, \'r-' + data.replyId + '\', ' + data.replyId + ', ${post.id})">' +
                     '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +

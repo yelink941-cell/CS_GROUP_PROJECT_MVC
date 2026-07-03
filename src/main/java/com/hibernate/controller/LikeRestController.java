@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hibernate.entity.Post;
-import com.hibernate.entity.PostLike;
 import com.hibernate.entity.User;
 import com.hibernate.repository.PostLikeRepository;
 import com.hibernate.repository.PostRepository;

@@ -5,17 +5,22 @@
     <c:if test="${reply.deletedAt == null && not empty reply.content}">
         <%-- 🟢 သတိပြုရန် - အကယ်၍ မိဘ (Parent) ကွန်မန့်ကိုယ်တိုင်က ဖျက်ဆီးခံထားရ (deleted) ဖြစ်ပါက ဤ reply ကိုပါ အလိုအလျောက် ပုန်းသွားစေရန် (မပြသရန်) logic လိုအပ်ပါက isParentDeleted(reply) ကို ဤနေရာတွင် စစ်ဆေးနိုင်ပါသည် 🟢 --%>
         <li style="margin-bottom: 8px; list-style-type: none;" id="reply-item-${reply.id}">
-            <strong>${reply.user.username}:</strong>
-            ${reply.content}
-            <br>
-            <small>${reply.createdAt}</small>
-            <br>
+        
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px;">
+    <strong>${reply.user.username}</strong>
+    <span style="white-space: nowrap; margin-left: 10px;">${reply.createdAt}</span>
+</div>
 
-            <button type="button" class="button-link" onclick="toggleReplyForm('r-${reply.id}')">Reply</button>
+<p style="margin:0 0 6px 0;">
+    ${reply.content}
+</p>
 
-            <c:if test="${sessionScope.userId != null && sessionScope.userId == reply.user.id}">
-                <button type="button" class="button-link" style="color: #dc3545; margin-left: 8px;" onclick="deleteComment(${reply.id})">Delete</button>
-            </c:if>
+            <div class="comment-actions">
+    <button type="button" class="btn-action" onclick="toggleReplyForm('r-${reply.id}')">Reply</button>
+    <c:if test="${sessionScope.userId == reply.user.id}">
+        <button type="button" class="btn-action btn-delete" onclick="deleteComment(${reply.id})">Delete</button>
+    </c:if>
+</div>
 
             <c:if test="${sessionScope.userId != null}">
                 <div id="replyFormContainer-r-${reply.id}" style="display: none; margin-top: 8px; margin-left: 20px;">
