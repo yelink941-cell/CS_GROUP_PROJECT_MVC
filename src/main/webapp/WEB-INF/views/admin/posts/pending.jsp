@@ -16,7 +16,7 @@
     <h2>Pending Posts</h2>
 
     <p>
-        <a href="${pageContext.request.contextPath}/admin-dashboard">Back to Dashboard</a>
+        <a href="${pageContext.request.contextPath}/admin/dashboard">Back to Dashboard</a>
     </p>
 
     <c:if test="${empty posts}">

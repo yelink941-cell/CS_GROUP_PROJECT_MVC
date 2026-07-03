@@ -249,11 +249,40 @@
         <article class="detail-card">
             <h1><c:out value="${post.title}" /></h1>
 
-            <div class="post-meta">
-                <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
-                <span><strong>Author:</strong> <c:out value="${post.author.username}" /></span>
-                <span><strong>Views:</strong> <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /></span>
-            </div>
+            <div class="post-meta" style="display: flex; gap: 20px; align-items: center;">
+    <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
+    <span>
+        <strong>Author:</strong> 
+        <a href="${pageContext.request.contextPath}/profile?id=${post.author.id}" style="color: #4038ff; text-decoration: none; font-weight: 600; margin-right: 8px;">
+            @<c:out value="${post.author.username}" />
+        </a>
+    </span>
+    <span><strong>Views:</strong> <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /></span>
+
+    <c:if test="${not empty userId && userId != post.author.id}">
+        <div style="margin-left: auto;">
+            <c:choose>
+                <%-- 🎯 FIX: Evaluate the direct model variable --%>
+                <c:when test="${isFollowing}">
+                    <form action="${pageContext.request.contextPath}/user/unfollow" method="POST" style="margin: 0;">
+                        <input type="hidden" name="targetId" value="${post.author.id}" />
+                        <button type="submit" style="color: #64748b; text-decoration: none; font-weight: 600; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 20px; background: #f8fafc; cursor: pointer;">
+                            ✓ Following
+                        </button>
+                    </form>
+                </c:when>
+                <c:otherwise>
+                    <form action="${pageContext.request.contextPath}/user/follow" method="POST" style="margin: 0;">
+                        <input type="hidden" name="targetId" value="${post.author.id}" />
+                        <button type="submit" class="button" style="background: #4038ff; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                            ➕ Follow Creator
+                        </button>
+                    </form>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </c:if>
+</div>
 
             <div class="badge-row" style="margin-top: 18px;">
                 <span class="visibility-badge visibility-public">PUBLIC</span>

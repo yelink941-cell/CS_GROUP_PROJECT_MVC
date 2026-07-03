@@ -28,6 +28,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import javax.persistence.Transient;
+
 @Getter
 @Setter
 @Entity
@@ -101,4 +103,15 @@ public class Post {
         inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private List<Tag> tags;
+    
+    @Transient
+    private boolean followedByCurrentUser;
+
+    public boolean isFollowedByCurrentUser() {
+        return followedByCurrentUser;
+    }
+
+    public void setFollowedByCurrentUser(boolean followedByCurrentUser) {
+        this.followedByCurrentUser = followedByCurrentUser;
+    }
 }

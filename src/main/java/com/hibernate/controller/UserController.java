@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -208,6 +209,13 @@ public class UserController {
             model.addAttribute("avatarImage", base64Avatar);
         }
         
+        User profileOwner = userService.getUserById(profileOwnerId);
+        
+        
+        long followerCount = userService.getFollowerCount(profileOwnerId);
+        long followingCount = userService.getFollowingCount(profileOwnerId);
+        long postCount = userService.getPostCountByUserId(profileOwnerId);
+
         model.addAttribute("userProfile", profile);
         return "profile/profile"; 
     }
@@ -294,14 +302,18 @@ public class UserController {
     public String followAction(@RequestParam("targetId") Long targetId, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
         userService.followUser(current.getId(), targetId);
-        return "redirect:/profile?id=" + targetId;
+        
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/posts/public");
     }
 
     @PostMapping("/user/unfollow")
     public String unfollowAction(@RequestParam("targetId") Long targetId, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
         userService.unfollowUser(current.getId(), targetId);
-        return "redirect:/profile?id=" + targetId;
+        
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/posts/public");
     }
 
     @GetMapping("/admin/dashboard")

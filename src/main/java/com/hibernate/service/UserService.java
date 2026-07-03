@@ -24,9 +24,13 @@ public interface UserService {
     boolean isFollowing(Long followerId, Long followingId);
     void followUser(Long followerId, Long followingId);
     void unfollowUser(Long followerId, Long followingId);
+    long getFollowerCount(Long userId);
+    long getFollowingCount(Long userId);
     
     User findUserByEmail(String email);
     void createPasswordResetTokenForUser(User user, String token);
     User findUserByResetToken(String token);
     void updatePassword(User user, String newPassword);
+    long getPostCountByUserId(Long userId);
 }
+

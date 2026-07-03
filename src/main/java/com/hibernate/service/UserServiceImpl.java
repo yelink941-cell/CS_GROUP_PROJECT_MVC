@@ -157,11 +157,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isFollowing(Long followerId, Long followingId) {
+    public boolean isFollowing(Long followerId, Long followingId) { 
         Long count = getCurrentSession()
                 .createQuery("SELECT count(f) FROM Follower f WHERE f.follower.id = :fId AND f.following.id = :gId", Long.class)
                 .setParameter("fId", followerId)
-                .setParameter("gId", followingId)
+                .setParameter("gId", followingId) 
                 .uniqueResult();
         return count > 0;
     }
@@ -173,20 +173,43 @@ public class UserServiceImpl implements UserService {
         
         Session session = getCurrentSession();
         Follower edge = new Follower();
-        edge.setFollower(session.get(User.class, followerId));
-        edge.setFollowing(session.get(User.class, followingId));
+       
+        edge.setFollower(session.load(User.class, followerId));
+        edge.setFollowing(session.load(User.class, followingId)); 
         
         session.persist(edge);
     }
 
     @Override
     @Transactional
-    public void unfollowUser(Long followerId, Long followingId) {
+    public void unfollowUser(Long followerId, Long followingId) { 
         getCurrentSession()
                 .createQuery("DELETE FROM Follower f WHERE f.follower.id = :fId AND f.following.id = :gId")
                 .setParameter("fId", followerId)
-                .setParameter("gId", followingId)
+                .setParameter("gId", followingId) 
                 .executeUpdate();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public long getFollowerCount(Long userId) {
+        String hql = "SELECT COUNT(f) FROM Follower f WHERE f.following.id = :userId";
+        Long count = getCurrentSession()
+                .createQuery(hql, Long.class)
+                .setParameter("userId", userId)
+                .uniqueResult();
+        return count != null ? count : 0L;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getFollowingCount(Long userId) {
+        String hql = "SELECT COUNT(f) FROM Follower f WHERE f.follower.id = :userId";
+        Long count = getCurrentSession()
+                .createQuery(hql, Long.class)
+                .setParameter("userId", userId)
+                .uniqueResult();
+        return count != null ? count : 0L;
     }
 
     @Override
@@ -218,5 +241,15 @@ public class UserServiceImpl implements UserService {
             user.setStatus(UserStatus.INACTIVE);
             session.merge(user);
         }
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public long getPostCountByUserId(Long userId) {
+        String hql = "SELECT COUNT(p) FROM Post p WHERE p.author.id = :userId AND p.deletedAt IS NULL";
+        Long count = getCurrentSession()
+                .createQuery(hql, Long.class)
+                .setParameter("userId", userId) 
+                .uniqueResult();
+        return count != null ? count : 0L;
     }
 }

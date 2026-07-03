@@ -13,6 +13,7 @@ import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.TagService;
+import com.hibernate.service.UserService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,7 @@ public class PostController {
     private final PostLikeService postLikeService; 
     private final CommentService commentService;
     private final BookmarkService bookmarkService;
+    private final UserService userService;
     @GetMapping
     public String listPosts(Model model, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -197,7 +199,7 @@ public class PostController {
         return "redirect:/user/posts";
     }
 
-    // 🎯 ဤနေရာတွင် Comment များကို ဖွင့်ပြီး မင်းရဲ့ JSP နှင့် အချက်အလက်များ ချိတ်ဆက်ပေးလိုက်ပါပြီ
+    
     @GetMapping("/{slug}")
     public String showPostDetail(@PathVariable String slug, Model model, HttpSession session) {
         return postService.getPostBySlug(slug).map(post -> {
@@ -205,19 +207,28 @@ public class PostController {
             model.addAttribute("contents", post.getContents());
             
             Long userId = (Long) session.getAttribute("userId");
+            
+            // 🎯 FIX: Default follow status to false
+            boolean isFollowingCreator = false; 
+            
             if (userId != null) {
-                // 🟢 အရေးကြီး: Refresh လုပ်တိုင်း အခြေအနေကို DB ကနေ ပြန်ယူပါ
+                if (post.getAuthor() != null) {
+                    // Calculate the real-time status straight from your database
+                    isFollowingCreator = userService.isFollowing(userId, post.getAuthor().getId());
+                }
+                
                 boolean hasLiked = postLikeService.hasUserLiked(post.getId(), userId);
                 model.addAttribute("hasUserLiked", hasLiked);
                 
                 boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, post.getId());
                 model.addAttribute("hasUserBookmarked", hasBookmarked);
                 
-                // Collections တွေကိုလည်း ဆွဲထုတ်ပေးပါ
                 model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
             }
             
-            // Count များကိုလည်း ပို့ပေးပါ
+            // 🎯 FIX: Explicitly bind the real-time boolean flag to the view model context
+            model.addAttribute("isFollowing", isFollowingCreator);
+            
             model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
             model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(post.getId()));
             model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
