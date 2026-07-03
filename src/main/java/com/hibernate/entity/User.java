@@ -77,4 +77,8 @@ public class User {
 
     @Column(name = "token_expiry_date")
     private java.time.LocalDateTime tokenExpiryDate;
+
+    public boolean isAdmin() {
+        return this.role == Role.ADMIN || this.role == Role.SUPER_ADMIN;
+    }
 }

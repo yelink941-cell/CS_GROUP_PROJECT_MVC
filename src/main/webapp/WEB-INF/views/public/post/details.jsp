@@ -178,6 +178,67 @@
     color: #333333 !important;
     border: 1px solid #cccccc !important;
 }
+
+.btn-report {
+    background-color: #fff5f5 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+}
+
+.btn-report:hover {
+    background-color: #fee2e2 !important;
+}
+
+.report-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.report-modal-backdrop.active {
+    display: flex;
+}
+
+.report-modal {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    width: min(420px, 92vw);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+}
+
+.report-modal h3 {
+    margin: 0 0 16px;
+}
+
+.report-modal label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #374151;
+}
+
+.report-modal select,
+.report-modal textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.report-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
 </style>
     
 </head>
@@ -261,6 +322,14 @@
             class="btn ${hasUserBookmarked ? 'btn-warning' : 'btn-outline-warning'}">
         <span id="bookmarkText-${post.id}">${hasUserBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
     </button>
+
+    <c:if test="${sessionScope.userId != null && sessionScope.userId != post.author.id}">
+        <button type="button"
+                class="button btn-report"
+                onclick="openReportModal('post', ${post.id})">
+            ⚠ Report Post
+        </button>
+    </c:if>
 </div>
 
         <div id="commentsToggleWrapper">
@@ -269,6 +338,10 @@
                     <strong>${comment.user.username}</strong>
                     <p>${comment.content}</p>
                     <button type="button" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+                    <c:if test="${sessionScope.userId != null && sessionScope.userId != comment.user.id}">
+                        <button type="button" class="button-link" style="color:#dc2626; margin-left:8px;"
+                                onclick="openReportModal('comment', ${comment.id})">Report</button>
+                    </c:if>
                     
                     <div id="replyFormContainer-c-${comment.id}" style="display: none;">
                         <form onsubmit="submitReply(event, 'c-${comment.id}', '${comment.id}', '${post.id}')">
@@ -359,9 +432,71 @@
         </div>
     </main>
 
+    <div id="reportModalBackdrop" class="report-modal-backdrop" onclick="closeReportModal(event)">
+        <div class="report-modal" onclick="event.stopPropagation()">
+            <h3 id="reportModalTitle">Report Content</h3>
+            <label for="reportReason">Reason</label>
+            <select id="reportReason">
+                <option value="TEXT">Inappropriate text</option>
+                <option value="CODE">Harmful code</option>
+                <option value="IMAGE">Inappropriate image</option>
+                <option value="VIDEO">Inappropriate video</option>
+                <option value="LINK">Suspicious link</option>
+            </select>
+            <label for="reportDescription">Details (optional)</label>
+            <textarea id="reportDescription" rows="4" placeholder="Describe the issue..."></textarea>
+            <div class="report-modal-actions">
+                <button type="button" class="button button-secondary" onclick="closeReportModal()">Cancel</button>
+                <button type="button" class="button btn-report" onclick="submitReport()">Submit Report</button>
+            </div>
+        </div>
+    </div>
+
   <script>
     // 🟢 အရေးကြီး: JSP ကနေ contextPath ကို တစ်ခါတည်း JS variable အဖြစ် ယူထားပါ
    const contextPath = "${pageContext.request.contextPath}";
+   let reportTarget = { type: null, id: null };
+
+    function openReportModal(type, id) {
+        reportTarget = { type, id };
+        document.getElementById('reportModalTitle').innerText =
+            type === 'post' ? 'Report Post' : 'Report Comment';
+        document.getElementById('reportReason').value = 'TEXT';
+        document.getElementById('reportDescription').value = '';
+        document.getElementById('reportModalBackdrop').classList.add('active');
+    }
+
+    function closeReportModal(event) {
+        if (event && event.target !== event.currentTarget) {
+            return;
+        }
+        document.getElementById('reportModalBackdrop').classList.remove('active');
+        reportTarget = { type: null, id: null };
+    }
+
+    function submitReport() {
+        if (!reportTarget.type || !reportTarget.id) {
+            return;
+        }
+
+        const reason = document.getElementById('reportReason').value;
+        const description = document.getElementById('reportDescription').value || '';
+        const url = reportTarget.type === 'post'
+            ? contextPath + '/posts/report/' + reportTarget.id
+            : contextPath + '/comments/report/' + reportTarget.id;
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'reason=' + encodeURIComponent(reason) + '&description=' + encodeURIComponent(description)
+        })
+        .then(response => response.text().then(text => ({ ok: response.ok, text })))
+        .then(result => {
+            closeReportModal();
+            alert(result.text || (result.ok ? 'Report submitted.' : 'Report failed.'));
+        })
+        .catch(() => alert('Report failed. Please try again.'));
+    }
 
     // --- ၁။ Folder Status စစ်ဆေးခြင်း ---
     function checkFolderStatus() {
