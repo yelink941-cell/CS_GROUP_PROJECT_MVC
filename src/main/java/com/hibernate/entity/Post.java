@@ -71,7 +71,7 @@ public class Post {
     @Column(name = "is_downloadable")
     private Boolean isDownloadable = false;
 
-    @Column(name = "view_count")
+    @Column(name = "view_count", nullable = false)
     private Integer viewCount = 0;
 
     @Column(name = "download_count")
@@ -79,6 +79,9 @@ public class Post {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

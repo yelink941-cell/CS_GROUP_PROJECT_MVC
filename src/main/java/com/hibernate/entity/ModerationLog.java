@@ -27,8 +27,14 @@ public class ModerationLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "post_id", nullable = false)
+    @Column(name = "post_id", nullable = true)
     private Integer postId;
+
+    @Column(name = "comment_id", nullable = true)
+    private Integer commentId;
+
+    @Column(name = "target_user_id", nullable = true)
+    private Integer targetUserId;
 
     @Column(name = "admin_id", nullable = false)
     private Integer adminId;

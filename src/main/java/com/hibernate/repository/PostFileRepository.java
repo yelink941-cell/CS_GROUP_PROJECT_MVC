@@ -9,5 +9,7 @@ public interface PostFileRepository {
 
     List<PostFile> findByPostId(Integer postId);
 
+    Optional<PostFile> findById(Integer fileId);
+
     Optional<PostFile> findByIdAndPostId(Integer id, Integer postId);
 }

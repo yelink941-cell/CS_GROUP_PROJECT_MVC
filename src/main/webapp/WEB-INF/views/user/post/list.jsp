@@ -9,23 +9,33 @@
     <title>My Posts - CheatSheet Hub</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-list.css?v=6">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-list.css?v=9">
 </head>
 <body class="my-posts-page">
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
     <main class="page-container my-posts-container">
         <header class="my-posts-header">
-            <div>
-                <span>Workspace</span>
+    <div>
+        <span>Workspace</span>
+        <c:choose>
+            <c:when test="${activeTab == 'bookmarks'}">
+                <h1>My Bookmarks</h1>
+                <p>Manage your saved and bookmarked cheat sheets.</p>
+            </c:when>
+            <c:otherwise>
                 <h1>My Posts</h1>
                 <p>Manage your drafts, submissions, published guides, and private notes.</p>
-            </div>
-            <div class="my-posts-header-actions">
-                <small><strong><c:out value="${fn:length(posts)}" /></strong> total posts</small>
-                <a class="button" href="${pageContext.request.contextPath}/user/posts/new">+ Create Post</a>
-            </div>
-        </header>
+            </c:otherwise>
+        </c:choose>
+    </div>
+    <div class="my-posts-header-actions">
+        <small><strong><c:out value="${fn:length(posts)}" /></strong> total items</small>
+        <c:if test="${activeTab != 'bookmarks'}">
+            <a class="button" href="${pageContext.request.contextPath}/user/posts/new">+ Create Post</a>
+        </c:if>
+    </div>
+</header>
 
         <c:if test="${empty posts}">
             <section class="empty-state">
@@ -58,6 +68,11 @@
                         <h2><c:out value="${post.title}" /></h2>
                         <p class="my-post-slug">/<c:out value="${post.slug}" /></p>
 
+                        <a class="my-view-summary" href="${pageContext.request.contextPath}/user/posts/${post.id}/views">
+                            <span aria-hidden="true">&#128065;</span>
+                            <strong><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /></strong> Views
+                        </a>
+
                         <c:if test="${post.status == 'REJECTED' && not empty post.rejectionReason}">
                             <p class="rejection-reason"><strong>Reason:</strong> <c:out value="${post.rejectionReason}" /></p>
                         </c:if>
@@ -65,6 +80,8 @@
                         <div class="my-post-actions">
                             <a class="my-action-link primary" href="${pageContext.request.contextPath}/user/posts/${post.id}/contents">Sections</a>
                             <a class="my-action-link" href="${pageContext.request.contextPath}/user/posts/${post.id}/files">Files</a>
+                            <a class="my-action-link" href="${pageContext.request.contextPath}/posts/${post.slug}/download-pdf">PDF</a>
+                            <a class="my-action-link" href="${pageContext.request.contextPath}/user/posts/${post.id}/views">View Users</a>
                             <a class="my-action-link" href="${pageContext.request.contextPath}/user/posts/edit/${post.id}">Edit</a>
                             <a class="my-action-link danger" href="${pageContext.request.contextPath}/user/posts/delete/${post.id}"
                                onclick="return confirm('Delete this post?');">Delete</a>

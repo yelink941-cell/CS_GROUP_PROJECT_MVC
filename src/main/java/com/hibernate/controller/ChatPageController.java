@@ -5,16 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import javax.servlet.http.HttpSession;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import com.hibernate.dto.ChatRoomView;
 import com.hibernate.entity.Conversation;
 import com.hibernate.entity.User;
@@ -59,8 +56,10 @@ public class ChatPageController {
 
         model.addAttribute("conversationId", roomView.getConversationId());
         model.addAttribute("conversationTitle", roomView.getTitle());
+        model.addAttribute("partnerUserId", roomView.getPartnerUserId());
         model.addAttribute("partnerRole", roomView.getPartnerRole());
         model.addAttribute("isGroup", roomView.isGroup());
+        model.addAttribute("canModerate", roomView.isCanModerate());
         model.addAttribute("currentUser", currentUser);
         return "chat/room";
     }
@@ -85,7 +84,7 @@ public class ChatPageController {
 
         String groupTitle = title.trim();
         if (groupTitle.isEmpty()) {
-            model.addAttribute("error", "Group အမည် ထည့်ပေးပါ။");
+            model.addAttribute("error", "Enter The Group Name");
             return "chat/create-group";
         }
 

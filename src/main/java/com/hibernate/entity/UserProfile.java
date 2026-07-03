@@ -39,7 +39,7 @@ public class UserProfile {
     @Column(name = "gender", length = 10)
     private String gender;
     
-    
+   
 
     @Lob
     @Column(name = "avatar", columnDefinition = "LONGBLOB")

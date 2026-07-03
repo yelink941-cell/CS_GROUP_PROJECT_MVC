@@ -4,6 +4,7 @@ import com.hibernate.entity.Post;
 import com.hibernate.entity.enums.ContentType;
 import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.entity.enums.PostVisibility;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,8 @@ public interface PostService {
 
     Optional<Post> getPostBySlug(String slug);
 
+    Optional<Post> getActivePostBySlug(String slug);
+
     boolean existsBySlug(String slug);
 
     List<Post> getPostsByCategoryId(Integer categoryId);
@@ -54,4 +57,10 @@ public interface PostService {
     void approvePost(Integer id);
 
     void rejectPost(Integer id, String rejectionReason);
+    
+    void toggleLike(Integer postId, Long userId);
+    
+    void addComment(Integer postId, Long userId, String text);
+    
+    boolean hasUserLiked(Integer postId, Long userId);
 }

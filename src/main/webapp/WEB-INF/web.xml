@@ -10,7 +10,6 @@
         <param-value>
             /WEB-INF/spring-hibernate.xml,
             /WEB-INF/spring-security.xml
-            
         </param-value>
     </context-param>
 
@@ -19,16 +18,22 @@
     </listener>
 
     <filter>
+        <filter-name>hibernateOpenSessionInViewFilter</filter-name>
+        <filter-class>org.springframework.orm.hibernate5.support.OpenSessionInViewFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>hibernateOpenSessionInViewFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>springSecurityFilterChain</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
-
     <filter-mapping>
         <filter-name>springSecurityFilterChain</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    
-
 
     <servlet>
         <servlet-name>spring</servlet-name>
@@ -39,8 +44,8 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
         <multipart-config>
-            <max-file-size>10485760</max-file-size>
-            <max-request-size>20971520</max-request-size>
+            <max-file-size>52428800</max-file-size>
+            <max-request-size>104857600</max-request-size>
             <file-size-threshold>0</file-size-threshold>
         </multipart-config>
     </servlet>
@@ -49,5 +54,5 @@
         <servlet-name>spring</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
-	
+    
 </web-app>

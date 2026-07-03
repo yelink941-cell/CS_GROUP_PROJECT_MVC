@@ -20,8 +20,16 @@ public class FileStorageService {
     private static final Set<String> ALLOWED_VIDEO_TYPES = Set.of(
             "video/mp4", "video/webm", "video/quicktime", "video/x-msvideo"
     );
+    // Added Document MIME types (PDF and PPTX)
+    private static final Set<String> ALLOWED_DOC_TYPES = Set.of(
+            "application/pdf", 
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    );
+
     private static final Set<String> ALLOWED_IMAGE_EXT = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
     private static final Set<String> ALLOWED_VIDEO_EXT = Set.of(".mp4", ".webm", ".mov", ".avi");
+    // Added Document extensions
+    private static final Set<String> ALLOWED_DOC_EXT = Set.of(".pdf", ".pptx");
 
     private final Path uploadRoot;
 
@@ -35,11 +43,12 @@ public class FileStorageService {
 
     public String storeChatFile(Long conversationId, MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("ဖိုင်ကို ရွေးချယ်ပေးပါ။");
+            throw new IllegalArgumentException("Choose the files");
         }
 
         if (!isAllowedFile(file)) {
-            throw new IllegalArgumentException("JPEG, PNG, GIF, WEBP, MP4, WEBM, MOV ဖိုင်များသာ ပို့ allowed ဖြစ်ပါသည်။");
+            // Updated exception message to include PDF and PPTX
+            throw new IllegalArgumentException("JPEG, PNG, GIF, WEBP, MP4, WEBM, MOV, PDF, PPTX ဖိုင်များသာ ပို့ခွင့်ရှိပါသည်။");
         }
 
         Path conversationDir = uploadRoot.resolve(String.valueOf(conversationId));
@@ -66,8 +75,10 @@ public class FileStorageService {
     public boolean isAllowedFile(MultipartFile file) {
         String contentType = file.getContentType();
         if (contentType != null) {
-            if (ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase(Locale.ROOT))
-                    || ALLOWED_VIDEO_TYPES.contains(contentType.toLowerCase(Locale.ROOT))) {
+            String lowerType = contentType.toLowerCase(Locale.ROOT);
+            if (ALLOWED_IMAGE_TYPES.contains(lowerType)
+                    || ALLOWED_VIDEO_TYPES.contains(lowerType)
+                    || ALLOWED_DOC_TYPES.contains(lowerType)) { // Added check here
                 return true;
             }
         }
@@ -78,7 +89,8 @@ public class FileStorageService {
         }
         String lower = name.toLowerCase(Locale.ROOT);
         return ALLOWED_IMAGE_EXT.stream().anyMatch(lower::endsWith)
-                || ALLOWED_VIDEO_EXT.stream().anyMatch(lower::endsWith);
+                || ALLOWED_VIDEO_EXT.stream().anyMatch(lower::endsWith)
+                || ALLOWED_DOC_EXT.stream().anyMatch(lower::endsWith); // Added check here
     }
 
     public boolean isImage(String contentType, String fileUrl) {
@@ -101,5 +113,17 @@ public class FileStorageService {
         }
         String lower = fileUrl.toLowerCase(Locale.ROOT);
         return ALLOWED_VIDEO_EXT.stream().anyMatch(lower::endsWith);
+    }
+
+    // Optional: Added helper method for document checking if you need it elsewhere
+    public boolean isDocument(String contentType, String fileUrl) {
+        if (contentType != null && ALLOWED_DOC_TYPES.contains(contentType.toLowerCase(Locale.ROOT))) {
+            return true;
+        }
+        if (fileUrl == null) {
+            return false;
+        }
+        String lower = fileUrl.toLowerCase(Locale.ROOT);
+        return ALLOWED_DOC_EXT.stream().anyMatch(lower::endsWith);
     }
 }

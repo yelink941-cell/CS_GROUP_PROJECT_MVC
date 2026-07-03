@@ -17,6 +17,9 @@ import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
 import com.hibernate.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -90,12 +93,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public boolean checkPassword(User user, String rawPassword) {
-        return user != null && rawPassword != null && BCrypt.checkpw(rawPassword, user.getPasswordHash());
-    }
-
-    @Override
     @Transactional
     public void updatePassword(User user, String newPassword) {
         String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
@@ -145,38 +142,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isFollowing(Long followerId, int followingId) {
+    public boolean isFollowing(Long followerId, Long followingId) {
         Long count = getCurrentSession()
                 .createQuery(
                         "SELECT count(f) FROM Follower f WHERE f.follower.id = :fId AND f.following.id = :gId",
                         Long.class)
                 .setParameter("fId", followerId)
-                .setParameter("gId", Long.valueOf(followingId))
+                .setParameter("gId", followingId)
                 .uniqueResult();
-        return count != null && count > 0;
+        return count > 0;
     }
 
     @Override
     @Transactional
-    public void followUser(Long followerId, int followingId) {
-        if (isFollowing(followerId, followingId)) {
-            return;
-        }
-
+    public void followUser(Long followerId, Long followingId) {
+        if (isFollowing(followerId, followingId)) return; 
+        
         Session session = getCurrentSession();
         Follower edge = new Follower();
-        edge.setFollower(session.load(User.class, followerId));
-        edge.setFollowing(session.load(User.class, Long.valueOf(followingId)));
+        edge.setFollower(session.get(User.class, followerId));
+        edge.setFollowing(session.get(User.class, followingId));
+        
         session.persist(edge);
     }
 
     @Override
     @Transactional
-    public void unfollowUser(Long followerId, int followingId) {
+    public void unfollowUser(Long followerId, Long followingId) {
         getCurrentSession()
                 .createQuery("DELETE FROM Follower f WHERE f.follower.id = :fId AND f.following.id = :gId")
                 .setParameter("fId", followerId)
-                .setParameter("gId", Long.valueOf(followingId))
+                .setParameter("gId", followingId)
                 .executeUpdate();
     }
 
@@ -190,7 +186,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserRoleAndStatus(int userId, Role role, UserStatus status) {
+    public void updateUserRoleAndStatus(Long userId, Role role, UserStatus status) {
         Session session = getCurrentSession();
         User user = session.get(User.class, Long.valueOf(userId));
         if (user != null) {
@@ -202,7 +198,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void softDeleteUser(int userId) {
+    public void softDeleteUser(Long userId) {
         Session session = getCurrentSession();
         User user = session.get(User.class, Long.valueOf(userId));
         if (user != null) {

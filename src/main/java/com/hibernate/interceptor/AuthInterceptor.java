@@ -9,14 +9,36 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 public class AuthInterceptor implements HandlerInterceptor {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.hibernate.service.UserService userService;
+
     @Override
     public boolean preHandle(
             HttpServletRequest request,
             HttpServletResponse response,
             Object handler) throws Exception {
+        String path = getPath(request);
+
+        // Allow suspended page, logout, and resources to load
+        if ("/suspended".equals(path) || "/logout".equals(path) || path.startsWith("/resources/")) {
+            return true;
+        }
+
         HttpSession session = request.getSession(false);
         User user = normalizeSession(session);
-        String path = getPath(request);
+
+        // Gatekeeper Logic: Check if logged-in user is BANNED
+        if (user != null) {
+            User dbUser = userService.getUserById(user.getId());
+            if (dbUser != null && com.hibernate.entity.enums.UserStatus.BANNED.equals(dbUser.getStatus())) {
+                if (session != null) {
+                    session.invalidate();
+                }
+                org.springframework.security.core.context.SecurityContextHolder.clearContext();
+                redirect(request, response, "/suspended");
+                return false;
+            }
+        }
 
         if (isAdminPath(path)) {
             if (user == null) {
@@ -24,7 +46,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 return false;
             }
 
-            if (!Role.ADMIN.equals(user.getRole())) {
+            if (!user.isAdmin()) {
                 redirect(request, response, "/");
                 return false;
             }
@@ -36,7 +58,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 return false;
             }
 
-            if (Role.ADMIN.equals(user.getRole())) {
+            if (user.isAdmin()) {
                 redirect(request, response, "/admin-dashboard");
                 return false;
             }
@@ -44,6 +66,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         return true;
     }
+
 
     private User normalizeSession(HttpSession session) {
         if (session == null) {

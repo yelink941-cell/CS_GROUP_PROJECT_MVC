@@ -1,15 +1,27 @@
 package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
+import com.hibernate.entity.User;
 import com.hibernate.entity.enums.ContentType;
 import com.hibernate.entity.enums.PostVisibility;
+import com.hibernate.service.BookmarkService;
 import com.hibernate.service.CategoryService;
 import com.hibernate.service.CollectionService; 
+import com.hibernate.service.CommentService;
+import com.hibernate.service.PostContentService;
+import com.hibernate.service.PostFileService;
+import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.TagService;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +39,12 @@ public class PostController {
     private final TagService tagService;
     private final CollectionService collectionService; 
 
+    
+    private final PostContentService postContentService;
+    private final PostFileService postFileService;
+    private final PostLikeService postLikeService; 
+    private final CommentService commentService;
+    private final BookmarkService bookmarkService;
     @GetMapping
     public String listPosts(Model model, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -184,16 +202,27 @@ public class PostController {
     public String showPostDetail(@PathVariable String slug, Model model, HttpSession session) {
         return postService.getPostBySlug(slug).map(post -> {
             model.addAttribute("post", post);
-            
-            // Post ရဲ့ အသေးစိတ် Content များကိုပါ JSP ဆီ ပို့ပေးခြင်း
             model.addAttribute("contents", post.getContents());
             
             Long userId = (Long) session.getAttribute("userId");
             if (userId != null) {
-                // 📁 လက်ရှိ ယူဆာပိုင်ဆိုင်သော Collections များကို ဆွဲထုတ်ပြီး Model ထဲသို့ ထည့်ပေးခြင်း
+                // 🟢 အရေးကြီး: Refresh လုပ်တိုင်း အခြေအနေကို DB ကနေ ပြန်ယူပါ
+                boolean hasLiked = postLikeService.hasUserLiked(post.getId(), userId);
+                model.addAttribute("hasUserLiked", hasLiked);
+                
+                boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, post.getId());
+                model.addAttribute("hasUserBookmarked", hasBookmarked);
+                
+                // Collections တွေကိုလည်း ဆွဲထုတ်ပေးပါ
                 model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
             }
-            return "user/post/detail"; 
+            
+            // Count များကိုလည်း ပို့ပေးပါ
+            model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
+            model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(post.getId()));
+            model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
+            
+            return "public/post/details"; 
         }).orElse("redirect:/user/posts");
     }
 
@@ -235,4 +264,101 @@ public class PostController {
         model.addAttribute("contentDataList", contentDataList);
         model.addAttribute("sortOrders", sortOrders);
     }
+    
+    @PostMapping("/like")
+    public ResponseEntity<Map<String, Object>> addLike(@RequestParam("postId") Integer postId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+
+       
+        Map<String, Object> response = new HashMap<>();
+        
+        if (userId != null) {
+            postLikeService.toggleLike(postId, userId); 
+            // Service တွင် သတ်မှတ်ထားသော hasUserLiked method အမည်ကို အသုံးပြုခြင်း
+            boolean isLikedNow = postLikeService.hasUserLiked(postId, userId); 
+            long totalLikes = postLikeService.getLikeCount(postId);
+            
+            response.put("status", "success");
+            response.put("isLiked", isLikedNow);
+            response.put("totalLikes", totalLikes);
+            
+            return ResponseEntity.ok(response);
+        }
+        
+        response.put("status", "unauthorized");
+        response.put("message", "Login ဝင်ရန် လိုအပ်ပါသည်။");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @PostMapping("/comment/add")
+    public ResponseEntity<Map<String, Object>> addComment(
+            @RequestParam("postId") Integer postId, 
+            @RequestParam("commentText") String text, 
+            HttpSession session) {
+    	 Long userId = (Long) session.getAttribute("userId");
+
+    	
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        if (userId != null) {
+            postService.addComment(postId, userId, text);
+            response.put("status", "success");
+            response.put("totalComments", commentService.getTotalActiveComments(postId));
+            return ResponseEntity.ok(response);
+        }
+        
+        response.put("status", "unauthorized");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    
+    @GetMapping("/details/{id}")
+    public String getPostDetails(@PathVariable("id") Integer id, Model model, HttpSession session) {
+        Post post = postService.getPostById(id).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        model.addAttribute("post", post);
+        model.addAttribute("contents", postContentService.getContentsByPostId(id));
+        model.addAttribute("postFiles", postFileService.getFilesByPostId(id));
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+        if (userId != null) {
+        	boolean hasLiked = postLikeService.hasUserLiked(id, userId); // DB ကနေ စစ်မယ်
+        	model.addAttribute("hasUserLiked", hasLiked);
+            
+            // 🟢 အမှန်ပြင်ဆင်ရမည့်နေရာ - BookmarkService အစား bookmarkService (variable name) ကို သုံးပါ
+            boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, id);
+            model.addAttribute("hasUserBookmarked", hasBookmarked);
+        }
+        
+        model.addAttribute("likeCount", postLikeService.getLikeCount(id));
+        model.addAttribute("comments", commentService.getActiveParentComments(id));
+        model.addAttribute("totalComments", commentService.getTotalActiveComments(id));
+        model.addAttribute("userLoggedIn", userId); 
+        
+        model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(id));
+        
+        return "public/post/details"; 
+    }
+    @GetMapping("/bookmark")
+    public String showMyBookmarks(Model model, HttpSession session) {
+      Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+    	
+        // Bookmarked လုပ်ထားသော Post စာရင်းများကို ထည့်ပေးခြင်း
+        model.addAttribute("posts", bookmarkService.getBookmarksByUserId(userId));
+        
+        // Tab အခြေအနေကို သတ်မှတ်ပေးခြင်း (Navbar သို့မဟုတ် sidebar တွင် Active ဖြစ်နေစေရန်)
+        model.addAttribute("activeTab", "bookmarks");
+        
+        // 🟢 သီးသန့်ဖိုင်အသစ်မသုံးတော့ဘဲ My Posts စာရင်းပြ JSP ဖိုင်ကို ပြန်သုံးခြင်း
+        return "user/post/list"; 
+    }
+    
 }

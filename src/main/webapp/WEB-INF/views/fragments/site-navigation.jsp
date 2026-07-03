@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+﻿  <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <style>
@@ -59,7 +59,7 @@
         font-size: 13px;
     }
 
-    .nav-history-btn, .nav-collections-btn {
+    .nav-history-btn, .nav-collections-btn, .nav-notifications-btn {
         text-decoration: none;
         font-weight: 600;
         padding: 6px 14px;
@@ -72,6 +72,20 @@
     }
     .nav-history-btn { color: #38bdf8; border: 1px solid #334155; }
     .nav-collections-btn { color: #10b981; border: 1px solid #065f46; gap: 6px; }
+    .nav-notifications-btn { color: #fbbf24; border: 1px solid #92400e; gap: 6px; position: relative; }
+    .nav-notif-badge {
+        background: #ef4444;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+    }
 
     .nav-links {
         display: flex;
@@ -110,12 +124,18 @@
         <div class="nav-right-zone">
             
             <c:if test="${not empty sessionScope.currentUser}">
-                <a href="${pageContext.request.contextPath}/history" class="nav-history-btn">🕒 History</a>
+                <a href="${pageContext.request.contextPath}/notifications" class="nav-notifications-btn">
+                    &#128276; Notifications
+                    <c:if test="${unreadNotificationCount > 0}">
+                        <span class="nav-notif-badge">${unreadNotificationCount}</span>
+                    </c:if>
+                </a>
+                <a href="${pageContext.request.contextPath}/history" class="nav-history-btn">&#128338; History</a>
             </c:if>
             
             <c:if test="${not empty sessionScope.userId}">
                 <a href="${pageContext.request.contextPath}/user/collections" class="nav-collections-btn">
-                    📁 My Collections
+                    &#128193; My Collections
                 </a>
             </c:if>
             
@@ -134,46 +154,46 @@
                         <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/logout">Logout</a>
                     </c:when>
 
-                    <c:when test="${sessionScope.role == 'USER'}">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+                    
 
-                        <div class="nav-item nav-dropdown">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/posts/public">View Posts</a>
-                            <div class="nav-dropdown-menu">
-                                <a href="${pageContext.request.contextPath}/posts/public">📄 All Public Posts</a>
-                                <a href="${pageContext.request.contextPath}/posts/categories">📚 Cheat Sheets by Category</a>
-                                <a href="${pageContext.request.contextPath}/posts/tags">🏷 Cheat Sheets by Tag</a>
-                                <a href="${pageContext.request.contextPath}/posts/popular">⭐ Popular Cheat Sheets</a>
-                                <a href="${pageContext.request.contextPath}/posts/new">🆕 New Cheat Sheets</a>
-                            </div>
+                <c:when test="${sessionScope.role == 'USER'}">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+                    <div class="nav-item nav-dropdown">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/posts/public">View Posts</a>
+                        <div class="nav-dropdown-menu">
+                            <a href="${pageContext.request.contextPath}/posts/public">&#128196; All Public Posts</a>
+                            <a href="${pageContext.request.contextPath}/posts/categories">&#128218; Cheat Sheets by Category</a>
+                            <a href="${pageContext.request.contextPath}/posts/tags">&#127991; Cheat Sheets by Tag</a>
+                            <a href="${pageContext.request.contextPath}/posts/popular">&#11088; Popular Cheat Sheets</a>
+                            <a href="${pageContext.request.contextPath}/posts/trending">&#128293; Trending Cheat Sheets</a>
+                            <a href="${pageContext.request.contextPath}/posts/new">&#127381; New Cheat Sheets</a>
                         </div>
+                    </div>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/user/posts">My Posts</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/user/posts/new">Create Post</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/profile">My Profile</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/user/posts/bookmark">My Bookmarks</a>
+                    <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/logout">Logout</a>
+                </c:when>
 
-                        <a class="nav-link" href="${pageContext.request.contextPath}/user/posts">My Posts</a>
-                        <a class="nav-link" href="${pageContext.request.contextPath}/user/posts/new">Create Post</a>
-                        <a class="nav-link" href="${pageContext.request.contextPath}/profile">My Profile</a>
-                        <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/logout">Logout</a>
-                    </c:when>
-
-                    <c:otherwise>
-                        <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
-
-                        <div class="nav-item nav-dropdown">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/posts/public">View Posts</a>
-                            <div class="nav-dropdown-menu">
-                                <a href="${pageContext.request.contextPath}/posts/public">📄 All Public Posts</a>
-                                <a href="${pageContext.request.contextPath}/posts/categories">📚 Cheat Sheets by Category</a>
-                                <a href="${pageContext.request.contextPath}/posts/tags">🏷 Cheat Sheets by Tag</a>
-                                <a href="${pageContext.request.contextPath}/posts/popular">⭐ Popular Cheat Sheets</a>
-                                <a href="${pageContext.request.contextPath}/posts/new">🆕 New Cheat Sheets</a>
-                            </div>
+                <c:otherwise>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+                    <div class="nav-item nav-dropdown">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/posts/public">View Posts</a>
+                        <div class="nav-dropdown-menu">
+                            <a href="${pageContext.request.contextPath}/posts/public">&#128196; All Public Posts</a>
+                            <a href="${pageContext.request.contextPath}/posts/categories">&#128218; Cheat Sheets by Category</a>
+                            <a href="${pageContext.request.contextPath}/posts/tags">&#127991; Cheat Sheets by Tag</a>
+                            <a href="${pageContext.request.contextPath}/posts/popular">&#11088; Popular Cheat Sheets</a>
+                            <a href="${pageContext.request.contextPath}/posts/trending">&#128293; Trending Cheat Sheets</a>
+                            <a href="${pageContext.request.contextPath}/posts/new">&#127381; New Cheat Sheets</a>
                         </div>
-
-                        <a class="nav-link" href="${pageContext.request.contextPath}/login">Login</a>
-                        <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/register">Register</a>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-            
+                    </div>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/login">Login</a>
+                    <a class="nav-link nav-link-primary" href="${pageContext.request.contextPath}/register">Register</a>
+                </c:otherwise>
+            </c:choose>
         </div>
+    </div>
     </div>
 </nav>

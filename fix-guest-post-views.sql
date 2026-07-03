@@ -1,0 +1,2 @@
+ALTER TABLE post_views
+    MODIFY COLUMN user_id BIGINT NULL;

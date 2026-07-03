@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.hibernate.entity.User" %>
 <%@ page import="org.springframework.security.core.Authentication" %>
 <%@ page import="org.springframework.security.core.context.SecurityContextHolder" %>
@@ -54,31 +54,42 @@
 %>
 
     <aside class="sidebar">
-        <div class="sidebar-brand">CheatSheet Admin Panel</div>
+        <div class="sidebar-brand">CheatSheet Admin Panel &#128081;</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link active">
-                    <span>Core Dashboard</span>
+                    <span>&#128202; Core Dashboard</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/categories" class="sidebar-link">
-                    <span>Category Management</span>
+                    <span>&#128451; Category Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
-                    <span>Tag Management</span>
+                <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
+                    <span>&#128221; Post Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
-                    <span>Pending Posts</span>
+                    <span>&#9203; Pending Posts</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/comments" class="sidebar-link">
+                    <span>&#128172; Comment Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
-                    <span>User Management</span>
+                    <span>&#128101; User Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link">
+                    <span>&#128680; Report Logs</span>
                 </a>
             </li>
         </ul>
