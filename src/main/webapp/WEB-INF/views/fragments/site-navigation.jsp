@@ -59,7 +59,7 @@
         font-size: 13px;
     }
 
-    .nav-history-btn, .nav-collections-btn {
+    .nav-history-btn, .nav-collections-btn, .nav-notifications-btn {
         text-decoration: none;
         font-weight: 600;
         padding: 6px 14px;
@@ -72,6 +72,20 @@
     }
     .nav-history-btn { color: #38bdf8; border: 1px solid #334155; }
     .nav-collections-btn { color: #10b981; border: 1px solid #065f46; gap: 6px; }
+    .nav-notifications-btn { color: #fbbf24; border: 1px solid #92400e; gap: 6px; position: relative; }
+    .nav-notif-badge {
+        background: #ef4444;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+    }
 
     .nav-links {
         display: flex;
@@ -110,6 +124,12 @@
         <div class="nav-right-zone">
             
             <c:if test="${not empty sessionScope.currentUser}">
+                <a href="${pageContext.request.contextPath}/notifications" class="nav-notifications-btn">
+                    &#128276; Notifications
+                    <c:if test="${unreadNotificationCount > 0}">
+                        <span class="nav-notif-badge">${unreadNotificationCount}</span>
+                    </c:if>
+                </a>
                 <a href="${pageContext.request.contextPath}/history" class="nav-history-btn">&#128338; History</a>
             </c:if>
             

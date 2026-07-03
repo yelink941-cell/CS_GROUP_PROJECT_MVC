@@ -2,9 +2,12 @@ package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
 import com.hibernate.entity.PostFile;
+import com.hibernate.service.BookmarkService;
 import com.hibernate.service.CollectionService; // 🎯 Added import for CollectionService
+import com.hibernate.service.CommentService;
 import com.hibernate.service.PostContentService;
 import com.hibernate.service.PostFileService;
+import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -31,7 +34,10 @@ public class HomePageController {
     private final PostService postService;
     private final PostFileService postFileService;
     private final CollectionService collectionService; 
-    private final PostContentService postContentService;// 🎯 Injected CollectionService via Lombok
+    private final PostContentService postContentService;
+    private final CommentService commentService;
+    private final PostLikeService postLikeService;
+    private final BookmarkService bookmarkService;
 
     @GetMapping("/")
     public String homePage(Model model) {
@@ -59,7 +65,12 @@ public class HomePageController {
                     Long userId = (Long) session.getAttribute("userId");
                     if (userId != null) {
                         model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
+                        model.addAttribute("hasUserLiked", postLikeService.hasUserLiked(post.getId(), userId));
+                        model.addAttribute("hasUserBookmarked", bookmarkService.hasUserBookmarked(userId, post.getId()));
                     }
+
+                    model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
+                    model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
                     
                     return "public/post/details";
                 })
