@@ -103,6 +103,23 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public Optional<Post> findActiveBySlug(String slug) {
+        Post post = getCurrentSession()
+                .createQuery(
+                        "SELECT DISTINCT p FROM Post p "
+                                + "LEFT JOIN FETCH p.author "
+                                + "LEFT JOIN FETCH p.category "
+                                + "LEFT JOIN FETCH p.tags "
+                                + "WHERE p.slug = :slug "
+                                + "AND p.deletedAt IS NULL",
+                        Post.class)
+                .setParameter("slug", slug)
+                .uniqueResult();
+
+        return Optional.ofNullable(post);
+    }
+
+    @Override
     public boolean existsBySlug(String slug) {
         Long count = getCurrentSession()
                 .createQuery("SELECT COUNT(p.id) FROM Post p WHERE p.slug = :slug", Long.class)
@@ -116,9 +133,10 @@ public class PostRepositoryImpl implements PostRepository {
     public List<Post> findByCategoryId(Integer categoryId) {
         return getCurrentSession()
                 .createQuery(
-                        "SELECT p FROM Post p "
+                        "SELECT DISTINCT p FROM Post p "
                                 + "LEFT JOIN FETCH p.author "
                                 + "LEFT JOIN FETCH p.category "
+                                + "LEFT JOIN FETCH p.tags "
                                 + "WHERE p.category.id = :categoryId "
                                 + "AND p.status = :status "
                                 + "AND p.visibility = :visibility "
@@ -139,6 +157,7 @@ public class PostRepositoryImpl implements PostRepository {
                                 + "JOIN p.tags filteredTag "
                                 + "LEFT JOIN FETCH p.author "
                                 + "LEFT JOIN FETCH p.category "
+                                + "LEFT JOIN FETCH p.tags "
                                 + "WHERE filteredTag.id = :tagId "
                                 + "AND p.status = :status "
                                 + "AND p.visibility = :visibility "
@@ -155,9 +174,10 @@ public class PostRepositoryImpl implements PostRepository {
     public List<Post> findPopularPublishedPublicPosts() {
         return getCurrentSession()
                 .createQuery(
-                        "SELECT p FROM Post p "
+                        "SELECT DISTINCT p FROM Post p "
                                 + "LEFT JOIN FETCH p.author "
                                 + "LEFT JOIN FETCH p.category "
+                                + "LEFT JOIN FETCH p.tags "
                                 + "WHERE p.status = :status "
                                 + "AND p.visibility = :visibility "
                                 + "AND p.deletedAt IS NULL "
@@ -235,9 +255,10 @@ public class PostRepositoryImpl implements PostRepository {
     public List<Post> findPublishedPublicPosts() {
         return getCurrentSession()
                 .createQuery(
-                        "SELECT p FROM Post p "
+                        "SELECT DISTINCT p FROM Post p "
                                 + "LEFT JOIN FETCH p.author "
                                 + "LEFT JOIN FETCH p.category "
+                                + "LEFT JOIN FETCH p.tags "
                                 + "WHERE p.status = :status "
                                 + "AND p.visibility = :visibility "
                                 + "AND p.deletedAt IS NULL "

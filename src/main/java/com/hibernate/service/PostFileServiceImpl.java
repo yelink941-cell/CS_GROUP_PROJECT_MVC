@@ -88,18 +88,50 @@ public class PostFileServiceImpl implements PostFileService {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<PostFile> getById(Integer fileId) {
+        return postFileRepository.findById(fileId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<PostFile> getFile(Integer postId, Integer fileId) {
         return postFileRepository.findByIdAndPostId(fileId, postId);
     }
 
     @Override
     public Path resolveFile(PostFile postFile) {
-        String storedFileName = Paths.get(postFile.getFileUrl()).getFileName().toString();
+        if (postFile == null || postFile.getPost() == null || postFile.getFileUrl() == null) {
+            throw new IllegalArgumentException("Invalid stored file.");
+        }
+
+        Integer postId = postFile.getPost().getId();
+        String expectedPrefix = "/uploads/posts/" + postId + "/";
+        String storedFileUrl = postFile.getFileUrl().replace('\\', '/');
+        if (!storedFileUrl.startsWith(expectedPrefix)) {
+            throw new IllegalArgumentException("Invalid stored file path.");
+        }
+
+        String storedFileName = Paths.get(storedFileUrl).getFileName().toString();
         Path uploadDirectory = getUploadDirectory(postFile.getPost().getId());
         Path resolvedFile = uploadDirectory.resolve(storedFileName).normalize();
 
         if (!resolvedFile.startsWith(uploadDirectory)) {
             throw new IllegalArgumentException("Invalid stored file path.");
+        }
+
+        if (Files.exists(resolvedFile)) {
+            return resolvedFile;
+        }
+
+        Optional<Path> legacyUploadDirectory = getLegacyUploadDirectory(postFile.getPost().getId());
+        if (legacyUploadDirectory.isPresent()) {
+            Path legacyDirectory = legacyUploadDirectory.get();
+            Path legacyFile = legacyDirectory.resolve(storedFileName).normalize();
+            if (!legacyFile.startsWith(legacyDirectory)) {
+                throw new IllegalArgumentException("Invalid stored file path.");
+            }
+
+            return legacyFile;
         }
 
         return resolvedFile;
@@ -193,13 +225,20 @@ public class PostFileServiceImpl implements PostFileService {
     }
 
     private Path getUploadDirectory(Integer postId) {
-        String webRoot = servletContext.getRealPath("/");
-        if (webRoot == null) {
-            throw new IllegalStateException("The application upload directory is unavailable.");
-        }
-
-        return Paths.get(webRoot, "uploads", "posts", postId.toString())
+        return Paths.get(System.getProperty("user.home"), "cheatsheet-uploads", "posts", postId.toString())
                 .toAbsolutePath()
                 .normalize();
+    }
+
+    private Optional<Path> getLegacyUploadDirectory(Integer postId) {
+        String webRoot = servletContext.getRealPath("/");
+        if (webRoot == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(
+                Paths.get(webRoot, "uploads", "posts", postId.toString())
+                        .toAbsolutePath()
+                        .normalize());
     }
 }

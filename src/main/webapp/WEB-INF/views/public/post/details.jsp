@@ -264,6 +264,66 @@
     color: #dc3545;
 }
 
+.btn-report {
+    background-color: #fff5f5 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+}
+
+.btn-report:hover {
+    background-color: #fee2e2 !important;
+}
+
+.report-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.report-modal-backdrop.active {
+    display: flex;
+}
+
+.report-modal {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    width: min(420px, 92vw);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+}
+
+.report-modal h3 {
+    margin: 0 0 16px;
+}
+
+.report-modal label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #374151;
+}
+
+.report-modal select,
+.report-modal textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.report-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
 </style>
     
 </head>
@@ -801,7 +861,8 @@ function submitReply(e, commentId, parentId, postId) {
                     listContainer = newSub;
                 }
             }
-        }
+        });
+    }
 
         const safeUser = escapeHtml(data.username);
         const safeContent = escapeHtml(data.content);

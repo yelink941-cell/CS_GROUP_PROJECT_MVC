@@ -15,12 +15,14 @@
     ${reply.content}
 </p>
 
-            <div class="comment-actions">
-    <button type="button" class="btn-action" onclick="toggleReplyForm('r-${reply.id}')">Reply</button>
-    <c:if test="${sessionScope.userId == reply.user.id}">
-        <button type="button" class="btn-action btn-delete" onclick="deleteComment(${reply.id})">Delete</button>
-    </c:if>
-</div>
+            <c:if test="${sessionScope.userId != null && sessionScope.userId != reply.user.id}">
+                <button type="button" class="button-link" style="color:#dc2626; margin-left:8px;"
+                        onclick="openReportModal('comment', ${reply.id})">Report</button>
+            </c:if>
+
+            <c:if test="${sessionScope.userId != null && sessionScope.userId == reply.user.id}">
+                <button type="button" class="button-link" style="color: #dc3545; margin-left: 8px;" onclick="deleteComment(${reply.id})">Delete</button>
+            </c:if>
 
             <c:if test="${sessionScope.userId != null}">
                 <div id="replyFormContainer-r-${reply.id}" style="display: none; margin-top: 8px; margin-left: 20px;">

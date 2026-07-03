@@ -1,6 +1,4 @@
 package com.hibernate.entity;
-
-// ❌ jakarta.persistence အားလုံးကို ဖျက်ပါ သို့မဟုတ် Replace လုပ်ပါ
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -48,6 +46,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private Role role = Role.USER;
+    
+ // ✅ အသစ်ထည့်ထားတဲ့ column နှစ်ခု
+    @Column(name = "is_online", nullable = false)
+    private Boolean isOnline = false;
+
+    @Column(name = "last_seen")
+    private LocalDateTime lastSeen = LocalDateTime.now();
+    
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -62,4 +68,17 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserProfile profile;
+    
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserPreference preferences;
+    
+    @Column(name = "reset_token", length = 100)
+    private String resetToken;
+
+    @Column(name = "token_expiry_date")
+    private java.time.LocalDateTime tokenExpiryDate;
+
+    public boolean isAdmin() {
+        return this.role == Role.ADMIN || this.role == Role.SUPER_ADMIN;
+    }
 }

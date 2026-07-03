@@ -9,6 +9,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 public class AuthInterceptor implements HandlerInterceptor {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.hibernate.service.UserService userService;
+
     @Override
     public boolean preHandle(
             HttpServletRequest request,
@@ -60,6 +63,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         return true;
     }
+
 
     private User normalizeSession(HttpSession session) {
         if (session == null) {

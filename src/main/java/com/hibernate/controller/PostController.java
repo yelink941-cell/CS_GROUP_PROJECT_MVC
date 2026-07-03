@@ -321,8 +321,8 @@ public class PostController {
         }
         
         if (userId != null) {
-            boolean hasLiked = postLikeService.hasUserLiked(id, userId);
-            model.addAttribute("hasUserLiked", hasLiked);
+        	boolean hasLiked = postLikeService.hasUserLiked(id, userId); // DB ကနေ စစ်မယ်
+        	model.addAttribute("hasUserLiked", hasLiked);
             
             boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, id);
             model.addAttribute("hasUserBookmarked", hasBookmarked);

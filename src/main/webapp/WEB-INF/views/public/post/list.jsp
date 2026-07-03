@@ -9,7 +9,7 @@
     <title><c:out value="${pageTitle}" /> - CheatSheet Hub</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-list.css?v=5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-list.css?v=8">
 </head>
 <body class="public-list-page">
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
@@ -37,7 +37,10 @@
                         <div class="card-content">
                             <div class="card-topline">
                                 <span class="category-label"><c:out value="${post.category.name}" /></span>
-                                <span class="public-label">Public</span>
+                                <span class="card-state">
+                                    <span class="public-label">Public</span>
+                                    <span class="view-count-text"><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
+                                </span>
                             </div>
 
                             <a class="card-title" href="${detailsUrl}"><c:out value="${post.title}" /></a>
