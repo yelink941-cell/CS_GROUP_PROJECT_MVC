@@ -2,15 +2,16 @@ package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
 import com.hibernate.entity.PostFile;
-import com.hibernate.service.CollectionService; // 🎯 Added import for CollectionService
+import com.hibernate.service.CollectionService;
+import com.hibernate.service.CommentService;
 import com.hibernate.service.PostContentService;
 import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostService;
+import com.hibernate.service.UserService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import javax.servlet.http.HttpSession; // 🎯 Session သုံးရန် Import ထည့်ပေးထားသည်
+import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -20,25 +21,40 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.ui.Model;
 
 @Controller
 @RequiredArgsConstructor
 public class HomePageController {
     private final PostService postService;
+    private final PostContentService postContentService;
     private final PostFileService postFileService;
-    private final CollectionService collectionService; 
-    private final PostContentService postContentService;// 🎯 Injected CollectionService via Lombok
+    private final CollectionService collectionService;
+    private final UserService userService;        // ✅ UserService ထည့်ပါ
+    private final CommentService commentService;  // ✅ CommentService ထည့်ပါ
 
+    // =========================================================
+    // 1. HOME PAGE (index)
+    // =========================================================
     @GetMapping("/")
-    public String homePage(Model model) {
-        model.addAttribute("posts", postService.getPublishedPublicPosts());
-        return "index";
+    public String home(HttpSession session, Model model) {
+        // Statistics တွေအတွက်
+        long totalPosts = postService.countAllPosts();
+        long totalCollections = collectionService.countAllCollections();
+        
+        // Model ထဲထည့်
+        model.addAttribute("totalPosts", totalPosts);
+        model.addAttribute("totalCollections", totalCollections);
+        
+        return "index"; 
     }
 
+    // =========================================================
+    // 2. POST DETAILS (by slug)
+    // =========================================================
     @GetMapping("/posts/public/details")
     public String publicPostDetails(@RequestParam("slug") String slug, Model model, HttpSession session) {
         return publicPostDetailsBySlug(slug, model, session);
@@ -49,11 +65,8 @@ public class HomePageController {
         return postService.getPostBySlug(slug)
                 .map(post -> {
                     model.addAttribute("post", post);
-                 // PostContentService (စာလုံးအကြီး) နေရာတွင် postContentService (စာလုံးအသေး) ကို သုံးပါ
                     model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
                     model.addAttribute("postFiles", postFileService.getFilesByPostId(post.getId()));
-                    
-                    // 🎯 ဤလိုင်းလေးကို အသစ်တိုးပေးလိုက်ပါဗျာ (JSP ထဲ တိုက်ရိုက်သယ်ယူနိုင်ရန်)
                     model.addAttribute("currentPostSlug", slug); 
                     
                     Long userId = (Long) session.getAttribute("userId");
@@ -66,6 +79,9 @@ public class HomePageController {
                 .orElse("redirect:/posts/public");
     }
 
+    // =========================================================
+    // 3. VIEW FILE
+    // =========================================================
     @GetMapping("/posts/{slug}/files/{fileId}")
     public ResponseEntity<?> viewPublicFile(
             @PathVariable String slug,
@@ -100,4 +116,6 @@ public class HomePageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    
 }

@@ -112,4 +112,15 @@ public class UserRepositoryImpl implements UserRepository {
                 .setMaxResults(limit)
                 .getResultList();
     }
+    @Override
+    public long count() {
+        try {
+            Long count = getSession()
+                    .createQuery("SELECT COUNT(u) FROM User u WHERE u.deletedAt IS NULL", Long.class)
+                    .uniqueResult();
+            return count != null ? count : 0;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 }

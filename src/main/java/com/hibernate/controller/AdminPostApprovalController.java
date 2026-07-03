@@ -1,6 +1,7 @@
 package com.hibernate.controller;
 
 import com.hibernate.entity.User;
+import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.service.PostService;
 import javax.servlet.http.HttpSession;
@@ -19,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class AdminPostApprovalController {
     private final PostService postService;
 
+    // =========================================================
+    // 1. PENDING POSTS - FIXED (with statistics)
+    // =========================================================
     @GetMapping("/pending")
     public String pendingPosts(Model model, HttpSession session) {
         String redirect = validateAdmin(session);
@@ -27,10 +31,21 @@ public class AdminPostApprovalController {
             return redirect;
         }
 
+        // Get pending posts
         model.addAttribute("posts", postService.getPendingPosts());
+        
+        // ✅ Statistics for cards
+        model.addAttribute("totalPending", postService.countPendingPosts());
+        model.addAttribute("totalPosts", postService.countAllPosts());
+        model.addAttribute("totalApproved", postService.countByStatus(PostStatus.PUBLISHED));
+        model.addAttribute("totalRejected", postService.countByStatus(PostStatus.REJECTED));
+        
         return "admin/posts/pending";
     }
 
+    // =========================================================
+    // 2. APPROVE POST
+    // =========================================================
     @PostMapping("/approve/{id}")
     public String approvePost(@PathVariable Integer id, HttpSession session) {
         String redirect = validateAdmin(session);
@@ -43,6 +58,9 @@ public class AdminPostApprovalController {
         return "redirect:/admin/posts/pending";
     }
 
+    // =========================================================
+    // 3. REJECT POST
+    // =========================================================
     @PostMapping("/reject/{id}")
     public String rejectPost(
             @PathVariable Integer id,
@@ -58,6 +76,9 @@ public class AdminPostApprovalController {
         return "redirect:/admin/posts/pending";
     }
 
+    // =========================================================
+    // 4. VALIDATE ADMIN
+    // =========================================================
     private String validateAdmin(HttpSession session) {
         User currentUser = (User) session.getAttribute("currentUser");
 

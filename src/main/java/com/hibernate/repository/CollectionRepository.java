@@ -12,6 +12,7 @@ public interface CollectionRepository {
     Optional<Collection> findById(Integer id);
     List<Collection> findByUserId(Long userId);
     List<Collection> findPublicCollections();
+    long count();
     
     // 🎯 🌟 ဖိုဒါ ID ကို သုံးပြီး ၎င်းထဲတွင် သိမ်းထားသမျှ Post များကို ဆွဲထုတ်ပေးမည့် မက်သတ်အသစ်
     List<Post> findPostsByCollectionId(Integer collectionId);

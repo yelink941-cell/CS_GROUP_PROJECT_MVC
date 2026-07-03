@@ -55,4 +55,11 @@ public class CategoryRepositoryImpl implements CategoryRepository {
 
         return count != null && count > 0;
     }
+    @Override
+    public long countTotalPostsInAllCategories() {
+        Long count = getCurrentSession()
+                .createQuery("SELECT SUM(p.id) FROM Post p", Long.class)
+                .uniqueResult();
+        return count != null ? count : 0;
+    }
 }

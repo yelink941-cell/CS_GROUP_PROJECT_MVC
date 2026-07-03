@@ -16,4 +16,5 @@ public interface CategoryRepository {
     List<Category> findAll();
 
     boolean existsByName(String name);
+    long countTotalPostsInAllCategories();
 }

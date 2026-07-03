@@ -228,4 +228,13 @@ public class UserServiceImpl implements UserService {
             session.merge(user);
         }
     }
+    @Override
+    public long countAllUsers() {
+        try {
+            return userRepository.count();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+    
 }

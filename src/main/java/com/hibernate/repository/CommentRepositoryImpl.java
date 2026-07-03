@@ -63,4 +63,15 @@ public class CommentRepositoryImpl implements CommentRepository {
                 .setParameter("postId", postId)
                 .getResultList();
     }
+    @Override
+    public long count() {
+        try {
+            Long count = entityManager.createQuery(
+                    "SELECT COUNT(c) FROM Comment c WHERE c.deletedAt IS NULL", Long.class)
+                    .getSingleResult();
+            return count != null ? count : 0;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 }

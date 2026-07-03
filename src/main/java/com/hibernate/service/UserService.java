@@ -30,5 +30,6 @@ public interface UserService {
     User findUserByResetToken(String token);
     boolean checkPassword(User user, String rawPassword);
     void updatePassword(User user, String newPassword);
+    long countAllUsers();
 }
 

@@ -6,6 +6,8 @@ import com.hibernate.entity.UserPreference;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
+import com.hibernate.service.CommentService;
+import com.hibernate.service.PostService;
 import com.hibernate.service.UserService;
 
 import java.time.LocalDateTime;
@@ -30,12 +32,20 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class UserController {
 
-    private final UserService userService;
+	private final UserService userService;
     private final JavaMailSender mailSender;
+    private final PostService postService;
+    private final CommentService commentService;
 
-    public UserController(UserService userService, JavaMailSender mailSender) {
+    // ✅ Constructor ကို ပြင်ပါ
+    public UserController(UserService userService, 
+                          JavaMailSender mailSender,
+                          PostService postService,
+                          CommentService commentService) {
         this.userService = userService;
         this.mailSender = mailSender;
+        this.postService = postService;
+        this.commentService = commentService;
     }
 
     @GetMapping("/register")
@@ -426,11 +436,20 @@ public class UserController {
         return "redirect:/?logout=true";
     }
     @GetMapping("/admin/dashboard")
-    public String showAdminDashboard(HttpSession session) {
-        User adminUser = (User) session.getAttribute("currentUser");
-        if (adminUser == null || !Role.ADMIN.equals(adminUser.getRole())) {
-            return "redirect:/login"; 
+    public String showAdminDashboard(HttpSession session, Model model) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        
+        if (currentUser == null) {
+            return "redirect:/login";
         }
+        
+        // Statistics
+        model.addAttribute("totalPosts", postService.countAllPosts());
+        model.addAttribute("pendingPosts", postService.countPendingPosts());
+        model.addAttribute("totalUsers", userService.countAllUsers());
+        model.addAttribute("totalComments", commentService.countAllComments());
+        
+        // ✅ JSP က WEB-INF/views/admin/admin-dashboard.jsp မှာရှိတယ်
         return "admin/admin-dashboard";
     }
 
