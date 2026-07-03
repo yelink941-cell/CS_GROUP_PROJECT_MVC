@@ -146,16 +146,8 @@ public class ReportServiceImpl implements ReportService {
 
             Post post = report.getPost();
             if (post != null) {
-                // Soft delete post
-                moderationService.softDeletePost(adminId, post.getId(), "Resolved report " + reportId + ": " + reason);
-
-                // Ban author when allowed (skip admins unless super admin is resolving)
-                User author = post.getAuthor();
-                User admin = getUser(adminId);
-                if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
-                    moderationService.banUser(adminId, author.getId(),
-                            "Banned due to resolved post report " + reportId + ": " + reason);
-                }
+                moderationService.softDeletePost(adminId, post.getId(),
+                        "Resolved report " + reportId + ": " + reason);
             }
         }
     }
@@ -194,5 +186,17 @@ public class ReportServiceImpl implements ReportService {
     @Transactional(readOnly = true)
     public List<CommentReport> getAllPendingCommentReports() {
         return commentReportRepository.findAllPending();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostReport> getAllPostReportHistory() {
+        return postReportRepository.findAllHistory();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentReport> getAllCommentReportHistory() {
+        return commentReportRepository.findAllHistory();
     }
 }
