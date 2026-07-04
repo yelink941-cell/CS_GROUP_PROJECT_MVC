@@ -16,4 +16,7 @@ public interface ReportService {
     
     List<PostReport> getAllPendingPostReports();
     List<CommentReport> getAllPendingCommentReports();
+
+    List<PostReport> getAllPostReportHistory();
+    List<CommentReport> getAllCommentReportHistory();
 }

@@ -8,4 +8,5 @@ public interface PostReportRepository {
     PostReport findPendingByPostAndReporter(Integer postId, Long reporterId);
     PostReport findById(Integer id);
     List<PostReport> findAllPending();
+    List<PostReport> findAllHistory();
 }

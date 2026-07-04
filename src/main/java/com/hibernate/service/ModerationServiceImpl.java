@@ -93,9 +93,9 @@ public class ModerationServiceImpl implements ModerationService {
             if (post.getAuthor() != null) {
                 notificationService.createNotification(
                         post.getAuthor().getId(),
-                        "CONTENT_REMOVED",
-                        "Post Removed",
-                        "Your post was removed by a moderator. Reason: " + reason,
+                        "POST_BANNED",
+                        "Post Banned",
+                        "Your post has been banned and removed. Reason: " + reason,
                         "POST",
                         postId
                 );
