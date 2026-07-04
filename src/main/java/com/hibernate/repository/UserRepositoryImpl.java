@@ -7,8 +7,9 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.Optional;
+
+import com.hibernate.entity.User;
+import com.hibernate.entity.UserProfile;
 
 @Repository
 @Transactional

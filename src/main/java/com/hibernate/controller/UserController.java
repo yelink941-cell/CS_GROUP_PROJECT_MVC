@@ -29,8 +29,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam; 
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.hibernate.dto.RegistrationDto;
+import com.hibernate.entity.User;
+import com.hibernate.entity.UserPreference;
+import com.hibernate.entity.UserProfile;
+import com.hibernate.entity.enums.Role;
+import com.hibernate.entity.enums.UserStatus;
+import com.hibernate.service.UserService;
 
 @Controller
 public class UserController {
@@ -55,44 +63,47 @@ public class UserController {
 
     @PostMapping("/register")
     public String processRegistration(
-            @ModelAttribute("registrationDto") RegistrationDto dto, 
-            @RequestParam("avatarFile") MultipartFile avatarFile,
+            @ModelAttribute("registrationDto") RegistrationDto dto,
+            @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
             Model model) {
-        
+
         if (dto.getPassword() == null || !dto.getPassword().equals(dto.getConfirmPassword())) {
             model.addAttribute("error", "Passwords do not match!");
             return "register";
         }
-        
+
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
-        user.setPasswordHash(dto.getPassword()); 
+        user.setPasswordHash(dto.getPassword());
 
         UserProfile profile = new UserProfile();
         profile.setFullName(dto.getFullName());
         profile.setBio(dto.getBio());
         profile.setGender(dto.getGender());
-        
+        profile.setCountry(dto.getCountry());
+        profile.setDobDay(dto.getDobDay());
+        profile.setDobMonth(dto.getDobMonth());
+        profile.setDobYear(dto.getDobYear());
+
         try {
             if (avatarFile != null && !avatarFile.isEmpty()) {
                 profile.setAvatar(avatarFile.getBytes());
             }
         } catch (Exception e) {
-            e.printStackTrace();
             model.addAttribute("error", "Image processing failed. Please try again.");
             return "register";
         }
-        
+
         boolean isSuccess = userService.registerNewUser(user, profile);
-        
+
         if (isSuccess) {
             model.addAttribute("msg", "Account Created Successfully");
-            return "login"; 
-        } else {
-            model.addAttribute("error", "This Email is already registered!");
-            return "register"; 
+            return "login";
         }
+
+        model.addAttribute("error", "This Email or Username is already registered!");
+        return "register";
     }
 
     @GetMapping("/login")
@@ -102,7 +113,7 @@ public class UserController {
         }
         return "login";
     }
-    
+
     @ModelAttribute
     public void populateUserSession(HttpSession session) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -121,6 +132,7 @@ public class UserController {
                 
                 if (session.getAttribute("currentUser") == null) {
                     session.setAttribute("currentUser", user);
+                    session.setAttribute("userId", user.getId());
                 }
             }
         }
@@ -128,16 +140,13 @@ public class UserController {
 
     @GetMapping("/forgot-password")
     public String showForgotPasswordForm() {
-        return "forgot-password"; 
+        return "forgot-password";
     }
 
     @PostMapping("/forgot-password")
-    public String processForgotPassword(
-            @RequestParam("email") String email, 
-            Model model) {
-        
+    public String processForgotPassword(@RequestParam("email") String email, Model model) {
         User user = userService.findUserByEmail(email);
-        
+
         if (user == null) {
             model.addAttribute("msg", "If that account exists, a secure verification step has been dispatched.");
             return "forgot-password";
@@ -147,21 +156,19 @@ public class UserController {
         String otpCode = String.format("%06d", random.nextInt(900000) + 100000);
         
         userService.createPasswordResetTokenForUser(user, otpCode);
-        
+
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
             message.setSubject("Your Secure Reset Verification Code");
-            message.setText("Hello,\n\nYour security Verification One-Time Code (OTP) is: " + otpCode 
-                            + "\n\nThis code will expire in exactly 15 minutes for your protection.");
-            
+            message.setText("Hello,\n\nYour security Verification One-Time Code (OTP) is: " + otpCode
+                    + "\n\nThis code will expire in exactly 15 minutes for your protection.");
+
             mailSender.send(message);
-            
+
             model.addAttribute("email", email);
             return "verify-otp";
-            
         } catch (Exception e) {
-            e.printStackTrace();
             model.addAttribute("error", "Failed to process email dispatch. Please try again.");
             return "forgot-password";
         }
@@ -172,9 +179,9 @@ public class UserController {
             @RequestParam("email") String email,
             @RequestParam("otp") String submittedOtp,
             Model model) {
-        
+
         User user = userService.findUserByEmail(email.trim());
-        
+
         if (user == null || user.getResetToken() == null) {
             model.addAttribute("error", "Session invalid. Please start over.");
             return "forgot-password";
@@ -184,7 +191,7 @@ public class UserController {
             model.addAttribute("error", "The OTP code has expired. Please request a new one.");
             return "forgot-password";
         }
-        
+
         if (user.getResetToken().equals(submittedOtp.trim())) {
             model.addAttribute("token", submittedOtp.trim());
             return "reset-password"; 
@@ -193,6 +200,10 @@ public class UserController {
             model.addAttribute("email", email); 
             return "verify-otp"; 
         }
+
+        model.addAttribute("error", "Invalid OTP security code. Please check your email inbox again.");
+        model.addAttribute("email", email);
+        return "verify-otp";
     }
 
     @PostMapping("/reset-password")
@@ -201,21 +212,21 @@ public class UserController {
             @RequestParam("password") String password,
             @RequestParam("confirmPassword") String confirmPassword,
             Model model) {
-        
+
         if (!password.equals(confirmPassword)) {
             model.addAttribute("token", token);
             model.addAttribute("error", "Passwords do not match!");
             return "reset-password";
         }
-        
+
         User user = userService.findUserByResetToken(token);
         if (user == null || user.getTokenExpiryDate().isBefore(LocalDateTime.now())) {
             model.addAttribute("error", "Transaction session expired. Please start over.");
             return "redirect:/forgot-password";
         }
-        
-        userService.updatePassword(user, password); 
-        return "redirect:/login?resetSuccess=true"; 
+
+        userService.updatePassword(user, password);
+        return "redirect:/login?resetSuccess=true";
     }
 
     @GetMapping("/profile")
@@ -300,7 +311,7 @@ public class UserController {
             model.addAttribute("avatarImage", base64Avatar);
         }
         model.addAttribute("userProfile", profile);
-        return "profile/edit-profile"; 
+        return "profile/edit-profile";
     }
 
     @PostMapping("/profile/update")
@@ -314,7 +325,7 @@ public class UserController {
 
         try {
             UserProfile existingProfile = userService.getUserProfileByUserId(currentUser.getId());
-            
+
             if (existingProfile != null) {
                 updatedProfile.setUser(existingProfile.getUser());
                 updatedProfile.setId(existingProfile.getId());
@@ -324,12 +335,11 @@ public class UserController {
                 } else {
                     updatedProfile.setAvatar(existingProfile.getAvatar());
                 }
+
+                userService.updateUserProfile(existingProfile);
             } else {
                 updatedProfile.setUser(currentUser);
             }
-            
-            userService.updateUserProfile(updatedProfile);
-            
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("error", "Failed to update profile settings.");
@@ -393,7 +403,7 @@ public class UserController {
             @RequestParam("userId") Long userId,
             @RequestParam("role") String roleStr,
             @RequestParam("status") String statusStr) {
-            
+
         userService.updateUserRoleAndStatus(userId, Role.valueOf(roleStr), UserStatus.valueOf(statusStr));
         return "redirect:/admin/users";
     }

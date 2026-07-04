@@ -60,7 +60,7 @@ public class AdminBanController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to hide post: " + e.getMessage());
         }
-        return "redirect:/admin/reports";
+        return "redirect:/admin/reports?type=posts&view=queue";
     }
 
     @PostMapping("/comments/{id}/hide")
@@ -78,6 +78,6 @@ public class AdminBanController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to hide comment: " + e.getMessage());
         }
-        return "redirect:/admin/reports";
+        return "redirect:/admin/reports?type=comments&view=queue";
     }
 }

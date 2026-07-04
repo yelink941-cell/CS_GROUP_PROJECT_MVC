@@ -1,7 +1,11 @@
 package com.hibernate.repository;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.hibernate.entity.User;
 import com.hibernate.entity.UserProfile;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -14,8 +18,11 @@ public interface UserRepository {
     User getUserById(Long id);
 
     User getUserByEmail(String email);
-    UserProfile getUserProfileByUserId(Long userId);
+    
     void updateProfile(UserProfile profile);
+    
+    UserProfile getUserProfileByUserId(int userId);
+
     Optional<User> findByEmail(String email);
     Optional<User> findByUsername(String username);
     Optional<User> findById(Long id);
