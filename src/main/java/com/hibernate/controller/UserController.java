@@ -1,15 +1,20 @@
 package com.hibernate.controller;
 
 import com.hibernate.dto.RegistrationDto;
+import com.hibernate.entity.Post;
 import com.hibernate.entity.User;
-import com.hibernate.entity.UserPreference;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
 import com.hibernate.service.UserService;
+import com.hibernate.service.PostService;    
+import com.hibernate.service.PostLikeService;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
+
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,10 +37,14 @@ public class UserController {
 
     private final UserService userService;
     private final JavaMailSender mailSender;
+    private final PostService postService;     
+    private final PostLikeService postLikeService; 
 
-    public UserController(UserService userService, JavaMailSender mailSender) {
+    public UserController(UserService userService, JavaMailSender mailSender,PostService postService, PostLikeService postLikeService) {
         this.userService = userService;
         this.mailSender = mailSender;
+        this.postService = postService;
+        this.postLikeService = postLikeService;
     }
 
     @GetMapping("/register")
@@ -87,7 +96,10 @@ public class UserController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm() {
+    public String showLoginForm(@RequestParam(value = "error", required = false) String error, Model model) {
+        if ("inactive".equals(error)) {
+            model.addAttribute("loginError", "Your account is currently inactive. Please contact the administrator.");
+        }
         return "login";
     }
     
@@ -96,11 +108,18 @@ public class UserController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         
         if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
-            if (session.getAttribute("currentUser") == null) {
-                String identifier = auth.getName(); 
-                User user = userService.findUserByEmail(identifier); 
+            String identifier = auth.getName(); 
+            User user = userService.findUserByEmail(identifier); 
+            
+            if (user != null) {
+                // 🔴 LOGIC BLOCK: If user account is marked INACTIVE, block access immediately
+                if (user.getStatus() == com.hibernate.entity.enums.UserStatus.INACTIVE) {
+                    session.invalidate(); // Clear out session variables
+                    SecurityContextHolder.clearContext(); // Disconnect Spring Security authentication
+                    return;
+                }
                 
-                if (user != null) {
+                if (session.getAttribute("currentUser") == null) {
                     session.setAttribute("currentUser", user);
                 }
             }
@@ -201,22 +220,74 @@ public class UserController {
 
     @GetMapping("/profile")
     public String showUserProfilePage(HttpSession session, Model model) {
+       
         User currentUser = (User) session.getAttribute("currentUser");
-        UserProfile profile = userService.getUserProfileByUserId(currentUser.getId());
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         
+        Long profileOwnerId = currentUser.getId();
+        
+        // --- 1. Fetch Profile Information ---
+        UserProfile profile = userService.getUserProfileByUserId(profileOwnerId);
         if (profile != null && profile.getAvatar() != null) {
-            String base64Avatar = java.util.Base64.getEncoder().encodeToString(profile.getAvatar());
+            String base64Avatar = Base64.getEncoder().encodeToString(profile.getAvatar());
             model.addAttribute("avatarImage", base64Avatar);
         }
         
         User profileOwner = userService.getUserById(profileOwnerId);
-        
-        
         long followerCount = userService.getFollowerCount(profileOwnerId);
         long followingCount = userService.getFollowingCount(profileOwnerId);
         long postCount = userService.getPostCountByUserId(profileOwnerId);
+        List<User> followers = userService.getFollowersByUserId(profileOwnerId);
+        List<User> following = userService.getFollowingByUserId(profileOwnerId);
+
+        model.addAttribute("followersList", followers);
+        model.addAttribute("followingList", following);
 
         model.addAttribute("userProfile", profile);
+        model.addAttribute("profileOwner", profileOwner);
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("followerCount", followerCount);
+        model.addAttribute("followingCount", followingCount);
+        model.addAttribute("postCount", postCount);
+        model.addAttribute("isFollowing", false);
+
+        // --- 2. Fetch User's Created Posts (Recent Activity Tab) ---
+        List<Post> userPosts = postService.getPostsByAuthorId(profileOwnerId);
+        model.addAttribute("userPosts", userPosts);
+
+        // --- 3. OPTION A FIX: Dynamically filter what platform sheets the user LIKED ---
+        List<Post> allPosts = postService.getAllPosts();
+        List<Post> savedPosts = new java.util.ArrayList<>();
+        
+        if (allPosts != null) {
+            for (Post p : allPosts) {
+                if (postService.hasUserLiked(p.getId(), profileOwnerId)) {
+                    savedPosts.add(p);
+                }
+            }
+        }
+        model.addAttribute("savedPosts", savedPosts);
+
+        // --- 4. Build Combined Like Mappings for All Displayed Cards ---
+        Map<Integer, Long> postLikeCounts = new java.util.HashMap<>();
+        
+        if (userPosts != null) {
+            for (Post post : userPosts) {
+                postLikeCounts.put(post.getId(), postLikeService.getLikeCount(post.getId()));
+            }
+        }
+        
+        if (savedPosts != null) {
+            for (Post post : savedPosts) {
+                if (!postLikeCounts.containsKey(post.getId())) {
+                    postLikeCounts.put(post.getId(), postLikeService.getLikeCount(post.getId()));
+                }
+            }
+        }
+        model.addAttribute("postLikeCounts", postLikeCounts);
+
         return "profile/profile"; 
     }
 
@@ -224,6 +295,10 @@ public class UserController {
     public String showEditProfilePage(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
         UserProfile profile = userService.getUserProfileByUserId(currentUser.getId());
+        if (profile != null && profile.getAvatar() != null) {
+            String base64Avatar = Base64.getEncoder().encodeToString(profile.getAvatar());
+            model.addAttribute("avatarImage", base64Avatar);
+        }
         model.addAttribute("userProfile", profile);
         return "profile/edit-profile"; 
     }
@@ -264,42 +339,10 @@ public class UserController {
         return "redirect:/profile";
     }
     
-    @GetMapping("/settings")
-    public String showSettingsSpace(HttpSession session, Model model) {
-        User current = (User) session.getAttribute("currentUser");
-        UserPreference pref = userService.getUserPreferenceByUserId(current.getId());
-        if (pref == null) {
-            pref = new UserPreference(); 
-        }
-        
-        model.addAttribute("userPreference", pref);
-        return "profile/account-settings";
-    }
-
-    @PostMapping("/settings/save")
-    public String saveSettingsAction(
-            @ModelAttribute("userPreference") UserPreference incomingPref,
-            HttpSession session) {
-        User current = (User) session.getAttribute("currentUser");
-        UserPreference existing = userService.getUserPreferenceByUserId(current.getId());
-        if (existing != null) {
-            existing.setTheme(incomingPref.getTheme());
-            existing.setLanguageCode(incomingPref.getLanguageCode());
-            existing.setEmailNotifications(incomingPref.getEmailNotifications());
-            existing.setPushNotifications(incomingPref.getPushNotifications());
-            existing.setAllowMessages(incomingPref.getAllowMessages());
-            existing.setProfileVisibility(incomingPref.getProfileVisibility());
-            userService.saveUserPreference(existing);
-        } else {
-            incomingPref.setUser(current);
-            userService.saveUserPreference(incomingPref);
-        }
-        
-        return "redirect:/settings";
-    }
+    
     
     @PostMapping("/user/follow")
-    public String followAction(@RequestParam("targetId") Long targetId, HttpSession session) {
+    public String followAction(@RequestParam("targetId") Long targetId,HttpServletRequest request, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
         userService.followUser(current.getId(), targetId);
         
@@ -308,7 +351,7 @@ public class UserController {
     }
 
     @PostMapping("/user/unfollow")
-    public String unfollowAction(@RequestParam("targetId") Long targetId, HttpSession session) {
+    public String unfollowAction(@RequestParam("targetId") Long targetId,HttpServletRequest request, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
         userService.unfollowUser(current.getId(), targetId);
         
@@ -322,9 +365,26 @@ public class UserController {
     }
 
     @GetMapping("/admin/users")
-    public String listAllUsers(Model model) {
-        List<User> userList = userService.getAllUsers();
+    public String listAllUsers(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(value = "search", required = false) String search,
+            Model model) {
+        
+        int pageSize = 10; 
+
+        // 🛠️ Pass the search parameter right down to the database query layers
+        List<User> userList = userService.getAllUsersPaginated(page, pageSize, search);
+        long totalUsers = userService.getTotalUserCount(search);
+        
+        int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
+        if (totalPages == 0) {
+            totalPages = 1;
+        }
+
         model.addAttribute("users", userList);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        
         return "admin/admin-user-management"; 
     }
 

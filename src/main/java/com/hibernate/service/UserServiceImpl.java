@@ -2,7 +2,6 @@ package com.hibernate.service;
 
 import com.hibernate.entity.Follower;
 import com.hibernate.entity.User;
-import com.hibernate.entity.UserPreference;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
@@ -11,7 +10,6 @@ import org.hibernate.query.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.hibernate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -140,20 +138,7 @@ public class UserServiceImpl implements UserService {
         return getCurrentSession().get(User.class, userId);
     }
     
-    @Override
-    @Transactional(readOnly = true)
-    public UserPreference getUserPreferenceByUserId(Long userId) {
-        return getCurrentSession()
-                .createQuery("FROM UserPreference up WHERE up.user.id = :userId", UserPreference.class)
-                .setParameter("userId", userId)
-                .uniqueResult();
-    }
-
-    @Override
-    @Transactional
-    public void saveUserPreference(UserPreference preference) {
-        getCurrentSession().merge(preference);
-    }
+    
 
     @Override
     @Transactional(readOnly = true)
@@ -211,6 +196,26 @@ public class UserServiceImpl implements UserService {
                 .uniqueResult();
         return count != null ? count : 0L;
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getFollowersByUserId(Long userId) {
+        // Grab all User objects who are following this target userId
+        String hql = "SELECT f.follower FROM Follower f LEFT JOIN FETCH f.follower.profile WHERE f.following.id = :userId";
+        return getCurrentSession().createQuery(hql, User.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getFollowingByUserId(Long userId) {
+        // Grab all User objects that this specific userId is actively following
+        String hql = "SELECT f.following FROM Follower f LEFT JOIN FETCH f.following.profile WHERE f.follower.id = :userId";
+        return getCurrentSession().createQuery(hql, User.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -218,6 +223,53 @@ public class UserServiceImpl implements UserService {
         return getCurrentSession()
                 .createQuery("FROM User u LEFT JOIN FETCH u.profile", User.class)
                 .getResultList();
+    }
+    
+ // 🛠️ Updated paginated method with smart parameter check logic
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getAllUsersPaginated(int page, int pageSize, String search) {
+        int firstResult = (page - 1) * pageSize;
+        
+        StringBuilder hql = new StringBuilder("FROM User u LEFT JOIN FETCH u.profile ");
+        boolean hasSearch = (search != null && !search.trim().isEmpty());
+        
+        // Group conditions inside brackets so OR clauses don't break row filters
+        if (hasSearch) {
+            hql.append("WHERE u.deletedAt IS NULL AND (u.username LIKE :search OR u.email LIKE :search OR u.profile.fullName LIKE :search) ");
+        } else {
+            hql.append("WHERE u.deletedAt IS NULL ");
+        }
+        hql.append("ORDER BY u.id DESC");
+        
+        var query = getCurrentSession().createQuery(hql.toString(), User.class);
+        if (hasSearch) {
+            query.setParameter("search", "%" + search.trim() + "%");
+        }
+        
+        return query.setFirstResult(firstResult)
+                    .setMaxResults(pageSize)
+                    .getResultList();
+    }
+
+    // 🛠️ Updated helper counter method with matching logic grouping
+    @Override
+    @Transactional(readOnly = true)
+    public long getTotalUserCount(String search) {
+        StringBuilder hql = new StringBuilder("SELECT COUNT(u) FROM User u WHERE u.deletedAt IS NULL ");
+        boolean hasSearch = (search != null && !search.trim().isEmpty());
+        
+        if (hasSearch) {
+            hql.append("AND (u.username LIKE :search OR u.email LIKE :search OR u.profile.fullName LIKE :search) ");
+        }
+        
+        var query = getCurrentSession().createQuery(hql.toString(), Long.class);
+        if (hasSearch) {
+            query.setParameter("search", "%" + search.trim() + "%");
+        }
+        
+        Long count = query.uniqueResult();
+        return count != null ? count : 0L;
     }
 
     @Override
