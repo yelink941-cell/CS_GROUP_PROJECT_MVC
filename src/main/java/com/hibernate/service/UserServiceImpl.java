@@ -219,4 +219,18 @@ public class UserServiceImpl implements UserService {
             session.merge(user);
         }
     }
+
+    @Override
+    @Transactional
+    public void updateUserOnlineStatus(Long userId, boolean isOnline) {
+        if (userId == null) return;
+        Session session = getCurrentSession();
+        User user = session.get(User.class, userId);
+        if (user != null) {
+            user.setIsOnline(isOnline);
+            user.setLastSeen(LocalDateTime.now());
+            session.merge(user);
+        }
+    }
 }
+

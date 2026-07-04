@@ -22,7 +22,7 @@ public class UserNoteRepositoryImpl implements UserNoteRepository {
     public List<UserNote> findByUserId(Long userId) {
         return getSession()
                 .createQuery(
-                    "FROM UserNote n WHERE n.user.id = :userId AND n.deletedAt IS NULL ORDER BY n.updatedAt DESC",
+                    "FROM UserNote n WHERE n.user.id = :userId AND n.admin IS NULL AND n.deletedAt IS NULL ORDER BY n.updatedAt DESC",
                     UserNote.class)
                 .setParameter("userId", userId)
                 .getResultList();
@@ -51,6 +51,11 @@ public class UserNoteRepositoryImpl implements UserNoteRepository {
     @Override
     public void save(UserNote note) {
         getSession().saveOrUpdate(note);
+    }
+
+    @Override
+    public void update(UserNote note) {
+        getSession().merge(note);
     }
 
     @Override

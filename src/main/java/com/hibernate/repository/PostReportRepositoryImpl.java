@@ -40,10 +40,20 @@ public class PostReportRepositoryImpl implements PostReportRepository {
     }
 
     @Override
+    public List<PostReport> findPendingByPostId(Integer postId) {
+        return getSession()
+                .createQuery(
+                    "FROM PostReport r JOIN FETCH r.post p JOIN FETCH p.author JOIN FETCH r.reporter WHERE r.post.id = :postId AND r.status = 'PENDING'",
+                    PostReport.class)
+                .setParameter("postId", postId)
+                .getResultList();
+    }
+
+    @Override
     public List<PostReport> findAllPending() {
         return getSession()
                 .createQuery(
-                    "FROM PostReport r JOIN FETCH r.post JOIN FETCH r.reporter WHERE r.status = 'PENDING' ORDER BY r.createdAt DESC",
+                    "FROM PostReport r JOIN FETCH r.post p JOIN FETCH p.author JOIN FETCH r.reporter WHERE r.status = 'PENDING' ORDER BY r.createdAt DESC",
                     PostReport.class)
                 .getResultList();
     }

@@ -29,4 +29,5 @@ public interface UserService {
     void createPasswordResetTokenForUser(User user, String token);
     User findUserByResetToken(String token);
     void updatePassword(User user, String newPassword);
+    void updateUserOnlineStatus(Long userId, boolean isOnline);
 }
