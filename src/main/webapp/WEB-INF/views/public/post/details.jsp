@@ -4,6 +4,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta name="_csrf" content="${_csrf.token}"/>
+    <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><c:out value="${post.title}" /> - CheatSheet Hub</title>
@@ -179,6 +181,89 @@
     border: 1px solid #cccccc !important;
 }
 
+.comment-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    align-items: center;
+}
+
+/* ===========================
+   Comment Action Buttons
+=========================== */
+.comment-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:10px;
+}
+
+.comment-btn{
+    border:none;
+    background:#f5f7fb;
+    color:#4b5563;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.comment-btn:hover{
+    background:#4038ff;
+    color:#fff;
+    transform:translateY(-2px);
+}
+
+.delete-btn{
+    background:#fff2f2;
+    color:#dc3545;
+}
+
+.delete-btn:hover{
+    background:#dc3545;
+    color:white;
+}
+
+.reply-btn{
+    background:#eef2ff;
+    color:#4038ff;
+}
+
+.reply-btn:hover{
+    background:#4038ff;
+    color:white;
+}
+
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.btn-action {
+    background: #f1f5f9;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    background: #e2e8f0;
+}
+
+.btn-delete:hover {
+    background: #fee2e2;
+    color: #dc3545;
+}
+
 .btn-report {
     background-color: #fff5f5 !important;
     color: #dc2626 !important;
@@ -245,381 +330,536 @@
 <body>
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
-    <main class="page-container">
-        <article class="detail-card">
-            <h1><c:out value="${post.title}" /></h1>
+<main class="page-container">
+    <article class="detail-card">
+        <h1><c:out value="${post.title}" /></h1>
 
-            <div class="post-meta">
-                <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
-                <span><strong>Author:</strong> <c:out value="${post.author.username}" /></span>
-                <span><strong>Views:</strong> <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /></span>
+        <div class="post-meta">
+            <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
+            <span><strong>Author:</strong> <c:out value="${post.author.username}" /></span>
+        </div>
+
+        <div class="badge-row" style="margin-top: 18px;">
+            <span class="visibility-badge visibility-public">PUBLIC</span>
+            <span class="status-badge status-published">PUBLISHED</span>
+        </div>
+
+        <c:if test="${not empty post.tags}">
+            <ul class="tag-list" aria-label="Post tags">
+                <c:forEach var="tag" items="${post.tags}">
+                    <li class="tag-pill"><c:out value="${tag.name}" /></li>
+                </c:forEach>
+            </ul>
+        </c:if>
+
+        <div class="detail-excerpt">
+            <c:choose>
+                <c:when test="${not empty post.excerpt}"><c:out value="${post.excerpt}" /></c:when>
+                <c:otherwise>No excerpt provided.</c:otherwise>
+            </c:choose>
+        </div>
+
+        <c:if test="${not empty sessionScope.userId}">
+            <div class="collection-box">
+                <form action="${pageContext.request.contextPath}/user/collections/add-post" method="post" class="collection-form">
+                    <input type="hidden" name="postId" value="${post.id}">
+                    <input type="hidden" name="slug" value="${post.slug}">
+                    
+                    <label for="collectionSelect" class="collection-label">
+                        📁 Save to Folder:
+                    </label>
+                    
+                    <select id="collectionSelect" name="collectionId" required class="collection-select" onchange="checkFolderStatus()">
+                        <option value="">-- Select Your Collection --</option>
+                        <c:forEach var="col" items="${collections}">
+                            <option value="${col.id}" data-saved="${col.posts.contains(post) ? 'true' : 'false'}">
+                                <c:out value="${col.name}" />
+                            </option>
+                        </c:forEach>
+                    </select>
+                    
+                    <button id="addFolderBtn" type="submit" class="btn-add-collection">
+                        ➕ Add to Folder
+                    </button>
+                </form>
             </div>
+        </c:if>
 
-            <div class="badge-row" style="margin-top: 18px;">
-                <span class="visibility-badge visibility-public">PUBLIC</span>
-                <span class="status-badge status-published">PUBLISHED</span>
+        <div class="rating-section">
+            <c:choose>
+                <c:when test="${not empty userLoggedIn}">
+                    <div class="star-rating">
+                        <input type="radio" id="star5" name="rating" value="5" onclick="submitRating(${post.id}, 5)" ${userRating == 5 ? 'checked' : ''}><label for="star5" title="5 stars">★</label>
+                        <input type="radio" id="star4" name="rating" value="4" onclick="submitRating(${post.id}, 4)" ${userRating == 4 ? 'checked' : ''}><label for="star4" title="4 stars">★</label>
+                        <input type="radio" id="star3" name="rating" value="3" onclick="submitRating(${post.id}, 3)" ${userRating == 3 ? 'checked' : ''}><label for="star3" title="3 stars">★</label>
+                        <input type="radio" id="star2" name="rating" value="2" onclick="submitRating(${post.id}, 2)" ${userRating == 2 ? 'checked' : ''}><label for="star2" title="2 stars">★</label>
+                        <input type="radio" id="star1" name="rating" value="1" onclick="submitRating(${post.id}, 1)" ${userRating == 1 ? 'checked' : ''}><label for="star1" title="1 star">★</label>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="star-rating" onclick="alert('Rating ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။'); window.location.href='${pageContext.request.contextPath}/login';" style="cursor: pointer;" title="Rating ပြုလုပ်ရန် နှိပ်ပါ။">
+                        <label style="color: ${averageRating >= 1 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 2 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 3 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 4 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 5 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+
+            <div class="average-rating-box">
+                <strong>⭐ AverageRating:</strong> <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>/5 
+                (<span id="totalRatingCount">${totalRatings}</span> ratings)
             </div>
-
-            <c:if test="${not empty post.tags}">
-                <ul class="tag-list" aria-label="Post tags">
-                    <c:forEach var="tag" items="${post.tags}">
-                        <li class="tag-pill"><c:out value="${tag.name}" /></li>
-                    </c:forEach>
-                </ul>
-            </c:if>
-
-            <div class="detail-excerpt">
-                <c:choose>
-                    <c:when test="${not empty post.excerpt}"><c:out value="${post.excerpt}" /></c:when>
-                    <c:otherwise>No excerpt provided.</c:otherwise>
-                </c:choose>
-            </div>
-
-       <%-- action လမ်းကြောင်းကို သေချာစစ်ပါ --%>
-<form action="${pageContext.request.contextPath}/user/collections/add-post" method="post">
-    <input type="hidden" name="postId" value="${post.id}">
-    <input type="hidden" name="slug" value="${post.slug}">
-    
-    <select id="collectionSelect" name="collectionId" required>
-        <option value="">-- Select --</option>
-        <c:forEach var="col" items="${collections}">
-            <option value="${col.id}">${col.name}</option>
-        </c:forEach>
-    </select>
-    
-    <button type="submit">➕ Add to Folder</button>
-</form>
-
-      <div class="rating-section">
-    <div class="star-rating">
-        <c:forEach begin="1" end="5" var="i">
-            <input type="radio" id="star${i}" name="rating" value="${i}" 
-                   class="star-input"
-                   data-post-id="${post.id}"
-                   <c:if test="${userRating == i}">checked</c:if>>
-            <label for="star${i}">★</label>
-        </c:forEach>
-    </div>
-    <div class="average-rating-box">
-        <strong>⭐ Average:</strong> <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>
-    </div>
-</div>
-
-    <div class="comments-section">
-      <div class="like-section">
-   <button type="button" 
-        onclick="toggleLikePost('${post.id}', this)" 
-        class="button ${hasUserLiked ? 'liked-btn' : 'unliked-btn'}">
-    <span id="likeIcon-${post.id}">
-        ${hasUserLiked ? '👍 Unlike' : '👍🏻 Like'}
-    </span>
-</button>
-    <span id="likeCount-${post.id}">${likeCount}</span>
+        </div>
+        
+        <div class="like-section" style="margin-bottom: 25px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <c:choose>
+                <c:when test="${not empty sessionScope.userId}">
+                    <button type="button" onclick="toggleLikePost(${post.id}, this)" class="button ${hasUserLiked ? 'liked-btn' : 'unliked-btn'}" style="display: inline-flex; align-items: center; gap: 8px;">
+                        <span id="likeIcon-${post.id}" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <c:choose>
+                                <c:when test="${hasUserLiked}">👍 Unlike</c:when>
+                                <c:otherwise>👍🏻 Like</c:otherwise>
+                            </c:choose>
+                        </span>
+                    </button>
+                    <span style="font-size: 16px;"><strong>Likes:</strong> <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span></span>
+                </c:when>
+                <c:otherwise>
+                    <button type="button" onclick="alert('Like ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။'); window.location.href='${pageContext.request.contextPath}/login';" class="button unliked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
+                        👍🏻 Like
+                    </button>
+                </c:otherwise>
+            </c:choose>
             
-    <button type="button" 
-            onclick="toggleBookmark('${post.id}', this)" 
-            id="bookmarkBtn-${post.id}"
-            class="btn ${hasUserBookmarked ? 'btn-warning' : 'btn-outline-warning'}">
-        <span id="bookmarkText-${post.id}">${hasUserBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
-    </button>
+            <c:choose>
+                <c:when test="${not empty sessionScope.userId}">
+                    <button type="button" onclick="toggleBookmark(${post.id}, this)" class="button ${hasUserBookmarked ? 'bookmarked-btn' : 'unbookmarked-btn'}" style="display: inline-flex; align-items: center; gap: 8px;">
+                        <span id="bookmarkIcon-${post.id}">
+                            <c:choose>
+                                <c:when test="${hasUserBookmarked}">⭐ Bookmarked</c:when>
+                                <c:otherwise>⭐ Bookmark</c:otherwise>
+                            </c:choose>
+                        </span>
+                    </button>
+                </c:when>
+                <c:otherwise>
+                    <button type="button" onclick="alert('Bookmark ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။'); window.location.href='${pageContext.request.contextPath}/login';" class="button unbookmarked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
+                        ⭐ Bookmark
+                    </button>
+                </c:otherwise>
+            </c:choose>
 
-    <c:if test="${sessionScope.userId != null && sessionScope.userId != post.author.id}">
-        <button type="button"
-                class="button btn-report"
-                onclick="openReportModal('post', ${post.id})">
-            ⚠ Report Post
-        </button>
+            <button type="button" class="button button-secondary" onclick="toggleCommentsSection()">
+                💬 Comments (${not empty totalComments ? totalComments : 0})
+            </button>
+        </div>
+
+        <div id="commentsToggleWrapper" style="display: none;">
+            <h2 id="commentCountHeader" data-count="${totalComments}"> Comments (${totalComments})</h2>
+            <c:if test="${not empty userLoggedIn}">
+                <form id="commentForm" style="margin-bottom: 30px;">
+                    <input type="hidden" id="postId" name="postId" value="${post.id}" />
+                    <div class="form-group">
+                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Comment တစ်ခုခုရေးပါ..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
+                    </div>
+                    <button type="submit" class="button button-primary" style="margin-top: 10px;">Comment ပို့မည်</button>
+                </form>
+            </c:if>
+            
+            <c:if test="${empty userLoggedIn}">
+                <p style="color: #666;">Comment ရေးသားရန် <a href="${pageContext.request.contextPath}/login">Login</a> ဝင်ပါ။</p>
+            </c:if>
+ 
+            <c:if test="${empty comments}">
+                <p style="color: #888;" id="noCommentsMessage">ကွန်မန့် မရှိသေးပါ။</p>
+            </c:if>
+            
+            <c:if test="${not empty comments}">
+                <div id="commentListContainer" class="comment-list" style="display: flex; flex-direction: column; gap: 16px;">
+                    <c:forEach var="comment" items="${comments}">
+                        <div class="comment-item" id="comment-${comment.id}" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px;">
+                                <strong><c:out value="${comment.user.username}" /></strong>
+                                <span>${comment.createdAt}</span>
+                            </div>
+                            <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;"><c:out value="${comment.content}" /></p>
+                            
+                            <div class="comment-actions">
+    <button type="button" class="btn-action" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+    <c:if test="${sessionScope.userId == comment.user.id}">
+        <button type="button" class="btn-action btn-delete" onclick="deleteComment(${comment.id})">Delete</button>
     </c:if>
 </div>
 
-        <div id="commentsToggleWrapper">
-            <c:forEach var="comment" items="${comments}">
-                <div id="comment-${comment.id}">
-                    <strong>${comment.user.username}</strong>
-                    <p>${comment.content}</p>
-                    <button type="button" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
-                    <c:if test="${sessionScope.userId != null && sessionScope.userId != comment.user.id}">
-                        <button type="button" class="button-link" style="color:#dc2626; margin-left:8px;"
-                                onclick="openReportModal('comment', ${comment.id})">Report</button>
-                    </c:if>
-                    
-                    <div id="replyFormContainer-c-${comment.id}" style="display: none;">
-                        <form onsubmit="submitReply(event, 'c-${comment.id}', '${comment.id}', '${post.id}')">
-                            <textarea id="replyText-c-${comment.id}"></textarea>
-                            <button type="submit">Reply ပို့မည်</button>
-                        </form>
-                    </div>
-                </div>
-            </c:forEach>
-        </div>
-    </div>
-            <div class="card-actions" style="margin-top: 20px;">
-                <a class="button" href="${pageContext.request.contextPath}/posts/${post.slug}/download-pdf">
-                    Download Full PDF
-                </a>
-            </div>
-        </article>
-
-        <section class="public-content-section">
-            <c:if test="${empty contents}">
-                <section class="empty-state">
-                    <h2>No content sections yet</h2>
-                </section>
-            </c:if>
-
-            <c:if test="${not empty contents}">
-                <div class="public-content-grid" aria-label="Cheat sheet sections">
-                    <c:forEach var="content" items="${contents}">
-                        <article class="public-content-card">
-                            <header class="public-content-card-header">
-                                <h2>
-                                    <c:choose>
-                                        <c:when test="${not empty content.subtitle}"><c:out value="${content.subtitle}" /></c:when>
-                                        <c:otherwise>Untitled Section</c:otherwise>
-                                    </c:choose>
-                                </h2>
-                                <span><c:out value="${content.contentType}" /></span>
-                            </header>
-
-                            <div class="public-content-card-body">
-                                <c:choose>
-                                    <c:when test="${content.contentType == 'CODE'}">
-                                        <pre class="public-code-content"><code><c:out value="${content.contentData}" /></code></pre>
-                                    </c:when>
-                                    <c:when test="${content.contentType == 'IMAGE'}">
-                                        <img class="public-section-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
-                                    </c:when>
-                                    <c:when test="${content.contentType == 'VIDEO'}">
-                                        <video class="public-section-video" controls src="${fn:escapeXml(content.contentData)}"></video>
-                                    </c:when>
-                                    <c:when test="${content.contentType == 'LINK'}">
-                                        <a class="public-section-link" href="${fn:escapeXml(content.contentData)}" target="_blank" rel="noopener noreferrer">
-                                            <c:out value="${content.contentData}" />
-                                        </a>
-                                    </c:when>
-                                    <c:when test="${content.contentType == 'TABLE'}">
-                                        <pre class="public-table-content"><c:out value="${content.contentData}" /></pre>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <p class="public-text-content"><c:out value="${content.contentData}" /></p>
-                                    </c:otherwise>
-                                </c:choose>
+                            <%-- Main Comment Reply Form --%>
+                            <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
+                                <form onsubmit="submitReply(event, 'c-${comment.id}', ${comment.id}, ${post.id})">
+                                    <textarea id="replyText-c-${comment.id}" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+                                    <br>
+                                    <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Reply ပို့မည်</button>
+                                </form>
                             </div>
-                        </article>
+
+                            <div id="replyListContainer-${comment.id}">
+                                <c:if test="${not empty comment.replies}">
+                                    <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
+                                        <c:set var="replyList" value="${comment.replies}" scope="request"/>
+                                        <jsp:include page="reply-recurse.jsp" />
+                                    </ul>
+                                </c:if>
+                            </div>
+                        </div>
                     </c:forEach>
                 </div>
             </c:if>
-        </section>
+        </div>
+    </article>
 
-        <c:if test="${not empty postFiles}">
-            <section class="attachment-panel">
-                <h2>Attachments</h2>
-                <ul class="attachment-list">
-                    <c:forEach var="postFile" items="${postFiles}">
-                        <li>
-                            <a class="button button-secondary"
-                               href="${pageContext.request.contextPath}/posts/files/${postFile.id}/download">
-                                Download <c:out value="${postFile.fileName}" />
-                            </a>
-                        </li>
-                    </c:forEach>
-                </ul>
+    <section class="public-content-section">
+        <c:if test="${empty contents}">
+            <section class="empty-state">
+                <h2>No content sections yet</h2>
             </section>
         </c:if>
 
-        <div class="public-back-actions">
-            <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>
-        </div>
-    </main>
+        <c:if test="${not empty contents}">
+            <div class="public-content-grid" aria-label="Cheat sheet sections">
+                <c:forEach var="content" items="${contents}">
+                    <article class="public-content-card">
+                        <header class="public-content-card-header">
+                            <h2>
+                                <c:choose>
+                                    <c:when test="${not empty content.subtitle}"><c:out value="${content.subtitle}" /></c:when>
+                                    <c:otherwise>Untitled Section</c:otherwise>
+                                </c:choose>
+                            </h2>
+                            <span><c:out value="${content.contentType}" /></span>
+                        </header>
 
-    <div id="reportModalBackdrop" class="report-modal-backdrop" onclick="closeReportModal(event)">
-        <div class="report-modal" onclick="event.stopPropagation()">
-            <h3 id="reportModalTitle">Report Content</h3>
-            <label for="reportReason">Reason</label>
-            <select id="reportReason">
-                <option value="TEXT">Inappropriate text</option>
-                <option value="CODE">Harmful code</option>
-                <option value="IMAGE">Inappropriate image</option>
-                <option value="VIDEO">Inappropriate video</option>
-                <option value="LINK">Suspicious link</option>
-            </select>
-            <label for="reportDescription">Details (optional)</label>
-            <textarea id="reportDescription" rows="4" placeholder="Describe the issue..."></textarea>
-            <div class="report-modal-actions">
-                <button type="button" class="button button-secondary" onclick="closeReportModal()">Cancel</button>
-                <button type="button" class="button btn-report" onclick="submitReport()">Submit Report</button>
+                        <div class="public-content-card-body">
+                            <c:choose>
+                                <c:when test="${content.contentType == 'CODE'}">
+                                    <pre class="public-code-content"><code><c:out value="${content.contentData}" /></code></pre>
+                                </c:when>
+                                <c:when test="${content.contentType == 'IMAGE'}">
+                                    <img class="public-section-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                </c:when>
+                                <c:when test="${content.contentType == 'VIDEO'}">
+                                    <video class="public-section-video" controls src="${fn:escapeXml(content.contentData)}"></video>
+                                </c:when>
+                                <c:when test="${content.contentType == 'LINK'}">
+                                    <a class="public-section-link" href="${fn:escapeXml(content.contentData)}" target="_blank" rel="noopener noreferrer">
+                                        <c:out value="${content.contentData}" />
+                                    </a>
+                                </c:when>
+                                <c:when test="${content.contentType == 'TABLE'}">
+                                    <pre class="public-table-content"><c:out value="${content.contentData}" /></pre>
+                                </c:when>
+                                <c:otherwise>
+                                    <p class="public-text-content"><c:out value="${content.contentData}" /></p>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </article>
+                </c:forEach>
             </div>
-        </div>
+        </c:if>
+    </section>
+
+    <c:if test="${not empty postFiles}">
+        <section class="attachment-panel">
+            <h2>Attachments</h2>
+            <ul class="attachment-list">
+                <c:forEach var="postFile" items="${postFiles}">
+                    <li>
+                        <a class="button button-secondary"
+                           href="${pageContext.request.contextPath}/posts/${post.slug}/files/${postFile.id}"
+                           target="_blank">
+                            <c:out value="${postFile.fileName}" />
+                        </a>
+                    </li>
+                </c:forEach>
+            </ul>
+        </section>
+    </c:if>
+
+    <div class="public-back-actions">
+        <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>
     </div>
+</main>
 
-  <script>
-    // 🟢 အရေးကြီး: JSP ကနေ contextPath ကို တစ်ခါတည်း JS variable အဖြစ် ယူထားပါ
-   const contextPath = "${pageContext.request.contextPath}";
-   let reportTarget = { type: null, id: null };
+    <script>
+/* =========================
+   🔐 CSRF HELPER (NEW)
+========================= */
+function getCsrfHeaders(contentType = 'application/json') {
+    const csrfHeaderMeta = document.querySelector("meta[name='_csrf_header']");
+    const csrfMeta = document.querySelector("meta[name='_csrf']");
 
-    function openReportModal(type, id) {
-        reportTarget = { type, id };
-        document.getElementById('reportModalTitle').innerText =
-            type === 'post' ? 'Report Post' : 'Report Comment';
-        document.getElementById('reportReason').value = 'TEXT';
-        document.getElementById('reportDescription').value = '';
-        document.getElementById('reportModalBackdrop').classList.add('active');
-    }
+    const headers = {
+        'Content-Type': contentType,
+        'X-Requested-With': 'XMLHttpRequest'
+    };
 
-    function closeReportModal(event) {
-        if (event && event.target !== event.currentTarget) {
-            return;
-        }
-        document.getElementById('reportModalBackdrop').classList.remove('active');
-        reportTarget = { type: null, id: null };
-    }
-
-    function submitReport() {
-        if (!reportTarget.type || !reportTarget.id) {
-            return;
-        }
-
-        const reason = document.getElementById('reportReason').value;
-        const description = document.getElementById('reportDescription').value || '';
-        const url = reportTarget.type === 'post'
-            ? contextPath + '/posts/report/' + reportTarget.id
-            : contextPath + '/comments/report/' + reportTarget.id;
-
-        fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'reason=' + encodeURIComponent(reason) + '&description=' + encodeURIComponent(description)
-        })
-        .then(response => response.text().then(text => ({ ok: response.ok, text })))
-        .then(result => {
-            closeReportModal();
-            alert(result.text || (result.ok ? 'Report submitted.' : 'Report failed.'));
-        })
-        .catch(() => alert('Report failed. Please try again.'));
-    }
-
-    // --- ၁။ Folder Status စစ်ဆေးခြင်း ---
-    function checkFolderStatus() {
-        var selectBox = document.getElementById("collectionSelect");
-        var actionBtn = document.getElementById("addFolderBtn");
-        if (!selectBox || !actionBtn) return;
-        
-        var selectedOption = selectBox.options[selectBox.selectedIndex];
-        var isSaved = selectedOption.getAttribute("data-saved");
-
-        if (selectBox.value === "") {
-            actionBtn.innerHTML = "➕ Add to Folder";
-            actionBtn.disabled = false;
-        } else if (isSaved === "true") {
-            actionBtn.innerHTML = "✓ Saved";
-            actionBtn.disabled = true;
-        } else {
-            actionBtn.innerHTML = "➕ Add to Folder";
-            actionBtn.disabled = false;
+    if (csrfHeaderMeta && csrfMeta) {
+        const headerName = csrfHeaderMeta.getAttribute("content");
+        const tokenValue = csrfMeta.getAttribute("content");
+        if (headerName && tokenValue && !headerName.startsWith('$')) {
+            headers[headerName] = tokenValue;
         }
     }
 
-    // --- ၂။ Main Comment တင်ခြင်း ---
-    document.getElementById('commentForm')?.addEventListener('submit', function(e) {
-        e.preventDefault(); 
-        const postId = document.getElementById('postId').value;
-        const commentText = document.getElementById('commentText').value;
-
-        fetch(contextPath + '/comments/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'postId=' + encodeURIComponent(postId) + '&commentText=' + encodeURIComponent(commentText)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                sessionStorage.setItem('isCommentsOpen', 'true');
-                location.reload(); 
-            } else {
-                alert('Comment သိမ်းဆည်းရာတွင် အမှားအယွင်းဖြစ်သွားပါသည်။');
-            }
-        });
-    });
-
-    // --- ၃။ Reply လုပ်ဆောင်ချက် ---
-   function toggleReplyForm(id) {
-            const el = document.getElementById('replyFormContainer-' + id);
-            el.style.display = (el.style.display === 'none') ? 'block' : 'none';
-        }
-
-    function submitReply(e, uniqueId, parentId, formPostId) {
-        e.preventDefault();
-        const content = document.getElementById('replyText-' + uniqueId).value;
-        fetch(contextPath + '/comments/reply', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'postId=' + encodeURIComponent(formPostId) + '&parentId=' + encodeURIComponent(parentId) + '&content=' + encodeURIComponent(content)
-        })
-        .then(res => { if (res.ok) location.reload(); });
-    }
-    // --- ၄။ Comment ဖျက်ခြင်း ---
-    function deleteComment(commentId) {
-        if (!confirm('ဤ comment ကို အမှန်တကယ် ဖျက်မှာလား?')) return;
-        fetch(contextPath + '/comments/delete/' + commentId, { method: 'POST' })
-        .then(response => { if (response.ok) location.reload(); });
-    }
-
-    // --- ၅။ Like / Bookmark / Rating ---
-function toggleLikePost(postId, btn) {
-    fetch(contextPath + '/user/posts/like', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'postId=' + encodeURIComponent(postId)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(data.status === 'success') {
-            document.getElementById('likeCount-' + postId).innerText = data.totalLikes;
-            
-            // Class ပြောင်းလဲမှု
-            btn.className = "button " + (data.isLiked ? "liked-btn" : "unliked-btn");
-            
-            // Icon ပြောင်းလဲမှု
-            document.getElementById('likeIcon-' + postId).innerHTML = data.isLiked ? "👍 Unlike" : "👍🏻 Like";
-        }
-    })
-    .catch(err => console.error("Error:", err));
+    return headers;
 }
 
-   function submitRating(postId, ratingValue) {
-       fetch(contextPath + '/api/toggle-rating', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-           body: 'postId=' + encodeURIComponent(postId) + '&rating=' + encodeURIComponent(ratingValue)
-       })
-       .then(response => response.json())
-       .then(data => {
-           if (data.status === 'success') {
-               // UI မှာ Average Rating ကို အပ်ဒိတ်လုပ်ပါ
-               document.getElementById('avgRatingValue').innerText = data.averageRating;
-           } else {
-               alert('Rating ပေးရာတွင် အမှားဖြစ်နေပါသည်။');
-           }
-       })
-       .catch(error => {
-           console.error('Error:', error);
-           alert('Server နှင့် ချိတ်ဆက်မှု အဆင်မပြေပါ။');
-       });
-   }
-    function toggleBookmark(postId, buttonElement) {
-        fetch(contextPath + '/api/toggle-bookmark', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'postId=' + postId
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.isBookmarked) {
-                document.getElementById('bookmarkIcon-' + postId).innerHTML = "⭐ Bookmarked";
-                buttonElement.className = "button bookmarked-btn";
+function getCleanUrl(path) {
+    let ctx = '${pageContext.request.contextPath}';
+    if (ctx === '/') {
+        ctx = '';
+    }
+    return ctx + path;
+}
+
+/* =========================
+   🔗 URL HASH HELPER (No-reload)
+   action လုပ်တိုင်း URL hash (#like, #comment, #rating, #bookmark) ပြောင်းပေးမည်။
+   history.replaceState သုံးထားသဖြ့င့် page reload / scroll jump မဖြစ်ပါ။
+========================= */
+function updateUrlHash(hash) {
+    try {
+        history.replaceState(null, '', '#' + hash);
+    } catch (e) {
+        // ignore
+    }
+}
+
+function showCommentsSection() {
+    const el = document.getElementById('commentsToggleWrapper');
+    if (el) {
+        el.style.display = 'block';
+    }
+}
+
+/* =========================
+   🔡 HTML ESCAPE HELPER
+   Backend မှ user input (username/content) ကို DOM ထဲထည့်ခါက XSS ကာကွယ်ရန်
+========================= */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/* =========================
+   📁 Folder Check
+========================= */
+function checkFolderStatus() {
+    var selectBox = document.getElementById("collectionSelect");
+    var actionBtn = document.getElementById("addFolderBtn");
+    if (!selectBox || !actionBtn) return;
+
+    var selectedOption = selectBox.options[selectBox.selectedIndex];
+    var isSaved = selectedOption.getAttribute("data-saved");
+
+    if (selectBox.value === "") {
+        actionBtn.innerHTML = "➕ Add to Folder";
+        actionBtn.disabled = false;
+    } else if (isSaved === "true") {
+        actionBtn.innerHTML = "✓ Saved";
+        actionBtn.disabled = true;
+    } else {
+        actionBtn.innerHTML = "➕ Add to Folder";
+        actionBtn.disabled = false;
+    }
+}
+
+/* =========================
+   💬 COMMENT SUBMIT (event delegation - form is inside hidden div)
+========================= */
+let commentFormListenerAttached = false;
+function attachCommentFormListener() {
+    if (commentFormListenerAttached) return;
+    const commentForm = document.getElementById('commentForm');
+    if (!commentForm) return;
+    commentFormListenerAttached = true;
+commentForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+	
+    const postId = document.querySelector('#postId').value;
+    const commentText = document.getElementById('commentText').value;
+
+    fetch(getCleanUrl('/comments/add'), {
+        method: 'POST',
+        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+        body: 'postId=' + postId + '&commentText=' + encodeURIComponent(commentText)
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            // 🟢 No-reload: backend မှ ပြန်လာတဲ့ data နဲ့ comment DOM အသစ်တည်ဆောက်ပြီး
+            //    comment list အပေါ်ဆုံးမှာ တိုက်ရိုက်ထည့်မည်။ (နေရာမှာပဲနေမည်)
+            const commentText = document.getElementById('commentText');
+            commentText.value = '';
+
+            let container = document.getElementById('commentListContainer');
+            if (!container) {
+                // ပထမဆုံး comment ဖြစ်နေလျှင် container အသစ်တည်ဆောက်
+                container = document.createElement('div');
+                container.id = 'commentListContainer';
+                container.className = 'comment-list';
+                container.style.cssText = 'display: flex; flex-direction: column; gap: 16px;';
+                document.getElementById('commentsToggleWrapper').appendChild(container);
+            }
+
+            const newComment = document.createElement('div');
+            newComment.className = 'comment-item';
+            newComment.id = 'comment-' + data.commentId;
+            newComment.style.cssText = 'border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;';
+
+            const safeUser = escapeHtml(data.username);
+            const safeContent = escapeHtml(data.content);
+            const safeDate = escapeHtml(data.createdAt);
+
+            newComment.innerHTML =
+                '<div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">' +
+                    '<strong>' + safeUser + '</strong>' +
+                    '<span>' + safeDate + '</span>' +
+                '</div>' +
+                '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
+                '<div style="display: flex; gap: 12px; margin-bottom: 8px;">' +
+                    '<button type="button" class="button-link" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">Reply</button>' +
+                    '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.commentId + ')">Delete</button>' +
+                '</div>' +
+                '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
+                    '<form onsubmit="submitReply(event, \'c-' + data.commentId + '\', ' + data.commentId + ', ${post.id})">' +
+                        '<textarea id="replyText-c-' + data.commentId + '" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
+                        '<br>' +
+                        '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Reply ပို့မည်</button>' +
+                    '</form>' +
+                '</div>' +
+                '<div id="replyListContainer-' + data.commentId + '"></div>';
+
+            container.prepend(newComment);
+
+            // 🟢 Comment count တိုး
+            const header = document.getElementById('commentCountHeader');
+            if (header) {
+                const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
+                header.setAttribute('data-count', newCount);
+                header.innerText = ' Comments (' + newCount + ')';
+                const topBtn = document.querySelector('.like-section .button-secondary');
+                // Comments (n) ခလုတ်လည်း update
+                document.querySelectorAll('.like-section button').forEach(function (b) {
+                    if (b.innerText && b.innerText.indexOf('Comments') !== -1) {
+                        b.innerText = '💬 Comments (' + newCount + ')';
+                    }
+                });
+            }
+
+            showCommentsSection();
+
+            updateUrlHash('comment');
+        } else {
+            alert('Comment error: ' + (data.message || ''));
+        }
+    })
+    .catch(err => {
+        console.error('Comment request failed:', err);
+        if (err.message && err.message.includes('401')) {
+            window.location.href = '${pageContext.request.contextPath}/login';
+        } else {
+            alert('Comment ပို့၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။');
+        }
+    });
+});
+}
+
+/* =========================
+   🔁 REPLY TOGGLE (FIXED BUG)
+========================= */
+function toggleReplyForm(commentId) {
+    const replyForm = document.getElementById('replyFormContainer-' + commentId);
+
+    if (!replyForm) return;
+
+    const isVisible = replyForm.style.display === "block";
+
+    document.querySelectorAll('[id^="replyFormContainer-"]')
+        .forEach(f => f.style.display = "none");
+
+    replyForm.style.display = isVisible ? "none" : "block";
+}
+
+/* =========================
+   🔁 SUBMIT REPLY (FIXED)
+========================= */
+function submitReply(e, commentId, parentId, postId) {
+    e.preventDefault();
+
+    const replyText = document.getElementById('replyText-' + commentId).value;
+
+    fetch(getCleanUrl('/comments/reply'), {
+        method: 'POST',
+        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+        body:
+            'postId=' + postId +
+            '&parentId=' + parentId +
+            '&content=' + encodeURIComponent(replyText)
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if (data.status !== 'success') {
+            alert('Reply error: ' + (data.message || ''));
+            return;
+        }
+
+        // 🟢 No-reload: textarea ရှင်း
+        const replyInput = document.getElementById('replyText-' + commentId);
+        if (replyInput) replyInput.value = '';
+
+        // reply ထည့်ရမည့် list container ကို ရှာရန်
+        // parentId ကို အသုံးပြုသည် (main comment အောက် reply ဖြစ်စေ, nested reply ဖြစ်စေ)
+        const realParentId = data.parentId || parentId;
+        let listContainer = document.getElementById('replyListContainer-' + realParentId)
+                         || document.getElementById('replySubListContainer-' + realParentId);
+
+        // မရှိသေးလျှင် အသစ်တည်ဆောက်
+        if (!listContainer) {
+            const parentReplyItem = document.getElementById('reply-item-' + realParentId);
+            const newSub = document.createElement('ul');
+            newSub.id = 'replySubListContainer-' + realParentId;
+            newSub.style.cssText = 'margin-left:20px; list-style-type: none; padding-left: 0;';
+            if (parentReplyItem) {
+                parentReplyItem.appendChild(newSub);
+                listContainer = newSub;
             } else {
-                document.getElementById('bookmarkIcon-' + postId).innerHTML = "⭐ Bookmark";
-                buttonElement.className = "button unbookmarked-btn";
+                // main comment အောက်တွင် reply container ဖန်တီး
+                const mainComment = document.getElementById('comment-' + realParentId);
+                if (mainComment) {
+                    const wrap = document.createElement('div');
+                    wrap.id = 'replyListContainer-' + realParentId;
+                    mainComment.appendChild(wrap);
+                    const sub = document.createElement('ul');
+                    sub.id = 'replySubListContainer-' + realParentId;
+                    sub.style.cssText = 'margin-left:20px; list-style-type: none; padding-left: 0;';
+                    wrap.appendChild(sub);
+                    listContainer = sub;
+                } else {
+                    listContainer = newSub;
+                }
             }
         });
     }

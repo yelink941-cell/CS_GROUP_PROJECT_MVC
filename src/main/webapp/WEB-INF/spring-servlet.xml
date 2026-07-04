@@ -20,21 +20,38 @@
 
     <mvc:resources mapping="/resources/**" location="/resources/" />
 
+    <bean class="org.springframework.web.context.request.RequestContextListener" />
+
     <mvc:interceptors>
-        <mvc:interceptor>
-            <mvc:mapping path="/**" />
-            <mvc:exclude-mapping path="/resources/**" />
-            <bean class="com.hibernate.interceptor.AuthInterceptor" />
-        </mvc:interceptor>
-    </mvc:interceptors>
+    <mvc:interceptor>
+        <mvc:mapping path="/**"/>
+        
+        <mvc:exclude-mapping path="/"/>
+        <mvc:exclude-mapping path="/login"/>
+        <mvc:exclude-mapping path="/register"/>
+        <mvc:exclude-mapping path="/ws/**"/>
+        <mvc:exclude-mapping path="/posts/**"/>
+        <mvc:exclude-mapping path="/comments/**"/>
+        <mvc:exclude-mapping path="/api/**"/>
+        <mvc:exclude-mapping path="/like"/>
+        <mvc:exclude-mapping path="/bookmark"/>
+        <mvc:exclude-mapping path="/rating"/>
+        
+        <mvc:exclude-mapping path="/resources/**"/>
+        <mvc:exclude-mapping path="/css/**"/>
+        <mvc:exclude-mapping path="/js/**"/>
+        <mvc:exclude-mapping path="/images/**"/>
+        
+        <bean class="com.hibernate.interceptor.AuthInterceptor"/>
+    </mvc:interceptor>
+</mvc:interceptors>
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/views/" />
         <property name="suffix" value=".jsp" />
     </bean>
 
-    <bean id="multipartResolver"
-          class="org.springframework.web.multipart.support.StandardServletMultipartResolver" />
+    <bean id="multipartResolver" class="org.springframework.web.multipart.support.StandardServletMultipartResolver" />
 
     <bean id="chatWebSocketHandler" class="com.hibernate.websocket.ChatWebSocketHandler" autowire="byType" />
 

@@ -1,7 +1,6 @@
 package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
-import com.hibernate.entity.User;
 import com.hibernate.entity.enums.ContentType;
 import com.hibernate.entity.enums.PostVisibility;
 import com.hibernate.service.BookmarkService;
@@ -197,7 +196,6 @@ public class PostController {
         return "redirect:/user/posts";
     }
 
-    // 🎯 ဤနေရာတွင် Comment များကို ဖွင့်ပြီး မင်းရဲ့ JSP နှင့် အချက်အလက်များ ချိတ်ဆက်ပေးလိုက်ပါပြီ
     @GetMapping("/{slug}")
     public String showPostDetail(@PathVariable String slug, Model model, HttpSession session) {
         return postService.getPostBySlug(slug).map(post -> {
@@ -215,6 +213,15 @@ public class PostController {
                 
                 // Collections တွေကိုလည်း ဆွဲထုတ်ပေးပါ
                 model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
+                
+                boolean hasUserLiked = postLikeService.hasUserLiked(post.getId(), userId); 
+                model.addAttribute("hasUserLiked", hasUserLiked);
+                
+                boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, post.getId());
+                model.addAttribute("hasUserBookmarked", hasBookmarked);
+                
+                // 🟢 ဤနေရာတွင် ထည့်ပေးရန် - JSP ဘက်က Not Empty userLoggedIn ဟု စစ်ထားသည်နှင့် တိုက်ဆိုင်စေသည်
+                model.addAttribute("userLoggedIn", userId); 
             }
             
             // Count များကိုလည်း ပို့ပေးပါ
@@ -269,25 +276,23 @@ public class PostController {
     public ResponseEntity<Map<String, Object>> addLike(@RequestParam("postId") Integer postId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
 
-       
         Map<String, Object> response = new HashMap<>();
         
-        if (userId != null) {
-            postLikeService.toggleLike(postId, userId); 
-            // Service တွင် သတ်မှတ်ထားသော hasUserLiked method အမည်ကို အသုံးပြုခြင်း
-            boolean isLikedNow = postLikeService.hasUserLiked(postId, userId); 
-            long totalLikes = postLikeService.getLikeCount(postId);
-            
-            response.put("status", "success");
-            response.put("isLiked", isLikedNow);
-            response.put("totalLikes", totalLikes);
-            
-            return ResponseEntity.ok(response);
+        // 🟢 User က Login မဝင်ထားရင် (သို့) Session ပြတ်တောက်သွားရင် 401 ပြန်ပို့မည်
+        if (userId == null) {
+            response.put("status", "unauthorized");
+            response.put("message", "Login ဝင်ရန် လိုအပ်ပါသည်။");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
         
-        response.put("status", "unauthorized");
-        response.put("message", "Login ဝင်ရန် လိုအပ်ပါသည်။");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        boolean isLikedNow = postLikeService.toggleLike(postId, userId);
+        long totalLikes = postLikeService.getLikeCount(postId);
+        
+        response.put("status", "success");
+        response.put("isLiked", isLikedNow);
+        response.put("totalLikes", totalLikes);
+        
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/comment/add")
@@ -295,21 +300,21 @@ public class PostController {
             @RequestParam("postId") Integer postId, 
             @RequestParam("commentText") String text, 
             HttpSession session) {
-    	 Long userId = (Long) session.getAttribute("userId");
-
-    	
+        Long userId = (Long) session.getAttribute("userId");
         
         Map<String, Object> response = new HashMap<>();
         
-        if (userId != null) {
-            postService.addComment(postId, userId, text);
-            response.put("status", "success");
-            response.put("totalComments", commentService.getTotalActiveComments(postId));
-            return ResponseEntity.ok(response);
+        // 🟢 User က Login မဝင်ထားရင် (သို့) Session ပြတ်တောက်သွားရင် 401 ပြန်ပို့မည်
+        if (userId == null) {
+            response.put("status", "unauthorized");
+            response.put("message", "Login ဝင်ရန် လိုအပ်ပါသည်။");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
         
-        response.put("status", "unauthorized");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        postService.addComment(postId, userId, text);
+        response.put("status", "success");
+        response.put("totalComments", commentService.getTotalActiveComments(postId));
+        return ResponseEntity.ok(response);
     }
 
     
@@ -324,19 +329,21 @@ public class PostController {
         if (userId == null) {
             return "redirect:/login";
         }
+        
         if (userId != null) {
         	boolean hasLiked = postLikeService.hasUserLiked(id, userId); // DB ကနေ စစ်မယ်
         	model.addAttribute("hasUserLiked", hasLiked);
             
-            // 🟢 အမှန်ပြင်ဆင်ရမည့်နေရာ - BookmarkService အစား bookmarkService (variable name) ကို သုံးပါ
             boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, id);
             model.addAttribute("hasUserBookmarked", hasBookmarked);
+            
+            // 🟢 JSTL မှ not empty userLoggedIn ဖြင့် စစ်ဆေးနိုင်ရန် သေချာထည့်ပေးခြင်း
+            model.addAttribute("userLoggedIn", userId); 
         }
         
         model.addAttribute("likeCount", postLikeService.getLikeCount(id));
         model.addAttribute("comments", commentService.getActiveParentComments(id));
         model.addAttribute("totalComments", commentService.getTotalActiveComments(id));
-        model.addAttribute("userLoggedIn", userId); 
         
         model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(id));
         

@@ -285,6 +285,18 @@ public class UserController {
         } else {
             incomingPref.setUser(current);
             userService.saveUserPreference(incomingPref);
+    @GetMapping("/admin-dashboard")
+    public String showAdminDashboard(HttpSession session) {
+        // 🟢 ပြင်ဆင်ချက်- currentUser အစား ပိုမိုကျယ်ပြန့်သော user ကိုပါ ထည့်သွင်းစစ်ဆေးပေးခြင်း 
+        // (Interceptor သို့မဟုတ် Intercept အချို့ကြောင့် session key တစ်ခုခု ပြတ်တောက်သွားလျှင်ပင် အခြားတစ်ခုဖြင့် ဆက်ဖမ်းနိုင်ရန်)
+        User adminUser = (User) session.getAttribute("user");
+        
+        if (adminUser == null) {
+            adminUser = (User) session.getAttribute("currentUser");
+        }
+        
+        if (adminUser == null || !Role.ADMIN.equals(adminUser.getRole())) {
+            return "redirect:/login"; 
         }
         
         return "redirect:/settings";
