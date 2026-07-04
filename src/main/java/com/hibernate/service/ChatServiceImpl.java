@@ -23,6 +23,7 @@ import com.hibernate.repository.MessageReportRepository;
 import com.hibernate.repository.MessageRepository;
 import com.hibernate.repository.MessageSeenStatusRepository;
 import com.hibernate.repository.UserRepository;
+import com.hibernate.util.LastSeenFormatter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -131,6 +132,14 @@ public class ChatServiceImpl implements ChatService {
                     item.setPartnerUserId(partner.userId);
                     item.setDisplayName(partner.displayName);
                     item.setDisplayRole(partner.role);
+                    item.setBlockedByMe(blockedUserRepository.isBlocked(currentUserId, partner.userId));
+
+                    User partnerUser = userRepository.getUserById(partner.userId);
+                    if (partnerUser != null) {
+                        boolean isOnline = Boolean.TRUE.equals(partnerUser.getIsOnline());
+                        item.setPartnerOnline(isOnline);
+                        item.setPartnerLastSeenFormatted(LastSeenFormatter.format(isOnline, partnerUser.getLastSeen()));
+                    }
                 } else {
                     item.setDisplayName(getConversationTitle(conversation, "Chat"));
                 }
@@ -175,6 +184,19 @@ public class ChatServiceImpl implements ChatService {
             view.setTitle(partner.displayName);
             view.setPartnerUserId(partner.userId);
             view.setPartnerRole(partner.role);
+            boolean blockedByMe = blockedUserRepository.isBlocked(currentUserId, partner.userId);
+            boolean blockedByPartner = blockedUserRepository.isBlocked(partner.userId, currentUserId);
+            view.setBlockedByMe(blockedByMe);
+            view.setBlockedByPartner(blockedByPartner);
+            view.setBlockedEitherWay(blockedByMe || blockedByPartner);
+
+            User partnerUser = userRepository.getUserById(partner.userId);
+            if (partnerUser != null) {
+                boolean isOnline = Boolean.TRUE.equals(partnerUser.getIsOnline());
+                view.setPartnerOnline(isOnline);
+                view.setPartnerLastSeen(partnerUser.getLastSeen());
+                view.setPartnerLastSeenFormatted(LastSeenFormatter.format(isOnline, partnerUser.getLastSeen()));
+            }
             return view;
         }
 
@@ -304,14 +326,14 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
         blockedUserRepository.blockUser(currentUserId, targetUserId);
+    }
 
-        Long conversationId = participantRepository.findDirectConversationIdBetweenUsers(currentUserId, targetUserId);
-        if (conversationId != null) {
-            participantRepository.findParticipant(conversationId, currentUserId).ifPresent(participant -> {
-                participant.setHiddenAt(now());
-                participantRepository.updateParticipant(participant);
-            });
+    @Override
+    public void unblockUser(Long currentUserId, Long targetUserId) {
+        if (currentUserId.equals(targetUserId)) {
+            throw new IllegalArgumentException("You can't unblock yourself.");
         }
+        blockedUserRepository.unblockUser(currentUserId, targetUserId);
     }
 
     @Override
@@ -481,9 +503,6 @@ public class ChatServiceImpl implements ChatService {
     private PartnerInfo getPartnerInfo(Long conversationId, Long currentUserId) {
         Long otherUserId = findOtherParticipantId(conversationId, currentUserId);
         if (otherUserId == null) {
-            return null;
-        }
-        if (blockedUserRepository.isBlockedEitherWay(currentUserId, otherUserId)) {
             return null;
         }
         Optional<User> partner = userRepository.findById(otherUserId);

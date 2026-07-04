@@ -340,6 +340,14 @@ public class UserController {
 
     @GetMapping("/logout")
     public String processLogout(HttpSession session) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser != null) {
+            try {
+                userService.updateUserOnlineStatus(currentUser.getId(), false);
+            } catch (Exception e) {
+                System.err.println("Failed to set offline status on logout: " + e.getMessage());
+            }
+        }
         session.invalidate();
         SecurityContextHolder.clearContext();
         return "redirect:/?logout=true";

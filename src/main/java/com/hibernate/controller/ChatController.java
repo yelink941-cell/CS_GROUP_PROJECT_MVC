@@ -219,6 +219,29 @@ public class ChatController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @PostMapping("/users/{userId}/unblock")
+    public ResponseEntity<?> unblockUser(
+            @PathVariable Long userId,
+            HttpSession session) {
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+        try {
+            chatService.unblockUser(currentUser.getId(), userId);
+            Map<String, Object> body = new HashMap<>();
+            body.put("userId", userId);
+            body.put("status", "unblocked");
+            return ResponseEntity.ok(body);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
     @DeleteMapping("/messages/{messageId}")
 
     public ResponseEntity<?> deleteMessage(

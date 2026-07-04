@@ -69,6 +69,8 @@ public interface ChatService {
 
     void blockUser(Long currentUserId, Long targetUserId);
 
+    void unblockUser(Long currentUserId, Long targetUserId);
+
 
 
     MarkReadResponse markMessagesAsRead(Long conversationId, Long userId, Long upToMessageId);
