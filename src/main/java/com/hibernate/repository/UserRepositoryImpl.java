@@ -18,31 +18,13 @@ public class UserRepositoryImpl implements UserRepository {
 	private SessionFactory sessionFactory;
 
 	private Session getSession() {
-        return sessionFactory.getCurrentSession();
-    }
-   
-    @Override
-    public void saveUser(User user) {
-        getSession().persist(user); 
-    }
-  
-  
+		return sessionFactory.getCurrentSession();
+	}
 
-    @Override
-    public boolean isEmailExists(String email) {
-        Long count = getSession()
-                .createQuery("select count(u) from User u where u.email = :email", Long.class)
-                .setParameter("email", email)
-                .uniqueResult();
-        return count > 0;
-    }
-    @Override
-    public User getUserByEmail(String email) {
-        return getSession()
-                .createQuery("from User u where u.email = :email", User.class)
-                .setParameter("email", email)
-                .uniqueResult();
-    }
+	@Override
+	public void saveUser(User user) {
+		getSession().persist(user);
+	}
 
 	@Override
 	public User save(User user) {
@@ -54,12 +36,6 @@ public class UserRepositoryImpl implements UserRepository {
 		return user;
 	}
 
-    @Override
-    public void updateProfile(UserProfile profile) {
-        getSession().merge(profile);
-    }
-
-    
 	@Override
 	public boolean isEmailExists(String email) {
 		Long count = getSession().createQuery("select count(u) from User u where u.email = :email", Long.class)
@@ -109,10 +85,14 @@ public class UserRepositoryImpl implements UserRepository {
 	@Override
 	public List<User> searchByUsername(String keyword, Long excludeUserId, int limit) {
 		return getSession()
-				.createQuery("from User u where u.deletedAt is null " + "and u.id <> :excludeId "
-						+ "and lower(u.username) like lower(:keyword) " + "order by u.username asc", User.class)
-				.setParameter("excludeId", excludeUserId).setParameter("keyword", "%" + keyword + "%")
-				.setMaxResults(limit).getResultList();
+				.createQuery("from User u where u.deletedAt is null " 
+						+ "and u.id <> :excludeId "
+						+ "and lower(u.username) like lower(:keyword) " 
+						+ "order by u.username asc", User.class)
+				.setParameter("excludeId", excludeUserId)
+				.setParameter("keyword", "%" + keyword + "%")
+				.setMaxResults(limit)
+				.getResultList();
 	}
 
 	@Override
