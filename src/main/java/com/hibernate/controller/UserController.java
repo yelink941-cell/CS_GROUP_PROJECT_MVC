@@ -27,16 +27,17 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam; 
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class UserController {
 
-	private final UserService userService;
+    private final UserService userService;
     private final JavaMailSender mailSender;
     private final PostService postService;
     private final CommentService commentService;
 
-    // ✅ Constructor ကို ပြင်ပါ
+    // Constructor
     public UserController(UserService userService, 
                           JavaMailSender mailSender,
                           PostService postService,
@@ -47,6 +48,9 @@ public class UserController {
         this.commentService = commentService;
     }
 
+    // =========================================================
+    // REGISTER
+    // =========================================================
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("registrationDto", new RegistrationDto());
@@ -95,6 +99,9 @@ public class UserController {
         }
     }
 
+    // =========================================================
+    // LOGIN
+    // =========================================================
     @GetMapping("/login")
     public String showLoginForm() {
         return "login";
@@ -116,6 +123,9 @@ public class UserController {
         }
     }
 
+    // =========================================================
+    // FORGOT PASSWORD
+    // =========================================================
     @GetMapping("/forgot-password")
     public String showForgotPasswordForm() {
         return "forgot-password"; 
@@ -208,6 +218,9 @@ public class UserController {
         return "redirect:/login?resetSuccess=true"; 
     }
 
+    // =========================================================
+    // PROFILE
+    // =========================================================
     @GetMapping("/profile")
     public String showUserProfilePage(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
@@ -266,6 +279,9 @@ public class UserController {
         return "redirect:/profile";
     }
     
+    // =========================================================
+    // SETTINGS
+    // =========================================================
     @GetMapping("/settings")
     public String showSettingsSpace(HttpSession session, Model model) {
         User current = (User) session.getAttribute("currentUser");
@@ -300,6 +316,9 @@ public class UserController {
         return "redirect:/settings";
     }
     
+    // =========================================================
+    // FOLLOW / UNFOLLOW
+    // =========================================================
     @PostMapping("/user/follow")
     public String followAction(@RequestParam("targetId") Long targetId, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
@@ -314,46 +333,88 @@ public class UserController {
         return "redirect:/profile?id=" + targetId;
     }
 
-    @GetMapping("/admin/dashboard")
-    public String showAdminDashboard() {
-        return "admin/admin-dashboard"; 
-    }
-
+    // =========================================================
+    // ADMIN - USER MANAGEMENT (FIXED with statistics)
+    // =========================================================
     @GetMapping("/admin/users")
     public String listAllUsers(Model model) {
         List<User> userList = userService.getAllUsers();
+        
         model.addAttribute("users", userList);
-        return "admin/admin-user-management"; 
+        
+        int totalUsers = userList.size();
+        model.addAttribute("totalUsers", totalUsers);
+        
+        long activeUsers = userList.stream()
+                .filter(u -> u.getStatus() != null && u.getStatus() == UserStatus.ACTIVE)
+                .count();
+        model.addAttribute("activeUsers", activeUsers);
+        
+        // ✅ SUSPENDED မရှိလို့ INACTIVE ကိုပဲသုံးပါ
+        long inactiveUsers = userList.stream()
+                .filter(u -> u.getStatus() != null && u.getStatus() == UserStatus.INACTIVE)
+                .count();
+        model.addAttribute("suspendedUsers", 0);  // SUSPENDED မရှိလို့ 0
+        model.addAttribute("inactiveUsers", inactiveUsers);
+        
+        return "admin/admin-user-management";
     }
 
+    // =========================================================
+    // ADMIN - UPDATE USER STATUS & ROLE
+    // =========================================================
     @PostMapping("/admin/users/update-status")
     public String updateStatusAndRole(
             @RequestParam("userId") Long userId,
             @RequestParam("role") String roleStr,
-            @RequestParam("status") String statusStr) {
-            
-        userService.updateUserRoleAndStatus(userId, Role.valueOf(roleStr), UserStatus.valueOf(statusStr));
+            @RequestParam("status") String statusStr,
+            RedirectAttributes redirectAttributes) {
+        
+        try {
+            userService.updateUserRoleAndStatus(userId, Role.valueOf(roleStr), UserStatus.valueOf(statusStr));
+            redirectAttributes.addFlashAttribute("successMessage", "User updated successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error updating user: " + e.getMessage());
+        }
         return "redirect:/admin/users";
     }
 
+    // =========================================================
+    // ADMIN - EDIT USER
+    // =========================================================
     @GetMapping("/admin/users/edit")
     public String showAdminEditUserPage(@RequestParam("id") Long userId, Model model) {
         model.addAttribute("targetUser", userService.getUserById(userId));
         return "admin/admin-edit-user";
     }
 
+    // =========================================================
+    // ADMIN - DELETE USER
+    // =========================================================
     @GetMapping("/admin/users/delete")
-    public String deleteUserAccount(@RequestParam("id") Long userId) {
-        userService.softDeleteUser(userId);
+    public String deleteUserAccount(@RequestParam("id") Long userId, RedirectAttributes redirectAttributes) {
+        try {
+            userService.softDeleteUser(userId);
+            redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting user: " + e.getMessage());
+        }
         return "redirect:/admin/users";
     }
 
+    // =========================================================
+    // LOGOUT
+    // =========================================================
     @GetMapping("/logout")
     public String processLogout(HttpSession session) {
         session.invalidate();
         SecurityContextHolder.clearContext();
         return "redirect:/?logout=true";
     }
+
+    // =========================================================
+    // ADMIN - DASHBOARD
+    // =========================================================
     @GetMapping("/admin/dashboard")
     public String showAdminDashboard(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
@@ -368,9 +429,6 @@ public class UserController {
         model.addAttribute("totalUsers", userService.countAllUsers());
         model.addAttribute("totalComments", commentService.countAllComments());
         
-        // ✅ JSP က WEB-INF/views/admin/admin-dashboard.jsp မှာရှိတယ်
         return "admin/admin-dashboard";
     }
-
-    
 }

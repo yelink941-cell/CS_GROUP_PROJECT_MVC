@@ -35,7 +35,6 @@ public class HomePageController {
     private final PostContentService postContentService;
     private final PostFileService postFileService;
     private final CollectionService collectionService; 
-    private final PostContentService postContentService;
     private final CommentService commentService;
     private final PostLikeService postLikeService;
     private final BookmarkService bookmarkService;

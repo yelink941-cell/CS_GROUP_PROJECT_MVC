@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-list.css?v=8">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* FIXED: Kept layout styling clean without overriding system global body rules */
         .home-main-content { 
             padding: 40px 20px; 
             max-width: 960px; 
@@ -28,7 +27,6 @@
             font-weight: 500;
         }
 
-        /* Search Results Layout Styling */
         .results-container {
             background: #ffffff;
             padding: 30px;
@@ -36,19 +34,25 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
         }
+        
         .result-section {
             margin-bottom: 30px;
         }
+        
         .section-title {
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: #64748b;
+            color: #475569;
             font-weight: 700;
             padding-bottom: 8px;
             border-bottom: 2px solid #f1f5f9;
             margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        
         .result-item {
             display: flex;
             justify-content: space-between;
@@ -59,10 +63,18 @@
             margin-bottom: 10px;
             border: 1px solid #e2e8f0;
             transition: all 0.2s ease;
+            color: #1e293b;
         }
         .result-item:hover {
             background: #f1f5f9;
             transform: translateY(-1px);
+        }
+        .result-item a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .result-item a:hover {
+            text-decoration: underline;
         }
         .badge {
             font-size: 11px;
@@ -85,7 +97,6 @@
             text-decoration: underline;
         }
 
-        /* Home Layout Main Banner Styling */
         .hero-card {
             background: linear-gradient(135deg, #4038ff 0%, #6366f1 100%);
             color: white;
@@ -97,12 +108,14 @@
             margin: 0 0 12px 0;
             font-size: 28px;
             font-weight: 800;
+            color: #ffffff;
         }
         .hero-card p {
             margin: 0;
             font-size: 16px;
             opacity: 0.9;
             line-height: 1.6;
+            color: #ffffff;
         }
         .accent-label {
             display: inline-block;
@@ -114,9 +127,9 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 16px;
+            color: #ffffff;
         }
 
-        /* Floating Action Chat Button */
         .chat-fab {
             position: fixed;
             bottom: 30px;
@@ -139,6 +152,124 @@
             transform: scale(1.1) translateY(-3px);
             background: #312bc4;
         }
+
+        /* ============================================
+           RELATED SEARCHES (Search History with Delete)
+           ============================================ */
+        .related-searches-section {
+            background: #f5f3ff;
+            border: 1px solid #ddd6fe;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-top: 25px;
+        }
+        
+        .related-searches-section .section-title {
+            color: #7c3aed;
+            border-bottom-color: #ddd6fe;
+        }
+        
+        .related-searches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        
+        .related-search-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px 8px 18px;
+            background: white;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.25s ease;
+        }
+        
+        .related-search-item:hover {
+            border-color: #7c3aed;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.1);
+        }
+        
+        .related-search-item .search-link {
+            color: #1e293b;
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 0;
+        }
+        
+        .related-search-item .search-link:hover {
+            color: #7c3aed;
+        }
+        
+        .related-search-item .delete-btn {
+            color: #94a3b8;
+            font-size: 13px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .related-search-item .delete-btn:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+        
+        .related-empty {
+            color: #94a3b8;
+            font-size: 14px;
+            font-style: italic;
+            padding: 10px 0;
+        }
+        
+        .related-empty .icon {
+            font-size: 24px;
+        }
+        
+        .delete-history-form {
+            display: inline;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .alert-success {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid #16a34a;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid #dc2626;
+        }
+        
+        /* Search Suggestion Colors */
+        .suggestion-item .highlight {
+            color: #f59e0b;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -146,6 +277,13 @@
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
     <main class="page-container home-main-content">
+        
+        <c:if test="${not empty successMessage}">
+            <div class="alert-success">✅ ${successMessage}</div>
+        </c:if>
+        <c:if test="${not empty errorMessage}">
+            <div class="alert-error">❌ ${errorMessage}</div>
+        </c:if>
         
         <c:if test="${not empty message}">
             <div class="welcome-msg">
@@ -157,27 +295,27 @@
             <%-- CONDITION A: INLINE SEARCH RESULTS VIEW SCREEN --%>
             <c:when test="${isSearching}">
                 <div class="results-container">
-                    <h3 style="color: #0f172a; font-size: 20px; margin-bottom: 20px;">Search Results for "${searchedKeyword}"</h3>
+                    <h3 style="color: #0f172a; font-size: 20px; margin-bottom: 20px;">
+                        Search Results for "<span style="color: #2563eb;">${searchedKeyword}</span>"
+                    </h3>
                     
                     <%-- 1. Cheat Sheets (Posts) Section --%>
                     <div class="result-section">
-                        <div class="section-title" style="color: #4038ff; border-bottom: 2px solid #f3f1ff;">&#128196; Cheat Sheets</div>
+                        <div class="section-title" style="color: #2563eb; border-bottom: 2px solid #dbeafe;">📄 Cheat Sheets</div>
                         <c:choose>
                             <c:when test="${not empty postResults}">
                                 <c:forEach var="p" items="${postResults}">
                                     <div class="result-item">
                                         <div>
                                             <a href="${pageContext.request.contextPath}/posts/${p.slug}" 
-                                               style="text-decoration: none; color: #4038ff; font-weight: 700; font-size: 16px;"
-                                               onmouseover="this.style.textDecoration='underline'" 
-                                               onmouseout="this.style.textDecoration='none'">
+                                               style="color: #2563eb; font-weight: 600; font-size: 16px;">
                                                 <c:out value="${p.title}" />
                                             </a>
                                             <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
                                                 <c:out value="${not empty p.excerpt ? p.excerpt : 'No description available.'}" />
                                             </div>
                                         </div>
-                                        <span class="badge" style="background: #f3f1ff; color: #4038ff;">CheatSheet</span>
+                                        <span class="badge" style="background: #dbeafe; color: #2563eb;">CheatSheet</span>
                                     </div>
                                 </c:forEach>
                             </c:when>
@@ -190,15 +328,13 @@
                     <%-- 2. Folders Section --%>
                     <c:if test="${not empty collectionResults}">
                         <div class="result-section">
-                            <div class="section-title" style="color: #f59e0b; border-bottom: 2px solid #fef3c7;">&#128193; Folders (Collections)</div>
+                            <div class="section-title" style="color: #d97706; border-bottom: 2px solid #fef3c7;">📁 Folders (Collections)</div>
                             <c:forEach var="col" items="${collectionResults}">
                                 <div class="result-item">
                                     <div>
                                         <a href="${pageContext.request.contextPath}/user/collections/view?id=${col.id}" 
-                                           style="text-decoration: none; color: #d97706; font-weight: 700; font-size: 16px;"
-                                           onmouseover="this.style.textDecoration='underline'" 
-                                           onmouseout="this.style.textDecoration='none'">
-                                            &#128193; <c:out value="${col.name}" />
+                                           style="color: #d97706; font-weight: 600; font-size: 16px;">
+                                            📁 <c:out value="${col.name}" />
                                         </a>
                                         <div style="font-size: 13px; color: #64748b; margin-top: 4px;">Created by: @${col.user.username}</div>
                                     </div>
@@ -211,7 +347,7 @@
                     <%-- 3. Categories Section --%>
                     <c:if test="${not empty categoryResults}">
                         <div class="result-section">
-                            <div class="section-title">Categories</div>
+                            <div class="section-title">📁 Categories</div>
                             <c:forEach var="cat" items="${categoryResults}">
                                 <div class="result-item">
                                     <div>
@@ -227,19 +363,19 @@
                     <%-- 4. Users Section --%>
                     <c:if test="${not empty userResults}">
                         <div class="result-section">
-                            <div class="section-title">Users</div>
+                            <div class="section-title">👥 Users</div>
                             <c:forEach var="u" items="${userResults}">
                                 <div class="result-item">
                                     <div>
                                         <c:choose>
                                             <c:when test="${not empty sessionScope.currentUser}">
                                                 <a href="${pageContext.request.contextPath}/profile?id=${u.id}" 
-                                                   style="text-decoration: none; color: #0f766e; font-weight: 600;">
+                                                   style="color: #0f766e; font-weight: 600;">
                                                     @<c:out value="${u.username}"/>
                                                 </a>
                                             </c:when>
                                             <c:otherwise>
-                                                <span style="color: #1e293b; font-weight: 600; cursor: not-allowed;" title="Please login to view profile">
+                                                <span style="color: #1e293b; font-weight: 600;">
                                                     @<c:out value="${u.username}"/>
                                                 </span>
                                             </c:otherwise>
@@ -252,14 +388,60 @@
                         </div>
                     </c:if>
 
+                    <%-- ✅ 5. RELATED SEARCHES (Search History with Delete - STAY ON PAGE) --%>
+                    <div class="related-searches-section">
+                        <div class="section-title">
+                            <span>🔄 Related Searches</span>
+                            <span style="font-size: 12px; color: #94a3b8; font-weight: 400;">
+                                ${searchHistory != null ? searchHistory.size() : 0} searches
+                            </span>
+                        </div>
+                        
+                        <c:choose>
+                            <c:when test="${not empty searchHistory}">
+                                <div class="related-searches">
+                                    <c:forEach var="history" items="${searchHistory}">
+                                        <div class="related-search-item">
+                                            <%-- Search Link --%>
+                                            <form action="${pageContext.request.contextPath}/doSearch" method="POST" style="display: inline;">
+                                                <input type="hidden" name="keyword" value="${history.keyword}" />
+                                                <button type="submit" class="search-link">
+                                                    🔍 ${history.keyword}
+                                                </button>
+                                            </form>
+                                            
+                                            <%-- Delete Button - ✅ STAY ON SEARCH RESULTS PAGE --%>
+                                            <form action="${pageContext.request.contextPath}/history/delete" method="GET" class="delete-history-form">
+                                                <input type="hidden" name="id" value="${history.id}" />
+                                                <input type="hidden" name="keyword" value="${searchedKeyword}" />
+                                                <button type="submit" class="delete-btn" 
+                                                        onclick="return confirm('Delete this search history?')" 
+                                                        title="Delete this search">
+                                                    ✕
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="related-empty">
+                                    <span class="icon">🔍</span>
+                                    No related searches found. Start searching to see related queries here.
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
                     <%-- Fallback Layout --%>
                     <c:if test="${empty postResults && empty collectionResults && empty categoryResults && empty userResults}">
-                        <div style="background: white; padding: 40px; text-align: center; border-radius: 16px; color: #64748b; border: 1px solid #e2e8f0;">
-                            <span style="font-size: 24px; display: block; margin-bottom: 10px;">&#128269;</span> No matching results found for "${searchedKeyword}".
+                        <div style="background: #f8fafc; padding: 40px; text-align: center; border-radius: 16px; color: #64748b; border: 1px solid #e2e8f0; margin-top: 20px;">
+                            <span style="font-size: 48px; display: block; margin-bottom: 10px;">🔍</span>
+                            No matching results found for "<strong>${searchedKeyword}</strong>".
                         </div>
                     </c:if>
 
-                    <a href="${pageContext.request.contextPath}/" class="clear-search-btn">&larr; Clear search results</a>
+                    <a href="${pageContext.request.contextPath}/" class="clear-search-btn">← Clear search results</a>
                 </div>
             </c:when>
 
@@ -269,7 +451,7 @@
                     <c:choose>
                         <c:when test="${not empty sessionScope.currentUser}">
                             <div class="accent-label">Dashboard Active</div>
-                            <h2>Welcome back, <c:out value="${sessionScope.currentUser.username}"/> &#128075;</h2>
+                            <h2>Welcome back, <c:out value="${sessionScope.currentUser.username}"/> 👋</h2>
                             <p>You can now use the top navigation bar from your dashboard to look up references and search everything.</p>
                         </c:when>
                         
@@ -285,7 +467,7 @@
     </main>
 
     <c:if test="${not empty sessionScope.currentUser}">
-        <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages">&#128172;</a>
+        <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages">💬</a>
     </c:if>
 
 </body>

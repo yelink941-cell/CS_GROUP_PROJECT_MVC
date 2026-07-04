@@ -4,186 +4,666 @@
 <%@ page import="com.hibernate.entity.UserPreference" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Base64" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel - User Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin.css">
+    
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { display: flex; min-height: 100vh; background-color: #f4f6f9; color: #1e293b; }
+        /* ============================================
+           USER MANAGEMENT - ADDITIONAL STYLES
+           ============================================ */
         
-        .sidebar { width: 260px; background-color: #1e293b; color: #fff; position: fixed; height: 100vh; }
-        .sidebar-brand { padding: 24px; font-size: 20px; font-weight: bold; background-color: #0f172a; text-align: center; color: #38bdf8; }
-        .sidebar-menu { list-style: none; padding: 20px 0; }
-        .sidebar-link { display: block; padding: 12px 16px; color: #cbd5e1; text-decoration: none; margin: 4px 15px; border-radius: 6px; font-size: 15px; }
-        .sidebar-link:hover { background-color: #334155; color: #fff; }
-        .sidebar-link.active { background-color: #0284c7; color: #fff; font-weight: 600; }
+        /* Alert Messages */
+        .alert-success {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #16a34a;
+        }
         
-        .main-workspace { margin-left: 260px; flex-grow: 1; padding: 40px; }
-        h2 { font-size: 24px; color: #0f172a; font-weight: 700; margin-bottom: 20px; }
-        .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 24px; border: 1px solid #e2e8f0; overflow-x: auto; }
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
         
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 14px; border-bottom: 1px solid #e2e8f0; font-size: 14px; vertical-align: middle; }
-        th { background-color: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        /* Welcome Card */
+        .welcome-card {
+            background: #ffffff;
+            padding: 30px 35px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-left: 8px solid #10b981;
+            margin-bottom: 30px;
+        }
         
-        .mini-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #f1f5f9; }
-        .avatar-letter { width: 45px; height: 45px; border-radius: 50%; background: #e2e8f0; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #475569; border: 2px solid #f1f5f9; }
-        .bio-text { font-size: 13px; color: #64748b; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
+        .welcome-card h2 {
+            font-size: 24px;
+            color: #1e293b;
+            margin: 0 0 8px 0;
+        }
         
-        select { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; color: #334155; background-color: #fff; outline: none; }
+        .welcome-card p {
+            color: #64748b;
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
         
-        .btn { padding: 6px 14px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; transition: all 0.2s; }
-        .btn-update { background-color: #10b981; color: white; margin-right: 4px; }
-        .btn-view { background-color: #3b82f6; color: white; margin-right: 4px; }
-        .btn-delete { background-color: #ef4444; color: white; }
+        /* Stats Cards */
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
         
-        /* --- VIEW MODAL STYLES --- */
-        .modal-mask { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 999; }
-        .modal-mask.open { opacity: 1; pointer-events: auto; }
-        .modal-body { background: white; width: 100%; max-width: 500px; padding: 32px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); transform: scale(0.9); transition: transform 0.3s ease; position: relative; }
-        .modal-mask.open .modal-body { transform: scale(1); }
+        .user-stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-left: 6px solid #10b981;
+            transition: all 0.3s ease;
+        }
         
-        .modal-header-profile { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; }
-        .modal-avatar { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 3px solid #f1f5f9; }
-        .modal-avatar-letter { width: 75px; height: 75px; border-radius: 50%; background: #e2e8f0; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #475569; border: 3px solid #f1f5f9; font-size: 28px; }
+        .user-stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
         
-        .modal-name { font-size: 20px; font-weight: 700; color: #0f172a; }
-        .modal-username { color: #0284c7; font-weight: 600; font-size: 14px; }
+        .user-stat-card.blue { border-left-color: #3b82f6; }
+        .user-stat-card.green { border-left-color: #10b981; }
+        .user-stat-card.orange { border-left-color: #f59e0b; }
+        .user-stat-card.purple { border-left-color: #8b5cf6; }
+        .user-stat-card.red { border-left-color: #ef4444; }
         
-        .modal-section-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 8px 0; display: block; }
-        .modal-bio { font-size: 14px; color: #475569; font-style: italic; background: #f8fafc; padding: 12px; border-radius: 8px; line-height: 1.5; min-height: 42px; }
+        .user-stat-number {
+            font-size: 30px;
+            font-weight: 800;
+            color: #1e293b;
+        }
         
-        .modal-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px; background: #f8fafc; padding: 14px; border-radius: 8px; }
-        .modal-info-row { display: flex; flex-direction: column; gap: 2px; }
-        .modal-label { color: #64748b; font-weight: 500; font-size: 12px; }
-        .modal-val { color: #1e293b; font-weight: 600; }
+        .user-stat-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 4px;
+        }
         
-        .modal-close-x { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; }
+        .user-stat-icon {
+            float: right;
+            font-size: 26px;
+            opacity: 0.25;
+        }
+        
+        /* Table */
+        .table-wrap {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        
+        .data-table thead {
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .data-table th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #475569;
+            white-space: nowrap;
+        }
+        
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Mini Avatar */
+        .mini-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .avatar-letter {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+            font-size: 16px;
+        }
+        
+        /* Status Badges */
+        .badge-status {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-status.active { background: #dcfce7; color: #16a34a; }
+        .badge-status.suspended { background: #fef3c7; color: #d97706; }
+        .badge-status.inactive { background: #fee2e2; color: #dc2626; }
+        
+        .badge-role {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-role.admin { background: #dbeafe; color: #1d4ed8; }
+        .badge-role.user { background: #e2e8f0; color: #475569; }
+        
+        /* Select Dropdowns */
+        .form-select {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #334155;
+            background-color: #fff;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        
+        .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Action Buttons */
+        .action-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .action-btn.update {
+            background: #10b981;
+            color: white;
+        }
+        
+        .action-btn.update:hover {
+            background: #059669;
+        }
+        
+        .action-btn.view {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .action-btn.view:hover {
+            background: #2563eb;
+        }
+        
+        .action-btn.delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .action-btn.delete:hover {
+            background: #fecaca;
+        }
+        
+        /* Modal */
+        .modal-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 999;
+        }
+        
+        .modal-mask.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-body {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-mask.open .modal-body {
+            transform: scale(1);
+        }
+        
+        .modal-close-x {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .modal-close-x:hover {
+            color: #1e293b;
+        }
+        
+        .modal-header-profile {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 16px;
+        }
+        
+        .modal-avatar {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #f1f5f9;
+        }
+        
+        .modal-avatar-letter {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #475569;
+            border: 3px solid #f1f5f9;
+            font-size: 28px;
+        }
+        
+        .modal-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        
+        .modal-username {
+            color: #0284c7;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .modal-section-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 16px 0 8px 0;
+            display: block;
+        }
+        
+        .modal-bio {
+            font-size: 14px;
+            color: #475569;
+            font-style: italic;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            line-height: 1.5;
+            min-height: 42px;
+        }
+        
+        .modal-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            font-size: 14px;
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 8px;
+        }
+        
+        .modal-info-row {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .modal-label {
+            color: #64748b;
+            font-weight: 500;
+            font-size: 12px;
+        }
+        
+        .modal-val {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .user-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .user-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-table {
+                min-width: 800px;
+            }
+            
+            .welcome-card {
+                padding: 20px;
+            }
+            
+            .welcome-card h2 {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .data-table th,
+            .data-table td {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+            
+            .action-btn {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 <body>
 
+    <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="sidebar-brand">CheatSheet Admin 👑</div>
+        <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
         <ul class="sidebar-menu">
-            <li><a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link">📊 Core Dashboard</a></li>
-            <li><a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link active">👥 User Management</a></li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link">
+                    <span>📊 Core Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/categories" class="sidebar-link">
+                    <span>📁 Category Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
+                    <span>🏷️ Tags Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
+                    <span>📄 Post Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
+                    <span>⏳ Pending Posts</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/comments" class="sidebar-link">
+                    <span>💬 Comment Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link active">
+                    <span>👥 User Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link">
+                    <span>📊 Report Logs</span>
+                </a>
+            </li>
         </ul>
     </aside>
 
+    <!-- Main Workspace -->
     <div class="main-workspace">
-        <h2>System User Registry & Full Profiles</h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Photo</th>
-                        <th>Account Details</th>
-                        <th>Full Name</th>
-                        <th>Gender</th>
-                        <th>Biography Snippet</th>
-                        <th>System Role</th>
-                        <th>Account Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% 
-                        List<User> users = (List<User>) request.getAttribute("users");
-                        if(users != null) {
-                            for(User u : users) {
-                                UserProfile prof = u.getProfile(); 
-                                
-                                String fullName = (prof != null && prof.getFullName() != null) ? prof.getFullName() : "No Profile Linked";
-                                String gender = (prof != null && prof.getGender() != null) ? prof.getGender() : "N/A";
-                                String bio = (prof != null && prof.getBio() != null) ? prof.getBio() : "No biography compiled yet.";
-                                
-                                // 🔥 FIX: Changed getPreference() to getPreferences() to match your entity model!
-                                UserPreference pref = u.getPreferences();
-                                
-                                String theme = (pref != null && pref.getTheme() != null) ? pref.getTheme().name() : "SYSTEM";
-                                String lang = (pref != null && pref.getLanguageCode() != null) ? pref.getLanguageCode() : "en";
-                                String mailAlerts = (pref != null && pref.getEmailNotifications() != null && pref.getEmailNotifications()) ? "Enabled" : "Disabled";
-                                String pushAlerts = (pref != null && pref.getPushNotifications() != null && pref.getPushNotifications()) ? "Enabled" : "Disabled";
-                                String allowDMs = (pref != null && pref.getAllowMessages() != null && pref.getAllowMessages()) ? "Allowed" : "Blocked";
-                                String visibility = (pref != null && pref.getProfileVisibility() != null) ? pref.getProfileVisibility().name() : "PUBLIC";
-                                
-                                String initialLetter = "U";
-                                if (u.getUsername() != null && !u.getUsername().trim().isEmpty()) {
-                                    initialLetter = u.getUsername().substring(0, 1).toUpperCase();
-                                }
-                                
-                                boolean hasRealAvatar = (prof != null && prof.getAvatar() != null && prof.getAvatar().length > 0);
-                                String rawAvatarSrc = "";
-                                String imgHtml = "<div class='avatar-letter'>" + initialLetter + "</div>";
-                                
-                                if (hasRealAvatar) {
-                                    String base64Img = Base64.getEncoder().encodeToString(prof.getAvatar());
-                                    rawAvatarSrc = "data:image/jpeg;base64," + base64Img.replaceAll("[\\r\\n\\s]+", "");
-                                    imgHtml = "<img src='" + rawAvatarSrc + "' class='mini-avatar' alt='Avatar' />";
-                                }
-                    %>
-                    <tr>
-                        <td><%= imgHtml %></td>
-                        <td>
-                            <strong>@<%= u.getUsername() %></strong><br/>
-                            <span style="font-size:12px; color:#64748b;"><%= u.getEmail() %></span>
-                        </td>
-                        <td><%= fullName %></td>
-                        <td><span style="text-transform: capitalize;"><%= gender %></span></td>
-                        <td><div class="bio-text" title="<%= bio %>">"<%= bio %>"</div></td>
-                        
-                        <form action="${pageContext.request.contextPath}/admin/users/update-status" method="POST">
-                            <input type="hidden" name="userId" value="<%= u.getId() %>" />
-                            <td>
-                                <select name="role">
-                                    <option value="USER" <%= u.getRole().name().equals("USER")?"selected":"" %>>USER</option>
-                                    <option value="ADMIN" <%= u.getRole().name().equals("ADMIN")?"selected":"" %>>ADMIN</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select name="status">
-                                    <option value="ACTIVE" <%= u.getStatus().name().equals("ACTIVE")?"selected":"" %>>ACTIVE</option>
-                                    <option value="SUSPENDED" <%= u.getStatus().name().equals("SUSPENDED")?"selected":"" %>>SUSPENDED</option>
-                                    <option value="INACTIVE" <%= u.getStatus().name().equals("INACTIVE")?"selected":"" %>>INACTIVE</option>
-                                </select>
-                            </td>
-                            <td>
-                                <div style="display: flex; align-items: center;">
-                                    <button type="submit" class="btn btn-update">Update</button>
+        
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="nav-title">👥 User Management</div>
+            <div class="user-profile-badge">
+                <span>Welcome, <strong>Admin</strong></span>
+                <span class="badge">ADMIN</span>
+                <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Sign Out</a>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            
+            <!-- Welcome Card -->
+            <div class="welcome-card">
+                <h2>👥 User Management</h2>
+                <p>Manage all registered users. View profiles, update roles and status, or delete users.</p>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <c:if test="${not empty successMessage}">
+                <div class="alert-success">✅ ${successMessage}</div>
+            </c:if>
+            
+            <c:if test="${not empty errorMessage}">
+                <div class="alert-error">❌ ${errorMessage}</div>
+            </c:if>
+
+            <!-- Statistics Cards -->
+            <div class="user-stats">
+                <div class="user-stat-card">
+                    <span class="user-stat-icon">👥</span>
+                    <div class="user-stat-number">${totalUsers}</div>
+                    <div class="user-stat-label">Total Users</div>
+                </div>
+                <div class="user-stat-card blue">
+                    <span class="user-stat-icon">✅</span>
+                    <div class="user-stat-number">${activeUsers}</div>
+                    <div class="user-stat-label">Active Users</div>
+                </div>
+                <div class="user-stat-card red">
+                    <span class="user-stat-icon">🚫</span>
+                    <div class="user-stat-number">${inactiveUsers}</div>
+                    <div class="user-stat-label">Inactive Users</div>
+                </div>
+            </div>
+
+            <!-- User Table -->
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Account Details</th>
+                            <th>Full Name</th>
+                            <th>Gender</th>
+                            <th>Bio Snippet</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% 
+                            List<User> users = (List<User>) request.getAttribute("users");
+                            if(users != null) {
+                                for(User u : users) {
+                                    UserProfile prof = u.getProfile(); 
                                     
-                                    <button type="button" 
-                                            class="btn btn-view" 
-                                            data-name="<%= fullName.replace("\"", "&quot;") %>"
-                                            data-username="<%= u.getUsername() != null ? u.getUsername().replace("\"", "&quot;") : "" %>"
-                                            data-gender="<%= gender %>"
-                                            data-bio="<%= bio.replace("\"", "&quot;").replace("\n", " ").replace("\r", "") %>"
-                                            data-hasavatar="<%= hasRealAvatar %>"
-                                            data-letter="<%= initialLetter %>"
-                                            data-role="<%= u.getRole().name() %>"
-                                            data-status="<%= u.getStatus().name() %>"
-                                            data-theme="<%= theme %>"
-                                            data-lang="<%= lang %>"
-                                            data-mail="<%= mailAlerts %>"
-                                            data-push="<%= pushAlerts %>"
-                                            data-dms="<%= allowDMs %>"
-                                            data-visibility="<%= visibility %>"
-                                            onclick="openProfileInspector(this)">View</button>                                    
-                                    <a href="${pageContext.request.contextPath}/admin/users/delete?id=<%= u.getId() %>" class="btn btn-delete" onclick="return confirm('Execute Soft Delete?');">Delete</a>
+                                    String fullName = (prof != null && prof.getFullName() != null) ? prof.getFullName() : "No Profile";
+                                    String gender = (prof != null && prof.getGender() != null) ? prof.getGender() : "N/A";
+                                    String bio = (prof != null && prof.getBio() != null) ? prof.getBio() : "No biography yet.";
+                                    
+                                    UserPreference pref = u.getPreferences();
+                                    
+                                    String theme = (pref != null && pref.getTheme() != null) ? pref.getTheme().name() : "SYSTEM";
+                                    String lang = (pref != null && pref.getLanguageCode() != null) ? pref.getLanguageCode() : "en";
+                                    String mailAlerts = (pref != null && pref.getEmailNotifications() != null && pref.getEmailNotifications()) ? "Enabled" : "Disabled";
+                                    String pushAlerts = (pref != null && pref.getPushNotifications() != null && pref.getPushNotifications()) ? "Enabled" : "Disabled";
+                                    String allowDMs = (pref != null && pref.getAllowMessages() != null && pref.getAllowMessages()) ? "Allowed" : "Blocked";
+                                    String visibility = (pref != null && pref.getProfileVisibility() != null) ? pref.getProfileVisibility().name() : "PUBLIC";
+                                    
+                                    String initialLetter = "U";
+                                    if (u.getUsername() != null && !u.getUsername().trim().isEmpty()) {
+                                        initialLetter = u.getUsername().substring(0, 1).toUpperCase();
+                                    }
+                                    
+                                    boolean hasRealAvatar = (prof != null && prof.getAvatar() != null && prof.getAvatar().length > 0);
+                                    String imgHtml = "<div class='avatar-letter'>" + initialLetter + "</div>";
+                                    
+                                    if (hasRealAvatar) {
+                                        String base64Img = Base64.getEncoder().encodeToString(prof.getAvatar());
+                                        String rawAvatarSrc = "data:image/jpeg;base64," + base64Img.replaceAll("[\\r\\n\\s]+", "");
+                                        imgHtml = "<img src='" + rawAvatarSrc + "' class='mini-avatar' alt='Avatar' />";
+                                    }
+                                    
+                                    String roleClass = u.getRole().name().equals("ADMIN") ? "admin" : "user";
+                                    String statusClass = u.getStatus().name().toLowerCase();
+                        %>
+                        <tr>
+                            <td><%= imgHtml %></td>
+                            <td>
+                                <strong>@<%= u.getUsername() %></strong><br/>
+                                <span style="font-size:12px; color:#64748b;"><%= u.getEmail() %></span>
+                            </td>
+                            <td><%= fullName %></td>
+                            <td><span style="text-transform: capitalize;"><%= gender %></span></td>
+                            <td>
+                                <div style="max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; font-size: 13px; color: #64748b;" 
+                                     title="<%= bio %>">
+                                    "<%= bio %>"
                                 </div>
                             </td>
-                        </form>
-                    </tr>
-                    <%      }
-                        } 
-                    %>
-                </tbody>
-            </table>
-        </div>
+                            <td>
+                                <span class="badge-role <%= roleClass %>"><%= u.getRole().name() %></span>
+                            </td>
+                            <td>
+                                <span class="badge-status <%= statusClass %>"><%= u.getStatus().name() %></span>
+                            </td>
+                            <td style="text-align: center; white-space: nowrap;">
+                                <form action="${pageContext.request.contextPath}/admin/users/update-status" method="POST" style="display: inline-block;">
+                                    <input type="hidden" name="userId" value="<%= u.getId() %>" />
+                                    <select name="role" class="form-select" style="display: inline-block; width: auto; margin-bottom: 4px;">
+                                        <option value="USER" <%= u.getRole().name().equals("USER")?"selected":"" %>>USER</option>
+                                        <option value="ADMIN" <%= u.getRole().name().equals("ADMIN")?"selected":"" %>>ADMIN</option>
+                                    </select>
+                                    <select name="status" class="form-select" style="display: inline-block; width: auto; margin-bottom: 4px;">
+                                        <option value="ACTIVE" <%= u.getStatus().name().equals("ACTIVE")?"selected":"" %>>ACTIVE</option>
+                                        <option value="SUSPENDED" <%= u.getStatus().name().equals("SUSPENDED")?"selected":"" %>>SUSPENDED</option>
+                                        <option value="INACTIVE" <%= u.getStatus().name().equals("INACTIVE")?"selected":"" %>>INACTIVE</option>
+                                    </select>
+                                    <button type="submit" class="action-btn update">Update</button>
+                                </form>
+                                <br>
+                                <button type="button" 
+                                        class="action-btn view" 
+                                        data-name="<%= fullName.replace("\"", "&quot;") %>"
+                                        data-username="<%= u.getUsername() != null ? u.getUsername().replace("\"", "&quot;") : "" %>"
+                                        data-gender="<%= gender %>"
+                                        data-bio="<%= bio.replace("\"", "&quot;").replace("\n", " ").replace("\r", "") %>"
+                                        data-hasavatar="<%= hasRealAvatar %>"
+                                        data-letter="<%= initialLetter %>"
+                                        data-role="<%= u.getRole().name() %>"
+                                        data-status="<%= u.getStatus().name() %>"
+                                        data-theme="<%= theme %>"
+                                        data-lang="<%= lang %>"
+                                        data-mail="<%= mailAlerts %>"
+                                        data-push="<%= pushAlerts %>"
+                                        data-dms="<%= allowDMs %>"
+                                        data-visibility="<%= visibility %>"
+                                        onclick="openProfileInspector(this)">View</button>
+                                <a href="${pageContext.request.contextPath}/admin/users/delete?id=<%= u.getId() %>" 
+                                   class="action-btn delete" 
+                                   onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                            </td>
+                        </tr>
+                        <%      }
+                            } 
+                        %>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
     </div>
 
+    <!-- Modal -->
     <div class="modal-mask" id="inspectorModal" onclick="closeProfileInspector(event)">
         <div class="modal-body" onclick="event.stopPropagation()">
             <button class="modal-close-x" onclick="document.getElementById('inspectorModal').classList.remove('open')">&times;</button>
@@ -201,29 +681,29 @@
             
             <span class="modal-section-title">Core Identity Profile</span>
             <div class="modal-info-grid" style="margin-bottom: 14px;">
-                <div class="modal-info-row"><span class="modal-label">Gender Axis:</span><span class="modal-val" id="modalGender">N/A</span></div>
+                <div class="modal-info-row"><span class="modal-label">Gender:</span><span class="modal-val" id="modalGender">N/A</span></div>
                 <div class="modal-info-row"><span class="modal-label">System Role:</span><span class="modal-val" id="modalRole">N/A</span></div>
                 <div class="modal-info-row"><span class="modal-label">Account Status:</span><span class="modal-val" id="modalStatus">N/A</span></div>
             </div>
 
-            <span class="modal-section-title">User Default App Parameters</span>
+            <span class="modal-section-title">User Preferences</span>
             <div class="modal-info-grid">
-                <div class="modal-info-row"><span class="modal-label">UI Theme Canvas:</span><span class="modal-val" id="modalTheme">N/A</span></div>
-                <div class="modal-info-row"><span class="modal-label">Language Node:</span><span class="modal-val" id="modalLang">N/A</span></div>
-                <div class="modal-info-row"><span class="modal-label">Mail Digests:</span><span class="modal-val" id="modalMailAlerts">N/A</span></div>
-                <div class="modal-info-row"><span class="modal-label">Push Alerts:</span><span class="modal-val" id="modalPushAlerts">N/A</span></div>
+                <div class="modal-info-row"><span class="modal-label">UI Theme:</span><span class="modal-val" id="modalTheme">N/A</span></div>
+                <div class="modal-info-row"><span class="modal-label">Language:</span><span class="modal-val" id="modalLang">N/A</span></div>
+                <div class="modal-info-row"><span class="modal-label">Email Notifications:</span><span class="modal-val" id="modalMailAlerts">N/A</span></div>
+                <div class="modal-info-row"><span class="modal-label">Push Notifications:</span><span class="modal-val" id="modalPushAlerts">N/A</span></div>
                 <div class="modal-info-row"><span class="modal-label">Direct Messages:</span><span class="modal-val" id="modalDMs">N/A</span></div>
-                <div class="modal-info-row"><span class="modal-label">Discovery Privacy:</span><span class="modal-val" id="modalVisibility">N/A</span></div>
+                <div class="modal-info-row"><span class="modal-label">Profile Visibility:</span><span class="modal-val" id="modalVisibility">N/A</span></div>
             </div>
         </div>
     </div>
 
     <script>
         function openProfileInspector(button) {
-            const name = button.getAttribute('data-name') || 'No Name Attached';
+            const name = button.getAttribute('data-name') || 'No Name';
             const username = button.getAttribute('data-username');
             const gender = button.getAttribute('data-gender') || 'N/A';
-            const bio = button.getAttribute('data-bio') || 'No biography compiled yet.';
+            const bio = button.getAttribute('data-bio') || 'No biography yet.';
             const hasAvatar = button.getAttribute('data-hasavatar') === 'true';
             const fallbackLetter = button.getAttribute('data-letter') || 'U';
             
@@ -272,8 +752,11 @@
         }
         
         function closeProfileInspector(event) {
-            document.getElementById('inspectorModal').classList.remove('open');
+            if (event.target === event.currentTarget) {
+                document.getElementById('inspectorModal').classList.remove('open');
+            }
         }
     </script>
+
 </body>
 </html>
