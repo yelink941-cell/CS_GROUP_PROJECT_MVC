@@ -1,0 +1,115 @@
+body > h2,
+body > p,
+body > table,
+body > form {
+    width: min(1100px, calc(100% - 32px));
+    margin-right: auto;
+    margin-left: auto;
+}
+
+body > h2 {
+    margin-top: 38px;
+}
+
+body > p a,
+body > form a {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+body > table,
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+}
+
+body > table {
+    width: min(1100px, calc(100% - 32px));
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+body > table th,
+body > table td,
+.data-table th,
+.data-table td {
+    padding: 14px;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+body > table th,
+.data-table th {
+    color: #475569;
+    background: #f8fafc;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+body > form {
+    max-width: 720px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+body > form input[type="text"],
+body > form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font: inherit;
+}
+
+body > form button {
+    padding: 9px 16px;
+    color: #ffffff;
+    border: 0;
+    border-radius: 8px;
+    background: var(--primary);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.data-table {
+    min-width: 980px;
+}
+
+.data-table textarea {
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font: inherit;
+}
+
+.sidebar {
+    width: 260px;
+    color: #ffffff;
+    background: #1e293b;
+}
+
+.main-workspace {
+    min-height: 100vh;
+}
+
+@media (max-width: 720px) {
+    body > table {
+        display: block;
+        overflow-x: auto;
+    }
+}

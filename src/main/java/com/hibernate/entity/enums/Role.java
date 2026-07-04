@@ -1,5 +1,6 @@
 package com.hibernate.entity.enums;
 
 public enum Role {
-	ADMIN, USER
+	ADMIN, USER, SUPER_ADMIN
 }
+

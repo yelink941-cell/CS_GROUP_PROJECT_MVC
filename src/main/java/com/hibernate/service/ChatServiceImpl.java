@@ -7,13 +7,21 @@ import com.hibernate.entity.MessageAttachment;
 import com.hibernate.entity.User;
 import com.hibernate.entity.enums.MessageType;
 import com.hibernate.entity.enums.ParticipantRole;
+import com.hibernate.entity.enums.Role;
 import com.hibernate.dto.ChatInboxItem;
 import com.hibernate.dto.ChatRoomView;
+import com.hibernate.dto.MessageResponse;
 import com.hibernate.dto.UserSearchResult;
+import com.hibernate.dto.MarkReadResponse;
+import com.hibernate.entity.MessageReport;
+import com.hibernate.entity.enums.ReportReason;
+import com.hibernate.repository.BlockedUserRepository;
 import com.hibernate.repository.ConversationRepository;
 import com.hibernate.repository.ConversationParticipantRepository;
 import com.hibernate.repository.MessageAttachmentRepository;
+import com.hibernate.repository.MessageReportRepository;
 import com.hibernate.repository.MessageRepository;
+import com.hibernate.repository.MessageSeenStatusRepository;
 import com.hibernate.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -36,22 +44,24 @@ public class ChatServiceImpl implements ChatService {
     private final MessageRepository messageRepository;
     private final ConversationParticipantRepository participantRepository;
     private final MessageAttachmentRepository attachmentRepository;
+    private final MessageSeenStatusRepository seenStatusRepository;
+    private final MessageReportRepository messageReportRepository;
     private final FileStorageService fileStorageService;
     private final UserRepository userRepository;
+    private final BlockedUserRepository blockedUserRepository;
 
     @Override
     public Conversation createConversation(String title, boolean isGroup, List<Long> userIds, Long creatorId) {
 
         if (!isGroup && userIds.size() == 1) {
             Long receiverId = userIds.get(0);
-            List<Conversation> existingChats = conversationRepository.getAllConversationsByUserId(creatorId);
-            for (Conversation chat : existingChats) {
-                if (!chat.isGroup()) {
-                    for (ConversationParticipant p : chat.getParticipants()) {
-                        if (p.getUserId().equals(receiverId)) {
-                            return chat;
-                        }
-                    }
+            Long existingConversationId = 
+            		participantRepository.findDirectConversationIdBetweenUsers(creatorId, receiverId);
+            if (existingConversationId != null) {
+                Conversation existing = 
+                		conversationRepository.getById(existingConversationId);
+                if (existing != null) {
+                    return existing;
                 }
             }
         }
@@ -90,13 +100,17 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Conversation startDirectChat(Long currentUserId, Long targetUserId) {
         if (currentUserId.equals(targetUserId)) {
-            throw new IllegalArgumentException("ကိုယ့်ကိုယ်ကို chat မစတင်နိုင်ပါ။");
+            throw new IllegalArgumentException("You can't start a chat with myself.");
+        }
+
+        if (blockedUserRepository.isBlockedEitherWay(currentUserId, targetUserId)) {
+            throw new SecurityException("Unable to start chat with this user.");
         }
 
         User target = userRepository.findById(targetUserId)
-                .orElseThrow(() -> new IllegalArgumentException("User ကို ရှာမတွေ့ပါ။"));
+                .orElseThrow(() -> new IllegalArgumentException("User is not fသund"));
 
-        return createConversation(target.getUsername(), false, List.of(targetUserId), currentUserId);
+        return createConversation(resolveDisplayName(target), false, List.of(targetUserId), currentUserId);
     }
 
     @Override
@@ -110,16 +124,15 @@ public class ChatServiceImpl implements ChatService {
             item.setGroup(conversation.isGroup());
 
             if (conversation.isGroup()) {
-                item.setDisplayName(conversation.getTitle() != null ? conversation.getTitle() : "Group Chat");
+                item.setDisplayName(getConversationTitle(conversation, "Group Chat"));
             } else {
-                Long otherUserId = findOtherParticipantId(conversation, currentUserId);
-                if (otherUserId != null) {
-                    userRepository.findById(otherUserId).ifPresentOrElse(user -> {
-                        item.setDisplayName(user.getUsername());
-                        item.setDisplayRole(user.getRole() != null ? user.getRole().name() : "USER");
-                    }, () -> item.setDisplayName("Unknown User"));
+                PartnerInfo partner = getPartnerInfo(conversation.getId(), currentUserId);
+                if (partner != null) {
+                    item.setPartnerUserId(partner.userId);
+                    item.setDisplayName(partner.displayName);
+                    item.setDisplayRole(partner.role);
                 } else {
-                    item.setDisplayName(conversation.getTitle() != null ? conversation.getTitle() : "Chat");
+                    item.setDisplayName(getConversationTitle(conversation, "Chat"));
                 }
             }
 
@@ -140,6 +153,8 @@ public class ChatServiceImpl implements ChatService {
             return null;
         }
 
+        participantRepository.restoreConversationForUser(conversationId, currentUserId);
+
         Conversation conversation = conversationRepository.getByIdWithParticipants(conversationId);
         if (conversation == null) {
             return null;
@@ -148,24 +163,28 @@ public class ChatServiceImpl implements ChatService {
         ChatRoomView view = new ChatRoomView();
         view.setConversationId(conversationId);
         view.setGroup(conversation.isGroup());
+        view.setCanModerate(canModerateMessagesInternal(conversationId, currentUserId));
 
         if (conversation.isGroup()) {
-            view.setTitle(conversation.getTitle() != null ? conversation.getTitle() : "Group Chat");
+            view.setTitle(getConversationTitle(conversation, "Group Chat"));
             return view;
         }
 
-        Long otherUserId = findOtherParticipantId(conversation, currentUserId);
-        if (otherUserId != null) {
-            Optional<User> partner = userRepository.findById(otherUserId);
-            if (partner.isPresent()) {
-                view.setTitle(partner.get().getUsername());
-                view.setPartnerRole(partner.get().getRole() != null ? partner.get().getRole().name() : "USER");
-                return view;
-            }
+        PartnerInfo partner = getPartnerInfo(conversationId, currentUserId);
+        if (partner != null) {
+            view.setTitle(partner.displayName);
+            view.setPartnerUserId(partner.userId);
+            view.setPartnerRole(partner.role);
+            return view;
         }
 
-        view.setTitle(conversation.getTitle() != null ? conversation.getTitle() : "Chat");
+        view.setTitle(getConversationTitle(conversation, "Chat"));
         return view;
+    }
+
+    @Override
+    public boolean canModerateMessages(Long conversationId, Long userId) {
+        return canModerateMessagesInternal(conversationId, userId);
     }
 
     @Override
@@ -175,27 +194,44 @@ public class ChatServiceImpl implements ChatService {
         }
 
         return userRepository.searchByUsername(keyword.trim(), currentUserId, 10).stream()
+                .filter(user -> !blockedUserRepository.isBlockedEitherWay(currentUserId, user.getId()))
                 .map(user -> new UserSearchResult(
                         user.getId(),
                         user.getUsername(),
-                        user.getRole() != null ? user.getRole().name() : "USER"))
+                        resolveDisplayName(user),
+                        getUserRoleName(user)))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Message sendMessage(Long conversationId, Long senderId, String text) {
+    public Message sendMessage(Long conversationId, Long senderId, String text, Long parentMessageId) {
         validateParticipant(conversationId, senderId);
+        assertNotBlockedInConversation(conversationId, senderId);
+        participantRepository.restoreConversationForUser(conversationId, senderId);
+
+        if (text == null || text.isBlank()) {
+            throw new IllegalArgumentException("Enter text.");
+        }
 
         Conversation conversation = conversationRepository.getById(conversationId);
         if (conversation == null) {
-            throw new RuntimeException("စကားဝိုင်း #" + conversationId + " ကို ရှာမတွေ့ပါ။");
+            throw new RuntimeException("Conversation #" + conversationId + " not found.");
         }
 
         Message message = new Message();
         message.setConversation(conversation);
         message.setSenderId(senderId);
-        message.setMessageText(text);
+        message.setMessageText(text.trim());
         message.setMessageType(MessageType.TEXT);
+
+        if (parentMessageId != null) {
+            Message parent = messageRepository.getById(parentMessageId);
+            if (parent == null || parent.getConversation() == null
+                    || !parent.getConversation().getId().equals(conversationId)) {
+                throw new IllegalArgumentException("The message to reply is invalid.");
+            }
+            message.setParentMessage(parent);
+        }
 
         Long messageId = messageRepository.insertMessage(message);
         message.setId(messageId);
@@ -207,53 +243,202 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Message sendMediaMessage(Long conversationId, Long senderId, MultipartFile file, String caption) {
+    public Message editMessage(Long messageId, Long senderId, String newText) {
+        if (newText == null || newText.isBlank()) {
+            throw new IllegalArgumentException("Enter text");
+        }
+
+        Message message = messageRepository.findByIdAndSenderId(messageId, senderId)
+                .orElseThrow(() -> new SecurityException("You do not have permission to edit this message."));
+
+        validateParticipant(message.getConversation().getId(), senderId);
+
+        message.setMessageText(newText.trim());
+        message.setEdited(true);
+        message.setUpdatedAt(now());
+        messageRepository.updateMessage(message);
+
+        return messageRepository.getByIdWithDetails(messageId);
+    }
+
+    @Override
+    public Long deleteMessage(Long messageId, Long userId) {
+        Message message = messageRepository.getById(messageId);
+        if (message == null || message.getDeletedAt() != null) {
+            throw new IllegalArgumentException("Message is not found!");
+        }
+
+        Long conversationId = message.getConversation().getId();
+        validateParticipant(conversationId, userId);
+
+        boolean isOwner = message.getSenderId().equals(userId);
+        if (!isOwner && !canModerateMessagesInternal(conversationId, userId)) {
+            throw new SecurityException("You do not have permission to delete this message.");
+        }
+
+        message.setDeletedAt(now());
+        messageRepository.updateMessage(message);
+        return conversationId;
+    }
+
+    @Override
+    public void deleteConversationForUser(Long conversationId, Long userId) {
+        validateParticipant(conversationId, userId);
+
+        ConversationParticipant participant = participantRepository.findParticipant(conversationId, userId)
+                .orElseThrow(() -> new SecurityException("You are not authorized to participate in this conversation."));
+
+        java.time.LocalDateTime currentTime = now();
+        messageRepository.softDeleteAllByConversationId(conversationId, currentTime);
+        participant.setHiddenAt(currentTime);
+        participantRepository.updateParticipant(participant);
+    }
+
+    @Override
+    public void blockUser(Long currentUserId, Long targetUserId) {
+        if (currentUserId.equals(targetUserId)) {
+            throw new IllegalArgumentException("You can't block yourself.");
+        }
+
+        userRepository.findById(targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+
+        blockedUserRepository.blockUser(currentUserId, targetUserId);
+
+        Long conversationId = participantRepository.findDirectConversationIdBetweenUsers(currentUserId, targetUserId);
+        if (conversationId != null) {
+            participantRepository.findParticipant(conversationId, currentUserId).ifPresent(participant -> {
+                participant.setHiddenAt(now());
+                participantRepository.updateParticipant(participant);
+            });
+        }
+    }
+
+    @Override
+    public MarkReadResponse markMessagesAsRead(Long conversationId, Long userId, Long upToMessageId) {
+        validateParticipant(conversationId, userId);
+
+        Long effectiveUpTo = upToMessageId;
+        if (effectiveUpTo == null) {
+            effectiveUpTo = messageRepository.findLatestByConversationId(conversationId)
+                    .map(Message::getId)
+                    .orElse(null);
+        }
+        if (effectiveUpTo == null) {
+            return new MarkReadResponse(conversationId, null, 0, List.of(userId));
+        }
+
+        int markedCount = seenStatusRepository.markConversationReadUpTo(conversationId, userId, effectiveUpTo);
+        return new MarkReadResponse(conversationId, effectiveUpTo, markedCount, List.of(userId));
+    }
+
+    @Override
+    public void reportMessage(Long messageId, Long reporterId, ReportReason reason, String description) {
+        Message message = messageRepository.getById(messageId);
+        if (message == null || message.getConversation() == null) {
+            throw new IllegalArgumentException("Message not found");
+        }
+
+        validateParticipant(message.getConversation().getId(), reporterId);
+
+        if (message.getSenderId().equals(reporterId)) {
+            throw new IllegalArgumentException("You cannot report your own message.");
+        }
+        if (reason == null) {
+            throw new IllegalArgumentException("Choose report reason ");
+        }
+
+        User reporter = userRepository.findById(reporterId)
+                .orElseThrow(() -> new IllegalArgumentException("User Not Found"));
+
+        MessageReport report = new MessageReport();
+        report.setMessage(message);
+        report.setReporter(reporter);
+        report.setReason(reason);
+        report.setDescription(description);
+        messageReportRepository.insertReport(report);
+    }
+
+    @Override
+    public Message sendMediaMessage(Long conversationId, Long senderId, List<MultipartFile> files, String caption) {
         validateParticipant(conversationId, senderId);
+        assertNotBlockedInConversation(conversationId, senderId);
+        participantRepository.restoreConversationForUser(conversationId, senderId);
 
         Conversation conversation = conversationRepository.getById(conversationId);
         if (conversation == null) {
-            throw new RuntimeException("စကားဝိုင်း #" + conversationId + " ကို ရှာမတွေ့ပါ။");
+            throw new RuntimeException("Conversation #" + conversationId + " not found.");
         }
 
-        String fileUrl;
-        try {
-            fileUrl = fileStorageService.storeChatFile(conversationId, file);
-        } catch (Exception e) {
-            throw new RuntimeException("ဖိုင်သိမ်းဆည်းရာတွင် အမှားဖြစ်ပါသည်: " + e.getMessage(), e);
-        }
-
-        String contentType = file.getContentType();
-        MessageType messageType = fileStorageService.isVideo(contentType, fileUrl)
-                ? MessageType.VIDEO : MessageType.IMAGE;
-
+        // 1. Create Message Object first (ID not included yet)
         Message message = new Message();
         message.setConversation(conversation);
         message.setSenderId(senderId);
         message.setMessageText(caption != null && !caption.isBlank() ? caption.trim() : null);
-        message.setMessageType(messageType);
 
+        MessageType finalType = MessageType.IMAGE;
+        List<MessageAttachment> attachmentsToSave = new ArrayList<>();
+
+        // 2. Loop through files, store in Storage and create Attachment Objects
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) continue;
+
+            String fileUrl;
+            try {
+                // Store each file in Storage
+                fileUrl = fileStorageService.storeChatFile(conversationId, file);
+            } catch (Exception e) {
+                throw new RuntimeException("Error occurred while storing file: " + e.getMessage(), e);
+            }
+
+            String contentType = file.getContentType();
+            if (fileStorageService.isVideo(contentType, fileUrl)) {
+                finalType = MessageType.VIDEO;
+            }
+
+            // Create a 'new' Attachment Object each loop iteration
+            MessageAttachment attachment = new MessageAttachment();
+            attachment.setFileUrl(fileUrl);
+            attachment.setFileType(contentType != null ? contentType : "application/octet-stream");
+            attachment.setFileSize((int) file.getSize());
+
+            attachmentsToSave.add(attachment);
+        }
+
+        if (attachmentsToSave.isEmpty()) {
+            throw new IllegalArgumentException("Please select at least 1 file to send.");
+        }
+
+        // 3. Insert Message into DB and get ID
+        message.setMessageType(finalType);
         Long messageId = messageRepository.insertMessage(message);
-        message.setId(messageId);
+        message.setId(messageId); // Put the obtained ID back into Message Object
 
-        MessageAttachment attachment = new MessageAttachment();
-        attachment.setMessage(message);
-        attachment.setFileUrl(fileUrl);
-        attachment.setFileType(contentType != null ? contentType : "application/octet-stream");
-        attachment.setFileSize((int) file.getSize());
-        attachmentRepository.insertAttachment(attachment);
+        // 4. Use the obtained Message ID to insert Attachments into DB
+        message.setAttachments(new ArrayList<>());
+        for (MessageAttachment att : attachmentsToSave) {
+            att.setMessage(message); // To allow Database Foreign Key (message_id) to enter
+            attachmentRepository.insertAttachment(att); // Insert into DB
+            message.getAttachments().add(att); // Put back into List to show immediately in UI
+        }
 
-        message.getAttachments().add(attachment);
-
+        // 5. Update Conversation's Updated time
         conversation.setUpdatedAt(message.getCreatedAt());
         conversationRepository.updateConversation(conversation);
 
         return message;
     }
-
     @Override
     public List<Message> getChatHistory(Long conversationId, Long currentUserId, Long lastMessageId) {
         validateParticipant(conversationId, currentUserId);
         return messageRepository.getChatHistory(conversationId, lastMessageId, 20);
+    }
+
+    @Override
+    public MessageResponse toMessageResponse(Message message) {
+        MessageResponse response = MessageMapper.toResponse(message);
+        response.setSenderDisplayName(resolveDisplayName(message.getSenderId()));
+        return response;
     }
 
     @Override
@@ -263,17 +448,96 @@ public class ChatServiceImpl implements ChatService {
 
     private void validateParticipant(Long conversationId, Long userId) {
         if (!participantRepository.isUserParticipant(conversationId, userId)) {
-            throw new SecurityException("ဒီစကားဝိုင်းတွင် ပါဝင်သူမဟုတ်သောကြောင့် ခွင့်ပြုချက်မရှိပါ။");
+            throw new SecurityException("You don't have permission because you're not a participant in this conversation.");
         }
     }
 
-    private Long findOtherParticipantId(Conversation conversation, Long currentUserId) {
-        for (ConversationParticipant participant : conversation.getParticipants()) {
-            if (!participant.getUserId().equals(currentUserId)) {
-                return participant.getUserId();
-            }
+    private void assertNotBlockedInConversation(Long conversationId, Long userId) {
+        Conversation conversation = conversationRepository.getById(conversationId);
+        if (conversation == null || conversation.isGroup()) {
+            return;
         }
-        return null;
+
+        Long otherUserId = findOtherParticipantId(conversationId, userId);
+        if (otherUserId != null && blockedUserRepository.isBlockedEitherWay(userId, otherUserId)) {
+            throw new SecurityException("Cannot send message with blocked user.");
+        }
+    }
+
+    private boolean canModerateMessagesInternal(Long conversationId, Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null && user.getRole() == Role.ADMIN) {
+            return true;
+        }
+        return participantRepository.findParticipantRole(conversationId, userId)
+                .map(role -> role == ParticipantRole.ADMIN)
+                .orElse(false);
+    }
+
+    private Long findOtherParticipantId(Long conversationId, Long currentUserId) {
+        return participantRepository.findOtherParticipantUserId(conversationId, currentUserId);
+    }
+
+    private PartnerInfo getPartnerInfo(Long conversationId, Long currentUserId) {
+        Long otherUserId = findOtherParticipantId(conversationId, currentUserId);
+        if (otherUserId == null) {
+            return null;
+        }
+        if (blockedUserRepository.isBlockedEitherWay(currentUserId, otherUserId)) {
+            return null;
+        }
+        Optional<User> partner = userRepository.findById(otherUserId);
+        if (partner.isEmpty()) {
+            return null;
+        }
+        User user = partner.get();
+        return new PartnerInfo(
+            otherUserId,
+            resolveDisplayName(user),
+            getUserRoleName(user)
+        );
+    }
+
+    private static class PartnerInfo {
+        final Long userId;
+        final String displayName;
+        final String role;
+
+        PartnerInfo(Long userId, String displayName, String role) {
+            this.userId = userId;
+            this.displayName = displayName;
+            this.role = role;
+        }
+    }
+
+    private String getConversationTitle(Conversation conversation, String defaultTitle) {
+        return conversation.getTitle() != null ? conversation.getTitle() : defaultTitle;
+    }
+
+    private String getUserRoleName(User user) {
+        return user.getRole() != null ? user.getRole().name() : "USER";
+    }
+
+    private java.time.LocalDateTime now() {
+        return java.time.LocalDateTime.now();
+    }
+
+    private String resolveDisplayName(User user) {
+        if (user == null) {
+            return "Unknown User";
+        }
+        return userRepository.findFullNameByUserId(user.getId())
+                .orElse(user.getUsername());
+    }
+
+    @Override
+    public String resolveDisplayName(Long userId) {
+        if (userId == null) {
+            return "Unknown User";
+        }
+        return userRepository.findById(userId)
+                .map(this::resolveDisplayName)
+                .orElse("Unknown User");
     }
 
     private String buildPreview(Message message) {

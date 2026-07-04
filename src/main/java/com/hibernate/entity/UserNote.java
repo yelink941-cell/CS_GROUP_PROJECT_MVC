@@ -30,6 +30,10 @@ public class UserNote {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
+    private User admin;
+
     @Column(nullable = false, length = 255)
     private String title;
 

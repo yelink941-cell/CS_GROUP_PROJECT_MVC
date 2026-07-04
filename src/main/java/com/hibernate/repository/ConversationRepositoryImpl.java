@@ -44,6 +44,7 @@ public class ConversationRepositoryImpl implements ConversationRepository {
         String hql = "SELECT DISTINCT c FROM Conversation c " +
                      "JOIN FETCH c.participants p " +
                      "WHERE p.userId = :userId " +
+                     "AND (p.hiddenAt IS NULL OR c.updatedAt > p.hiddenAt) " +
                      "ORDER BY c.updatedAt DESC";
                      
         return getSession().createQuery(hql, Conversation.class)

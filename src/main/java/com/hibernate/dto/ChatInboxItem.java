@@ -8,6 +8,8 @@ public class ChatInboxItem {
     private String displayName;
     private String displayRole;
     private boolean group;
+    private boolean blockedByMe;
+    private Long partnerUserId;
     private String lastMessagePreview;
     private LocalDateTime lastMessageAt;
 
@@ -22,6 +24,12 @@ public class ChatInboxItem {
 
     public boolean isGroup() { return group; }
     public void setGroup(boolean group) { this.group = group; }
+
+    public boolean isBlockedByMe() { return blockedByMe; }
+    public void setBlockedByMe(boolean blockedByMe) { this.blockedByMe = blockedByMe; }
+
+    public Long getPartnerUserId() { return partnerUserId; }
+    public void setPartnerUserId(Long partnerUserId) { this.partnerUserId = partnerUserId; }
 
     public String getLastMessagePreview() { return lastMessagePreview; }
     public void setLastMessagePreview(String lastMessagePreview) { this.lastMessagePreview = lastMessagePreview; }

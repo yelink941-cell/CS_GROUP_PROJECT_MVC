@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.hibernate.entity.enums.PostStatus;
+import com.hibernate.entity.enums.PostVisibility;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -57,13 +58,20 @@ public class Post {
     @Column(length = 20)
     private PostStatus status = PostStatus.DRAFT;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private PostVisibility visibility = PostVisibility.PUBLIC;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
     @Column(name = "compiled_file_url", length = 500)
     private String compiledFileUrl;
 
     @Column(name = "is_downloadable")
     private Boolean isDownloadable = false;
 
-    @Column(name = "view_count")
+    @Column(name = "view_count", nullable = false)
     private Integer viewCount = 0;
 
     @Column(name = "download_count")
@@ -71,6 +79,9 @@ public class Post {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

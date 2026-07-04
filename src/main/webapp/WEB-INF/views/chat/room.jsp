@@ -1,129 +1,1275 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
-<html>
+<html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${conversationTitle}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #efeae2; }
-        .app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; border-left: 1px solid #d1d7db; border-right: 1px solid #d1d7db; }
-        .header { background: #008069; color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
-        .header a { color: #fff; text-decoration: none; font-size: 20px; }
-        .header-title { font-size: 17px; font-weight: 600; }
-        .badge-admin { background: #ff9800; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 6px; }
-        #chatBox { flex: 1; overflow-y: auto; padding: 12px; background: #efeae2; min-height: calc(100vh - 120px); }
-        .bubble { max-width: 78%; padding: 8px 10px 6px; border-radius: 8px; margin: 3px 0; box-shadow: 0 1px 1px rgba(0,0,0,.06); word-wrap: break-word; }
-        .bubble.me { background: #d9fdd3; margin-left: auto; border-top-right-radius: 0; }
-        .bubble.other { background: #fff; margin-right: auto; border-top-left-radius: 0; }
-        .bubble small { color: #667781; font-size: 11px; display: block; margin-bottom: 2px; }
-        .bubble img, .bubble video { max-width: 240px; border-radius: 6px; margin-top: 4px; display: block; }
-        .footer { background: #f0f2f5; padding: 8px 10px; display: flex; align-items: center; gap: 8px; border-top: 1px solid #d1d7db; }
-        .footer input[type=text] { flex: 1; border: none; border-radius: 20px; padding: 10px 14px; font-size: 15px; outline: none; }
-        .icon-btn { width: 42px; height: 42px; border: none; border-radius: 50%; background: #008069; color: #fff; font-size: 18px; cursor: pointer; flex-shrink: 0; }
-        .icon-btn.attach { background: #54656f; }
-        .icon-btn:disabled { opacity: .5; cursor: not-allowed; }
+        :root {
+            --bg-main: #ffffff;
+            --panel-bg: #ffffff;
+            --border-clean: #e5e7eb;
+            --accent-black: #111111;
+            --accent-gray: #f5f6f6;
+            --text-main: #111111;
+            --text-muted: #707579; /* Telegram Style Secondary Muted */
+          --bubble-me: #ffffff; /* အဖြူရောင် ပြောင်းလိုက်သည် */
+--bubble-me-text: #111111; /* စာလုံးကို အနက်ရောင် ပြောင်းလိုက်သည် */
+            --bubble-other: #f5f6f6;
+            --bubble-other-text: #111111;
+            --success-color: #00c853;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--bg-main); 
+            color: var(--text-main); 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* Full Screen Desktop & Mobile App Layout */
+        .app-container { 
+            width: 100%;
+            max-width: 100%; 
+            height: 100vh;
+            background: var(--panel-bg);
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Solid Matte Black Header */
+        .header { 
+            background: var(--accent-black); 
+            border-bottom: 1px solid var(--accent-black);
+            padding: 14px 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            z-index: 10;
+            color: #ffffff;
+        }
+
+        .header a { 
+            color: #ffffff; 
+            text-decoration: none; 
+            font-size: 20px; 
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .header a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .header-title-container {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .header-title { 
+            font-size: 16px; 
+            font-weight: 600; 
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-admin { 
+            background: rgba(255, 255, 255, 0.2); 
+            color: #ffffff; 
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            font-size: 10px; 
+            padding: 2px 6px; 
+            border-radius: 6px; 
+            font-weight: 600;
+        }
+
+        .header-menu-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header-menu-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: #ffffff;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 1px;
+            transition: background 0.2s;
+        }
+
+        .header-menu-btn:hover,
+        .header-menu-btn.active {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .header-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 180px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 6px 0;
+            z-index: 120;
+            animation: menuPop 0.15s ease-out;
+            overflow: hidden;
+        }
+
+        .header-dropdown.active {
+            display: block;
+        }
+
+        .header-dropdown button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 10px 18px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--error-color);
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .header-dropdown button:hover {
+            background: var(--accent-gray);
+        }
+
+        .header-dropdown .menu-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .header-dropdown-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 119;
+            background: transparent;
+        }
+
+        .header-dropdown-backdrop.active {
+            display: block;
+        }
+
+        /* Circular Clean Avatar */
+        .avatar { 
+            width: 38px; 
+            height: 38px; 
+            border-radius: 50%; 
+            background: var(--accent-gray);
+            color: var(--text-main); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 600; 
+            font-size: 14px; 
+            flex-shrink: 0; 
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-clean);
+        }
+
+        /* Connection Status */
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .status-text {
+            font-size: 11px;
+            color: #b0b5b9;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.online {
+            background-color: var(--success-color);
+        }
+
+        .status-dot.offline {
+            background-color: var(--text-muted);
+        }
+
+        .status-dot.connecting {
+            background-color: var(--warning-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Chat Box Frame */
+        #chatBox { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px 24px; 
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--bg-main);
+        }
+
+        #chatBox::-webkit-scrollbar {
+            width: 5px;
+        }
+        #chatBox::-webkit-scrollbar-thumb {
+            background: var(--border-clean);
+            border-radius: 10px;
+        }
+
+        /* Telegram-like Message Rows */
+        .message-row {
+            display: flex;
+            width: 100%;
+            margin: 1px 0;
+            animation: fadeInUp 0.25s ease-out forwards;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .message-row.me { justify-content: flex-end; }
+        .message-row.other { justify-content: flex-start; }
+
+        /* Minimalist High-Contrast Bubbles */
+        .bubble { 
+            max-width: 65%; 
+            padding: 10px 14px 8px; 
+            border-radius: 16px; 
+            word-wrap: break-word; 
+            position: relative;
+            font-size: 14px;
+            line-height: 1.5;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .bubble.me { 
+            background: var(--bubble-me); 
+            color: var(--bubble-me-text);
+            border-bottom-right-radius: 4px;
+        }
+
+        .bubble.other { 
+            background: var(--bubble-other); 
+            color: var(--bubble-other-text);
+            border: 1px solid var(--border-clean);
+            border-bottom-left-radius: 4px;
+        }
+
+        .bubble-meta { 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px; 
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+.bubble.me .bubble-meta { color: var(--accent-black); }        .bubble.other .bubble-meta { color: var(--text-muted); }
+
+        .bubble-time {
+            font-size: 9px;
+            margin-left: 10px;
+            opacity: 0.8;
+            align-self: flex-end;
+            text-align: right;
+            display: block;
+            margin-top: 4px;
+        }
+
+.bubble.me .bubble-time { color: var(--text-muted); }        .bubble.other .bubble-time { color: var(--text-muted); }
+
+        .reply-preview {
+            border-left: 3px solid var(--accent-black);
+            padding: 4px 8px;
+            margin-bottom: 6px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .reply-bar {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--accent-gray);
+            border-top: 1px solid var(--border-clean);
+            font-size: 12px;
+        }
+
+        .reply-bar.active { display: flex; }
+
+        .reply-bar-text {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-muted);
+        }
+
+        .msg-context-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: transparent;
+        }
+        .msg-context-backdrop.active { display: block; }
+
+        .msg-context-menu {
+            display: none;
+            position: fixed;
+            z-index: 201;
+            min-width: 180px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 6px 0;
+            animation: menuPop 0.15s ease-out;
+            overflow: hidden;
+        }
+        .msg-context-menu.active { display: block; }
+
+        .msg-context-menu button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 10px 18px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: left;
+        }
+        .msg-context-menu button:hover {
+            background: var(--accent-gray);
+        }
+        .msg-context-menu button.danger {
+            color: var(--error-color);
+        }
+        .msg-context-menu .menu-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+            opacity: 0.85;
+        }
+        .msg-context-menu .menu-divider {
+            height: 1px;
+            background: var(--border-clean);
+            margin: 4px 0;
+        }
+
+        @keyframes menuPop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .bubble-media-container video {
+            cursor: default;
+        }
+
+        .read-receipt {
+            font-size: 10px;
+            margin-left: 4px;
+            color: var(--success-color);
+        }
+
+        .edited-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-left: 4px;
+        }
+
+        /* Clean Minimalist Input Area */
+        .footer { 
+            background: var(--panel-bg); 
+            padding: 14px 24px; 
+            display: flex; 
+            flex-direction: column;
+            gap: 8px;
+            border-top: 1px solid var(--border-clean); 
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .input-row input[type=text] { 
+            flex: 1; 
+            border: 1px solid var(--border-clean); 
+            border-radius: 12px; 
+            padding: 12px 16px; 
+            font-size: 14px; 
+            outline: none; 
+            background: var(--accent-gray);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .input-row input[type=text]:focus { 
+            border-color: var(--accent-black);
+            background: var(--panel-bg);
+        }
+
+        /* Icon Buttons Styles */
+        .icon-btn { 
+            width: 42px; 
+            height: 42px; 
+            border: none; 
+            border-radius: 12px; 
+            background: var(--accent-black); 
+            color: #ffffff; 
+            font-size: 16px; 
+            cursor: pointer; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; 
+            transition: opacity 0.2s ease;
+        }
+
+        .icon-btn:hover { opacity: 0.9; }
+
+        .icon-btn.attach { 
+            background: transparent; 
+            border: 1px solid var(--border-clean);
+            color: var(--text-muted);
+        }
+
+        .icon-btn.attach:hover {
+            background: var(--accent-gray);
+            color: var(--text-main);
+        }
+
+        .icon-btn:disabled { 
+            opacity: 0.3; 
+            cursor: not-allowed; 
+        }
+
         #mediaFile { display: none; }
-        .upload-hint { font-size: 12px; color: #667781; padding: 0 12px 6px; display: none; }
+
+        /* Attachment Previews Horizontal Panel */
+        .attachment-preview-container {
+            display: none;
+            background: var(--accent-gray);
+            border: 1px solid var(--border-clean);
+            border-radius: 12px;
+            padding: 10px;
+            gap: 12px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .attachment-preview-container::-webkit-scrollbar { height: 4px; }
+        .attachment-preview-container::-webkit-scrollbar-thumb { background: var(--border-clean); }
+
+        .preview-card {
+            position: relative; 
+            width: 60px; 
+            height: 60px; 
+            flex-shrink: 0; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-clean); 
+            overflow: hidden; 
+            background: #fafafa;
+        }
+
+        /* Fixed Flash Issue by adding style="display: none;" */
+        .upload-hint { 
+            font-size: 12px; 
+            color: var(--warning-color); 
+            display: none; 
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* ၁။ Chat ထဲက ပုံတွေကို Pointer ပြောင်းရန် */
+.bubble-media-container img {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+.bubble-media-container img:hover {
+    opacity: 0.9;
+}
+
+/* ၂။ ပုံကြီးပြပေးမည့် မျက်နှာပြင် (Lightbox) စတိုင် */
+.image-lightbox-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.93);
+    justify-content: center; align-items: center;
+    cursor: zoom-out;
+}
+.lightbox-content {
+    max-width: 92%; max-height: 92%;
+    object-fit: contain; border-radius: 4px;
+    animation: zoomEffect 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.lightbox-close {
+    position: absolute; top: 20px; right: 25px;
+    color: #ffffff; font-size: 32px; font-weight: 300;
+    cursor: pointer; line-height: 1; transition: opacity 0.2s;
+}
+.lightbox-close:hover { opacity: 0.7; }
+
+@keyframes zoomEffect {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+/* Floating Scroll to Bottom Button */
+.scroll-bottom-btn {
+    display: none; /* စစချင်းမှာ ဝှက်ထားမည် */
+    position: absolute;
+    bottom: 85px; /* စာရိုက်တဲ့ Input Area ရဲ့ အပေါ်နားတင် ပေါ်ရန် */
+    right: 20px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--accent-black);
+    color: #ffffff;
+    border: 1px solid var(--border-clean);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    z-index: 99;
+    transition: all 0.2s ease;
+}
+.scroll-bottom-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
     </style>
 </head>
 <body>
 
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 
-<div class="app">
+<div class="app-container">
     <div class="header">
-        <a href="${ctx}/chat">←</a>
-        <div class="header-title">
-            <c:choose>
-                <c:when test="${isGroup}">👥 ${conversationTitle}</c:when>
-                <c:otherwise>
-                    ${conversationTitle}
-                    <c:if test="${partnerRole == 'ADMIN'}"><span class="badge-admin">Admin</span></c:if>
-                </c:otherwise>
-            </c:choose>
+        <a href="${ctx}/chat" id="btnBack">←</a>
+        <c:if test="${!isGroup && not empty partnerUserId}">
+            <div class="avatar" style="width:34px; height:34px;">
+                <img src="${ctx}/user/avatar/${partnerUserId}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" class="avatar-img" alt="avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />
+                <div class="avatar-initials" style="display:none; width:100%; height:100%; border-radius:50%; align-items:center; justify-content:center; background: var(--border-clean); color: var(--text-main);">
+                    ${conversationTitle.substring(0,1).toUpperCase()}
+                </div>
+            </div>
+        </c:if>
+        <div class="header-title-container">
+            <div class="header-title" id="roomTitle">
+                <c:choose>
+                    <c:when test="${isGroup}">📁 ${conversationTitle}</c:when>
+                    <c:otherwise>
+                        <c:out value="${conversationTitle}" />
+                        <c:if test="${partnerRole == 'ADMIN'}"><span class="badge-admin">Admin</span></c:if>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="status-container">
+                <span id="statusDot" class="status-dot connecting"></span>
+                <span id="statusText" class="status-text">Connecting...</span>
+                <span id="typingIndicator" class="status-text" style="color: var(--success-color); font-weight: 500; margin-left: 4px;"></span>
+            </div>
+        </div>
+        <div class="header-menu-wrap">
+            <button type="button" id="btnHeaderMenu" class="header-menu-btn" title="More options" aria-label="More options">&#8942;</button>
+            <div id="headerDropdown" class="header-dropdown">
+                <button type="button" id="btnDeleteChat">
+                    <span class="menu-icon">🗑</span>
+                    Delete chat
+                </button>
+            </div>
         </div>
     </div>
+    <div id="headerDropdownBackdrop" class="header-dropdown-backdrop"></div>
 
     <div id="chatBox"></div>
-    <div id="uploadHint" class="upload-hint">Media ပို့နေသည်...</div>
 
     <div class="footer">
-        <input type="file" id="mediaFile" accept="image/*,video/*">
-        <button type="button" class="icon-btn attach" id="btnAttach" title="Photo/Video">📎</button>
-        <input type="text" id="messageText" placeholder="Message" autocomplete="off">
-        <button type="button" class="icon-btn" id="btnSend">➤</button>
+        <div id="uploadHint" class="upload-hint" style="display: none;">
+            <span class="status-dot connecting" style="width:6px;height:6px;"></span> Sending media files...
+        </div>
+
+        <div id="attachmentPreview" class="attachment-preview-container"></div>
+
+        <div id="replyBar" class="reply-bar">
+            <span>↩ Reply:</span>
+            <span id="replyBarText" class="reply-bar-text"></span>
+            <button type="button" id="btnCancelReply" style="background:transparent;border:none;cursor:pointer;">✕</button>
+        </div>
+
+        <div class="input-row">
+            <input type="file" id="mediaFile" accept="image/*,video/*" multiple>
+            <button type="button" class="icon-btn attach" id="btnAttach" title="Attach Files">📎</button>
+            <input type="text" id="messageText" placeholder="စာတို ရေးရန်..." autocomplete="off">
+            <button type="button" class="icon-btn" id="btnSend" title="Send">➤</button>
+        </div>
     </div>
 </div>
+<div id="imageLightbox" class="image-lightbox-modal">
+    <span class="lightbox-close">&times;</span>
+    <img class="lightbox-content" id="lightboxTargetImg" alt="Enlarged Chat Frame">
+</div>
+<button type="button" id="btnScrollBottom" class="scroll-bottom-btn">↓</button>
+<div id="msgContextBackdrop" class="msg-context-backdrop"></div>
+<div id="msgContextMenu" class="msg-context-menu"></div>
 
 <script>
     const ctx = '${ctx}';
     const chatId = '${conversationId}';
     const myUserId = '${currentUser.id}';
+    const canModerate = ${canModerate};
+    const partnerDisplayName = '<c:out value="${conversationTitle}" />';
+    
+    let socket = null;
+    let isReconnecting = false;
+    let selectedFiles = [];
+    let replyToMessage = null;
+    let editingMessageId = null;
+    let contextMenuMessage = null;
 
     $(document).ready(function() {
+        // DEBUG: စစ်ဆေးရန် - chatId နဲ့ myUserId ကို console တွင် ကြည့်ပါ
+        console.log('[DEBUG] chatId:', chatId, '| myUserId:', myUserId, '| ctx:', ctx);
+        if (!chatId || chatId === '' || chatId === 'null') {
+            $('#chatBox').html('<div style="padding:20px;color:red;">❌ ERROR: conversationId မရှိပါ (chatId=' + chatId + ')</div>');
+            return;
+        }
         loadChatHistory();
-        setInterval(loadChatHistory, 4000);
-
-        $('#btnSend').click(sendMessage);
+        connectWebSocket();
+        
+        $('#btnSend').click(handleSend);
         $('#btnAttach').click(function() { $('#mediaFile').click(); });
-        $('#mediaFile').change(function() {
-            if (this.files.length > 0) sendMedia();
-        });
+        $('#mediaFile').change(handleFileSelect);
+        
         $('#messageText').keypress(function(e) {
-            if (e.which === 13) sendMessage();
+            if (e.which === 13) handleSend();
         });
+     // စာရိုက်ရပ်နားမှု အချိန်တွက်ရန် variable
+        let typingTimeout;
+
+        $('#messageText').on('input', function() {
+            // WebSocket အလုပ်လုပ်နေမှသာ ပို့မည်
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                // စာရိုက်နေကြောင်း Server ထံ ပို့ခြင်း
+                socket.send(JSON.stringify({
+                    type: 'user_typing',
+                    conversationId: chatId,
+                    senderId: myUserId
+                }));
+            }
+
+            // အရင်ရှိနေတဲ့ Timer ကို ဖျက်ထုတ်ပါ
+            clearTimeout(typingTimeout);
+
+            // ၁.၅ စက္ကန့်အတွင်း ဘာစာမှ ထပ်မရိုက်တော့လျှင် စာရိုက်ရပ်သွားပြီဟု သတ်မှတ်မည်
+            typingTimeout = setTimeout(function() {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({
+                        type: 'user_stopped_typing',
+                        conversationId: chatId,
+                        senderId: myUserId
+                    }));
+                }
+            }, 1500);
+        });
+
+        // စာရိုက်တဲ့ Textbox ထဲကနေ မောက်စ် (Mouse pointer) အပြင်ထုတ်လိုက်ရင် ချက်ချင်း ပျောက်စေရန်
+        $('#messageText').blur(function() {
+            clearTimeout(typingTimeout);
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'user_stopped_typing',
+                    conversationId: chatId,
+                    senderId: myUserId
+                }));
+            }
+        });
+        $('#btnCancelReply').click(cancelReply);
+     // User က အပေါ်ကို Scroll ဆွဲလိုက်ရင် Floating Button ပြပေးရန်
+        $('#chatBox').scroll(function() {
+            if ($(this).scrollTop() + $(this).innerHeight() < $(this)[0].scrollHeight - 100) {
+                $('#btnScrollBottom').css('display', 'flex');
+            } else {
+                $('#btnScrollBottom').hide();
+            }
+        });
+
+        // မြှားခလုတ်ကို နှိပ်လိုက်ရင် အောက်ဆုံးကို Smooth အနေနဲ့ ဆင်းသွားရန်
+        $('#btnScrollBottom').click(function() {
+            scrollToBottom();
+        });
+
+        // ပုံကို နှိပ်လိုက်လျှင် Lightbox Modal ပွင့်လာစေရန်
+        $(document).on('click', '.bubble-media-container img', function() {
+            const imgSrc = $(this).attr('src');
+            $('#lightboxTargetImg').attr('src', imgSrc);
+            $('#imageLightbox').css('display', 'flex');
+        });
+
+        // မည်သည့်နေရာကိုမဆို ပြန်နှိပ်လိုက်လျှင် Lightbox ပိတ်သွားစေရန်
+        $('#imageLightbox, .lightbox-close').click(function() {
+            $('#imageLightbox').hide();
+            $('#lightboxTargetImg').attr('src', ''); 
+        });
+
+        $(document).on('click', '.bubble', function(e) {
+            if ($(e.target).closest('.bubble-media-container img, .bubble-media-container video').length) return;
+            if ($(e.target).is('a, button, input, video')) return;
+            var row = $(this).closest('.message-row');
+            var msg = row.data('msg');
+            if (msg) openMessageContextMenu(msg, this);
+        });
+
+        $('#msgContextBackdrop').click(closeMessageContextMenu);
+
+        $('#msgContextMenu').on('click', 'button', function(e) {
+            e.stopPropagation();
+            var action = $(this).data('action');
+            var msg = contextMenuMessage;
+            closeMessageContextMenu();
+            if (!msg) return;
+            if (action === 'reply') startReply(msg);
+            else if (action === 'edit') startEdit(msg);
+            else if (action === 'report') reportMessage(msg);
+            else if (action === 'delete') deleteMessage(msg);
+        });
+
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape') {
+                closeMessageContextMenu();
+                closeHeaderMenu();
+            }
+        });
+
+        $('#btnHeaderMenu').click(function(e) {
+            e.stopPropagation();
+            toggleHeaderMenu();
+        });
+
+        $('#headerDropdownBackdrop').click(closeHeaderMenu);
+
+        $('#btnDeleteChat').click(function(e) {
+            e.stopPropagation();
+            closeHeaderMenu();
+            deleteChat();
+        });
+
     });
+ // မူရင်း function ကို Smooth Scroll လေးနဲ့ အစားထိုးပါ
+    function scrollToBottom() {
+        var box = $('#chatBox');
+        if (box.length) {
+            box.animate({ scrollTop: box[0].scrollHeight }, 300); // 300ms Smooth Scroll Effect
+        }
+    }
+
+    function updateConnectionStatus(status) {
+        const dot = $('#statusDot');
+        const text = $('#statusText');
+        dot.removeClass('online offline connecting');
+        
+        if (status === 'online') {
+            dot.addClass('online');
+            text.text('Online');
+        } else if (status === 'connecting') {
+            dot.addClass('connecting');
+            text.text('Connecting...');
+        } else {
+            dot.addClass('offline');
+            text.text('Offline');
+        }
+    }
+
+    function connectWebSocket() {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = wsProtocol + '//' + window.location.host + ctx + '/ws/chat';
+        
+        updateConnectionStatus('connecting');
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = function() {
+            console.log('WebSocket Connected');
+            updateConnectionStatus('online');
+            isReconnecting = false;
+        };
+
+        socket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'error') return;
+
+                // === စာရိုက်ခြင်းဆိုင်ရာ Event များ ဖမ်းရန် ===
+                if (data.type === 'user_typing') {
+                    if (data.payload && String(data.payload.conversationId) === String(chatId) && String(data.payload.senderId) !== String(myUserId)) {
+                        const senderName = data.payload.senderName || 'User';
+                        $('#typingIndicator').text(senderName + ' is typing...');
+                    }
+                    return;
+                }
+
+                if (data.type === 'user_stopped_typing') {
+                    if (data.payload && String(data.payload.conversationId) === String(chatId)) {
+                        $('#typingIndicator').text('');
+                    }
+                    return;
+                }
+                // ===========================================
+
+                if (data.type === 'message_edited' && data.payload) {
+                    updateMessageDom(data.payload);
+                    return;
+                }
+
+                if (data.type === 'message_deleted' && data.payload) {
+                    if (String(data.payload.conversationId) === String(chatId)) {
+                        removeMessageDom(data.payload.messageId);
+                    }
+                    return;
+                }
+
+                if (data.type === 'conversation_cleared' && data.payload) {
+                    if (String(data.payload.conversationId) === String(chatId)) {
+                        clearChatBox();
+                    }
+                    return;
+                }
+
+                if (data.type === 'messages_read' && data.payload) {
+                    applyReadReceipt(data.payload);
+                    return;
+                }
+
+                const msg = data.type === 'message' ? data.payload : data;
+                if (!msg || !msg.conversationId) return;
+
+                const msgChatId = String(msg.conversationId);
+                if (msgChatId === String(chatId)) {
+                    if ($('#msg-' + msg.id).length === 0) {
+                        appendMessage(msg);
+                        scrollToBottom();
+                        markReadUpTo(msg.id);
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to parse socket message:', e);
+            }
+        };
+
+        socket.onclose = function(e) {
+            updateConnectionStatus('offline');
+            if (!isReconnecting) {
+                isReconnecting = true;
+                setTimeout(connectWebSocket, 3000);
+            }
+        };
+
+        socket.onerror = function(err) {
+            updateConnectionStatus('offline');
+            socket.close();
+        };
+    }
 
     function loadChatHistory() {
+        console.log('[DEBUG] loadChatHistory() called, URL:', ctx + '/api/chat/history?conversationId=' + chatId);
         $.ajax({
             url: ctx + '/api/chat/history',
             type: 'GET',
             data: { conversationId: chatId },
             success: function(messages) {
+                console.log('[DEBUG] history loaded:', messages.length, 'messages', messages);
                 $('#chatBox').empty();
-                messages.reverse().forEach(appendMessage);
-                scrollToBottom();
+                if (messages.length === 0) {
+/*                     $('#chatBox').html('<div style="text-align:center;padding:40px;color:var(--text-muted);">စာမပေးပို့ရသေးပါ။ ပထမဆုံး message ပေးပို့ပါ 👋</div>');
+ */
+                	$('#chatBox').html(
+                		    '<div id="emptyChat" style="text-align:center;padding:40px;color:var(--text-muted);">စာမပေးပို့ရသေးပါ။ ပထမဆုံး message ပေးပို့ပါ 👋</div>'
+                		);
+                
+                } else {
+                    messages.reverse().forEach(appendMessage);
+                    scrollToBottom();
+                    markReadUpTo(messages[messages.length - 1].id);
+                }
+            },
+            error: function(xhr) {
+                console.error('[DEBUG] history error:', xhr.status, xhr.responseText);
+                $('#chatBox').html('<div style="padding:20px;color:red;">❌ Messages load မအောင်မြင်ပါ (' + xhr.status + '): ' + xhr.responseText + '</div>');
             }
         });
     }
 
-    function sendMessage() {
-        var text = $('#messageText').val().trim();
+     function handleSend() {
+        const text = $('#messageText').val().trim();
+        if (editingMessageId) {
+            submitEdit(text);
+            return;
+        }
+        if (selectedFiles.length > 0) {
+            sendMedia(text);
+            return;
+        }
         if (!text) return;
 
+        // Always use REST fallback for reliable message delivery and display
+        sendTextFallback(text);
+    } 
+    
+    function submitEdit(text) {
+        if (!text) return;
+        $.ajax({
+            url: ctx + '/api/chat/messages/' + editingMessageId,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ text: text }),
+            success: function(updated) {
+                updateMessageDom(updated);
+                cancelEdit();
+            },
+            error: function(xhr) {
+                alert('Edit failed: ' + xhr.responseText);
+            }
+        });
+    }
+
+    function startEdit(msg) {
+        editingMessageId = msg.id;
+        replyToMessage = null;
+        $('#replyBar').removeClass('active');
+        $('#messageText').val(msg.messageText || '').focus();
+        $('#btnSend').attr('title', 'Save edit');
+    }
+
+    function cancelEdit() {
+        editingMessageId = null;
+        $('#messageText').val('');
+        $('#btnSend').attr('title', 'Send');
+    }
+
+    function startReply(msg) {
+        editingMessageId = null;
+        replyToMessage = msg;
+        $('#replyBarText').text(msg.messageText || msg.parentMessagePreview || 'Message');
+        $('#replyBar').addClass('active');
+        $('#messageText').focus();
+    }
+
+    function cancelReply() {
+        replyToMessage = null;
+        $('#replyBar').removeClass('active');
+        $('#replyBarText').text('');
+    }
+
+    function markReadUpTo(messageId) {
+        $.ajax({
+            url: ctx + '/api/chat/messages/read',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ conversationId: Number(chatId), upToMessageId: messageId })
+        });
+    }
+
+    function applyReadReceipt(payload) {
+        if (!payload || String(payload.conversationId) !== String(chatId)) return;
+        $('[data-sender-me="true"]').each(function() {
+            const row = $(this);
+            if (Number(row.attr('data-msg-id')) <= Number(payload.upToMessageId)) {
+                row.find('.read-receipt').text('✓✓');
+            }
+        });
+    }
+
+    function updateMessageDom(msg) {
+        const row = $('#msg-' + msg.id);
+        if (!row.length) return;
+        row.data('msg', msg);
+        row.find('.bubble-text').text(msg.messageText || '');
+        row.find('.edited-label').toggle(!!msg.edited);
+        row.find('.reply-preview').remove();
+        if (msg.parentMessagePreview) {
+            row.find('.bubble').prepend('<div class="reply-preview">' + escapeHtml(msg.parentMessagePreview) + '</div>');
+        }
+    }
+
+    function escapeHtml(text) {
+        return $('<div/>').text(text).html();
+    }
+
+    function getMessageActions(msg) {
+        var isMe = String(msg.senderId) === String(myUserId);
+        var hasText = msg.messageText && msg.messageText.trim().length > 0;
+        var actions = [{ id: 'reply', label: 'Reply', icon: '↩' }];
+        if (isMe) {
+            if (hasText) actions.push({ id: 'edit', label: 'Edit', icon: '✎' });
+            actions.push({ id: 'delete', label: 'Delete', icon: '🗑', danger: true });
+        } else {
+            actions.push({ id: 'report', label: 'Report', icon: '⚠' });
+            if (canModerate) actions.push({ id: 'delete', label: 'Delete', icon: '🗑', danger: true });
+        }
+        return actions;
+    }
+
+    function openMessageContextMenu(msg, anchorEl) {
+        closeMessageContextMenu();
+        contextMenuMessage = msg;
+        var menu = $('#msgContextMenu');
+        menu.empty();
+
+        getMessageActions(msg).forEach(function(action, idx) {
+            if (action.danger && idx > 0) {
+                menu.append('<div class="menu-divider"></div>');
+            }
+            var btn = $('<button type="button"></button>')
+                .addClass(action.danger ? 'danger' : '')
+                .html('<span class="menu-icon">' + action.icon + '</span>' + action.label)
+                .data('action', action.id);
+            menu.append(btn);
+        });
+
+        menu.addClass('active');
+        var rect = anchorEl.getBoundingClientRect();
+        var menuW = menu.outerWidth();
+        var menuH = menu.outerHeight();
+        var top = rect.top - menuH - 8;
+        if (top < 8) top = rect.bottom + 8;
+        var left = String(msg.senderId) === String(myUserId) ? rect.right - menuW : rect.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - menuW - 8));
+        menu.css({ top: top + 'px', left: left + 'px' });
+        $('#msgContextBackdrop').addClass('active');
+    }
+
+    function closeMessageContextMenu() {
+        contextMenuMessage = null;
+        $('#msgContextMenu').removeClass('active').empty();
+        $('#msgContextBackdrop').removeClass('active');
+    }
+
+    function reportMessage(msg) {
+        $.ajax({
+            url: ctx + '/api/chat/messages/' + msg.id + '/report',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ reason: 'TEXT', description: 'Reported from chat UI' }),
+            success: function() { alert('Report submitted.'); },
+            error: function(xhr) { alert('Report failed: ' + xhr.responseText); }
+        });
+    }
+
+    function deleteMessage(msg) {
+        if (!confirm('ဒီမက်ဆေ့ချ်ကို ဖျက်မှာသေချာလား?')) return;
+        $.ajax({
+            url: ctx + '/api/chat/messages/' + msg.id,
+            type: 'DELETE',
+            success: function() { removeMessageDom(msg.id); },
+            error: function(xhr) { alert('Delete failed: ' + xhr.responseText); }
+        });
+    }
+
+    function removeMessageDom(messageId) {
+        $('#msg-' + messageId).fadeOut(200, function() { $(this).remove(); });
+    }
+
+    function clearChatBox() {
+        $('#chatBox').empty().html(
+            '<div style="text-align:center;padding:40px;color:var(--text-muted);">စကားမရှိသေးပါ။ ပထမဆုံး message ပေးပို့ပါ 👋</div>'
+        );
+    }
+
+    function toggleHeaderMenu() {
+        var isOpen = $('#headerDropdown').hasClass('active');
+        if (isOpen) {
+            closeHeaderMenu();
+        } else {
+            closeMessageContextMenu();
+            $('#headerDropdown').addClass('active');
+            $('#headerDropdownBackdrop').addClass('active');
+            $('#btnHeaderMenu').addClass('active');
+        }
+    }
+
+    function closeHeaderMenu() {
+        $('#headerDropdown').removeClass('active');
+        $('#headerDropdownBackdrop').removeClass('active');
+        $('#btnHeaderMenu').removeClass('active');
+    }
+
+    function deleteChat() {
+        if (!confirm('ဒီ chat ကို inbox မှ ဖျက်မှာသေချာလား?')) return;
+        $.ajax({
+            url: ctx + '/api/chat/conversations/' + chatId,
+            type: 'DELETE',
+            success: function() {
+                window.location.href = ctx + '/chat';
+            },
+            error: function(xhr) {
+                alert('Chat delete failed: ' + xhr.responseText);
+            }
+        });
+    }
+
+    function sendTextFallback(text) {
+        console.log('[DEBUG] sendTextFallback(), chatId:', chatId, 'text:', text);
         $('#btnSend').prop('disabled', true);
         $.ajax({
             url: ctx + '/api/chat/messages',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ conversationId: Number(chatId), text: text }),
+            data: JSON.stringify({
+                conversationId: Number(chatId),
+                text: text,
+                parentMessageId: replyToMessage ? replyToMessage.id : null
+            }),
             success: function(newMsg) {
-                appendMessage(newMsg);
+                console.log('[DEBUG] message sent OK:', newMsg);
+                if ($('#msg-' + newMsg.id).length === 0) {
+                    appendMessage(newMsg);
+                    scrollToBottom();
+                }
                 $('#messageText').val('');
-                scrollToBottom();
+                cancelReply();
             },
             error: function(xhr) {
-                alert('စာပို့ခြင်း မအောင်မြင်ပါ: ' + xhr.responseText);
+                console.error('[DEBUG] send error:', xhr.status, xhr.responseText);
+                alert('❌ Message ပို့မအောင်မြင်ပါ (' + xhr.status + '): ' + xhr.responseText);
             },
             complete: function() { $('#btnSend').prop('disabled', false); }
         });
     }
 
-    function sendMedia() {
-        var fileInput = $('#mediaFile')[0];
+    function handleFileSelect() {
+        const fileInput = $('#mediaFile')[0];
         if (!fileInput.files || !fileInput.files.length) return;
+
+        for (let i = 0; i < fileInput.files.length; i++) {
+            selectedFiles.push(fileInput.files[i]);
+        }
+        $('#mediaFile').val('');
+        renderPreviews();
+    }
+
+    function renderPreviews() {
+        const container = $('#attachmentPreview').empty();
+        if (selectedFiles.length === 0) {
+            container.hide();
+            return;
+        }
+
+        selectedFiles.forEach((file, index) => {
+            const card = $('<div class="preview-card"></div>');
+            const closeBtn = $('<button type="button" style="position:absolute; top:3px; right:3px; background:#ef4444; border:none; border-radius:50%; width:16px; height:16px; color:#fff; font-size:10px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:5;">×</button>');
+            
+            closeBtn.click(function(e) {
+                e.stopPropagation();
+                removeFile(index);
+            });
+            card.append(closeBtn);
+
+            if (file.type.startsWith('image/')) {
+                const img = $('<img style="width:100%; height:100%; object-fit:cover;" />');
+                const reader = new FileReader();
+                reader.onload = function(e) { img.attr('src', e.target.result); };
+                reader.readAsDataURL(file);
+                card.append(img);
+            } else if (file.type.startsWith('video/')) {
+                const vid = $('<video style="width:100%; height:100%; object-fit:cover;"></video>');
+                vid.attr('src', URL.createObjectURL(file));
+                card.append(vid);
+            } else {
+                card.append('<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:16px;">📄</div>');
+            }
+            container.append(card);
+        });
+        container.css('display', 'flex');
+    }
+
+    function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        renderPreviews();
+    }
+
+    function clearAttachmentPreview() {
+        selectedFiles = [];
+        $('#mediaFile').val('');
+        $('#attachmentPreview').hide().empty();
+    }
+
+    function sendMedia(caption) {
+        if (selectedFiles.length === 0) return;
 
         var formData = new FormData();
         formData.append('conversationId', chatId);
-        formData.append('file', fileInput.files[0]);
-        formData.append('caption', $('#messageText').val().trim());
+        selectedFiles.forEach(function(file) { formData.append('files', file); });
+        if (caption) formData.append('caption', caption);
 
         $('#btnAttach, #btnSend').prop('disabled', true);
-        $('#uploadHint').show();
+        $('#uploadHint').css('display', 'flex');
 
         $.ajax({
             url: ctx + '/api/chat/messages/media',
@@ -132,58 +1278,108 @@
             processData: false,
             contentType: false,
             success: function(newMsg) {
-                appendMessage(newMsg);
+                if ($('#msg-' + newMsg.id).length === 0) {
+                    appendMessage(newMsg);
+                    scrollToBottom();
+                }
                 $('#messageText').val('');
-                $('#mediaFile').val('');
-                scrollToBottom();
+                clearAttachmentPreview();
             },
             error: function(xhr) {
-                alert('Media ပို့ခြင်း မအောင်မြင်ပါ:\n' + xhr.responseText);
+                alert('Media sending is fail\n' + xhr.responseText);
             },
             complete: function() {
                 $('#btnAttach, #btnSend').prop('disabled', false);
-                $('#uploadHint').hide();
+                $('#uploadHint').css('display', 'none'); // Explicit hidden rewrite
             }
         });
     }
 
     function appendMessage(msg) {
+    	$('#emptyChat').remove();
         var isMe = String(msg.senderId) === String(myUserId);
-        var cls = isMe ? 'bubble me' : 'bubble other';
-        var label = isMe ? 'You' : 'User ' + msg.senderId;
+        var cls = isMe ? 'me' : 'other';
+        var label = isMe ? 'You' : (msg.senderDisplayName || partnerDisplayName || 'User');
 
-        var html = '<div class="' + cls + '">';
-        html += '<small>' + label + '</small>';
+        var row = $('<div class="message-row ' + cls + '" id="msg-' + msg.id + '" data-msg-id="' + msg.id + '" data-sender-me="' + isMe + '"></div>');
+        row.data('msg', msg);
+        
+        if (!isMe) {
+            var senderAvatar = $('<div class="avatar" style="width:30px; height:30px; font-size:10px; box-shadow:none; flex-shrink:0; border-radius:50%; margin-bottom: 2px;">' +
+                '<img src="' + ctx + '/user/avatar/' + msg.senderId + '" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />' +
+                '<div class="avatar-initials" style="display:none; width:100%; height:100%; border-radius:50%; align-items:center; justify-content:center; background: var(--accent-gray); color: var(--text-main);">' +
+                    'U' +
+                '</div>' +
+            '</div>');
+            row.append(senderAvatar);
+        }
+        
+        var bubble = $('<div class="bubble ' + cls + '"></div>');
+        var meta = $('<div class="bubble-meta"></div>');
+        meta.html('<span>' + label + '</span>');
+        bubble.append(meta);
+
+        if (msg.parentMessagePreview) {
+            bubble.append('<div class="reply-preview">' + escapeHtml(msg.parentMessagePreview) + '</div>');
+        }
 
         if (msg.messageText) {
-            html += '<div>' + escapeHtml(msg.messageText) + '</div>';
+            bubble.append($('<div class="bubble-text"></div>').text(msg.messageText));
         }
 
+        // Clean Collage Design for Media Files
         if (msg.attachments && msg.attachments.length) {
+            var mediaContainer = $('<div class="bubble-media-container" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;"></div>');
+            var itemWidth = msg.attachments.length === 1 ? '100%' : 'calc(50% - 2px)';
+            if (msg.attachments.length > 2 && msg.attachments.length % 3 === 0) {
+                itemWidth = 'calc(33.33% - 3px)';
+            }
+            
             msg.attachments.forEach(function(att) {
                 var url = ctx + att.fileUrl;
+                var mediaWrapper = $('<div style="width: ' + itemWidth + '; min-width: 90px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-clean); background: var(--accent-gray);"></div>');
+                
                 if (att.fileType && att.fileType.indexOf('video/') === 0) {
-                    html += '<video controls src="' + url + '"></video>';
+                    mediaWrapper.append('<video controls src="' + url + '" style="width:100%; display:block; max-height:200px; object-fit:cover;"></video>');
                 } else if (att.fileUrl && att.fileUrl.match(/\.(mp4|webm|mov|avi)$/i)) {
-                    html += '<video controls src="' + url + '"></video>';
+                    mediaWrapper.append('<video controls src="' + url + '" style="width:100%; display:block; max-height:200px; object-fit:cover;"></video>');
                 } else {
-                    html += '<img src="' + url + '" alt="photo"/>';
+                    mediaWrapper.append('<img src="' + url + '" alt="photo" style="width:100%; display:block; max-height:200px; object-fit:cover;"/>');
                 }
+                mediaContainer.append(mediaWrapper);
             });
+            bubble.append(mediaContainer);
         }
 
-        html += '</div>';
-        $('#chatBox').append(html);
+        var timeStr = '00:00';
+        if (msg.createdAt) {
+            try {
+                if (Array.isArray(msg.createdAt)) {
+                    var hrs = String(msg.createdAt[3]).padStart(2, '0');
+                    var mins = String(msg.createdAt[4]).padStart(2, '0');
+                    timeStr = hrs + ':' + mins;
+                } else {
+                    var parts = msg.createdAt.split('T');
+                    if (parts.length > 1) timeStr = parts[1].substring(0, 5);
+                }
+            } catch(e) { console.error(e); }
+        }
+        var timeHtml = '<span class="bubble-time">' + timeStr;
+        if (msg.edited) {
+            timeHtml += '<span class="edited-label">edited</span>';
+        }
+        if (isMe) {
+            var readMark = (msg.readCount && msg.readCount > 0) ? '✓✓' : '✓';
+            timeHtml += '<span class="read-receipt">' + readMark + '</span>';
+        }
+        timeHtml += '</span>';
+        bubble.append(timeHtml);
+
+        row.append(bubble);
+        $('#chatBox').append(row);
     }
 
-    function escapeHtml(text) {
-        return $('<div>').text(text).html();
-    }
-
-    function scrollToBottom() {
-        var box = document.getElementById('chatBox');
-        box.scrollTop = box.scrollHeight;
-    }
+ 
 </script>
 
 </body>
