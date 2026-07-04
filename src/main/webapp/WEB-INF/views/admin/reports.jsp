@@ -2,6 +2,7 @@
 <%@ page import="com.hibernate.entity.User" %>
 <%@ page import="com.hibernate.entity.PostReport" %>
 <%@ page import="com.hibernate.entity.CommentReport" %>
+<%@ page import="com.hibernate.entity.enums.ReportStatus" %>
 <%@ page import="java.util.List" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -142,6 +143,66 @@
             padding: 0;
         }
         
+        /* View Tabs */
+        .view-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .view-tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #475569;
+            background: #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .view-tab:hover {
+            background: #cbd5e1;
+            color: #1e293b;
+        }
+        
+        .view-tab.active {
+            background: #0284c7;
+            color: white;
+        }
+        
+        /* Type Tabs */
+        .type-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .type-tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #475569;
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .type-tab:hover {
+            border-color: #94a3b8;
+            color: #1e293b;
+        }
+        
+        .type-tab.active {
+            background: #0f172a;
+            border-color: #0f172a;
+            color: white;
+        }
+        
         /* Table */
         .data-table {
             width: 100%;
@@ -191,6 +252,36 @@
             text-transform: uppercase;
             display: inline-block;
             border: 1px solid #fecaca;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-resolved {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-dismissed {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        .status-other {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .date-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
         }
         
         /* Comment Preview */
@@ -297,6 +388,19 @@
             content: "📭 ";
         }
         
+        .btn-logout {
+            background-color: #64748b;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .btn-logout:hover {
+            background-color: #475569;
+        }
+        
         /* Responsive */
         @media (max-width: 1024px) {
             .report-stats {
@@ -345,6 +449,26 @@
     </style>
 </head>
 <body>
+
+<%
+    User currentUser = (User) session.getAttribute("currentUser");
+    String displayUsername = (currentUser != null) ? currentUser.getUsername() : "ADMIN";
+    String displayRole = (currentUser != null) ? currentUser.getRole().name() : "ADMIN";
+    
+    List<PostReport> postReports = (List<PostReport>) request.getAttribute("postReports");
+    List<CommentReport> commentReports = (List<CommentReport>) request.getAttribute("commentReports");
+    String reportType = (String) request.getAttribute("reportType");
+    String reportView = (String) request.getAttribute("reportView");
+    if (reportType == null) reportType = "posts";
+    if (reportView == null) reportView = "queue";
+    boolean isPostType = "posts".equals(reportType);
+    boolean isHistoryView = "history".equals(reportView);
+    String ctx = request.getContextPath();
+    
+    int totalPostReports = postReports != null ? postReports.size() : 0;
+    int totalCommentReports = commentReports != null ? commentReports.size() : 0;
+    int totalReports = totalPostReports + totalCommentReports;
+%>
 
     <!-- Sidebar -->
     <aside class="sidebar">
@@ -398,10 +522,10 @@
         
         <!-- Top Navbar -->
         <header class="top-navbar">
-            <div class="nav-title">🚨 Report Logs</div>
+            <div class="nav-title"><%= isPostType ? "📄 Post Report Logs" : "💬 Comment Report Logs" %></div>
             <div class="user-profile-badge">
-                <span>Welcome, <strong>Admin</strong></span>
-                <span class="badge">ADMIN</span>
+                <span>Welcome, <strong><%= displayUsername %></strong></span>
+                <span class="badge"><%= displayRole %></span>
                 <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Sign Out</a>
             </div>
         </header>
@@ -425,14 +549,6 @@
             </c:if>
 
             <!-- Statistics Cards -->
-            <%
-                List<PostReport> postReports = (List<PostReport>) request.getAttribute("postReports");
-                List<CommentReport> commentReports = (List<CommentReport>) request.getAttribute("commentReports");
-                int totalPostReports = postReports != null ? postReports.size() : 0;
-                int totalCommentReports = commentReports != null ? commentReports.size() : 0;
-                int totalReports = totalPostReports + totalCommentReports;
-            %>
-            
             <div class="report-stats">
                 <div class="report-stat-card">
                     <span class="report-stat-icon">🚨</span>
@@ -456,15 +572,32 @@
                 </div>
             </div>
 
+            <!-- Type Tabs -->
+            <div class="type-tabs">
+                <a href="<%= ctx %>/admin/reports?type=posts&view=<%= reportView %>"
+                   class="type-tab <%= isPostType ? "active" : "" %>">📄 Post Reports</a>
+                <a href="<%= ctx %>/admin/reports?type=comments&view=<%= reportView %>"
+                   class="type-tab <%= !isPostType ? "active" : "" %>">💬 Comment Reports</a>
+            </div>
+
+            <!-- View Tabs -->
+            <div class="view-tabs">
+                <a href="<%= ctx %>/admin/reports?type=<%= reportType %>&view=queue"
+                   class="view-tab <%= !isHistoryView ? "active" : "" %>">📥 Pending Queue</a>
+                <a href="<%= ctx %>/admin/reports?type=<%= reportType %>&view=history"
+                   class="view-tab <%= isHistoryView ? "active" : "" %>">📜 History</a>
+            </div>
+            
             <!-- POST REPORTS -->
+            <% if (isPostType) { %>
             <div class="section-card">
                 <div class="section-header">
-                    <span>📄 Pending Post Reports</span>
-                    <span class="count-badge"><%= totalPostReports %> pending</span>
+                    <span><%= isHistoryView ? "📜 Post Report History" : "📥 Pending Post Reports" %></span>
+                    <span class="count-badge"><%= totalPostReports %> <%= isHistoryView ? "records" : "pending" %></span>
                 </div>
                 <div class="section-body">
                     <% if (postReports == null || postReports.isEmpty()) { %>
-                        <div class="no-data">No pending post reports found.</div>
+                        <div class="no-data"><%= isHistoryView ? "No post report history found." : "No pending post reports found." %></div>
                     <% } else { %>
                         <div class="table-wrap">
                             <table class="data-table">
@@ -473,17 +606,27 @@
                                         <th>Report Details</th>
                                         <th>Post Info</th>
                                         <th>Parties Involved</th>
-                                        <th style="text-align: center;">Actions</th>
+                                        <% if (isHistoryView) { %>
+                                            <th>Outcome</th>
+                                        <% } else { %>
+                                            <th style="text-align: center;">Actions</th>
+                                        <% } %>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <% for (PostReport r : postReports) { %>
+                                    <% for (PostReport r : postReports) {
+                                        ReportStatus status = r.getStatus();
+                                        String statusClass = "status-other";
+                                        if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
+                                        else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
+                                    %>
                                         <tr>
                                             <td>
                                                 <span class="reason-badge"><%= r.getReason() %></span><br/>
                                                 <p style="margin-top:6px; font-size:13px; color:#475569; max-width:200px;">
                                                     <%= r.getDescription() %>
                                                 </p>
+                                                <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
                                             </td>
                                             <td>
                                                 <strong><%= r.getPost().getTitle() %></strong><br/>
@@ -493,17 +636,23 @@
                                                 <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
                                                 <span style="font-size:12px;"><strong>Author:</strong> @<%= r.getPost().getAuthor().getUsername() %></span>
                                             </td>
-                                            <td style="text-align: center;">
-                                                <div class="action-cell" style="justify-content: center;">
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
-                                                        <button type="submit" class="action-btn dismiss" onclick="return confirm('Dismiss this report as false alarm?')">✕ Dismiss</button>
-                                                    </form>
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/resolve" method="POST" style="display:inline;">
-                                                        <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
-                                                        <button type="submit" class="action-btn resolve" onclick="return confirm('Resolve report: soft delete post and BAN the author?')">⚡ Resolve</button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                                            <% if (isHistoryView) { %>
+                                                <td>
+                                                    <span class="status-badge <%= statusClass %>"><%= status %></span>
+                                                </td>
+                                            <% } else { %>
+                                                <td style="text-align: center;">
+                                                    <div class="action-cell" style="justify-content: center;">
+                                                        <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
+                                                            <button type="submit" class="action-btn dismiss" onclick="return confirm('Dismiss this report as false alarm?')">✕ Dismiss</button>
+                                                        </form>
+                                                        <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/resolve" method="POST" style="display:inline;">
+                                                            <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
+                                                            <button type="submit" class="action-btn resolve" onclick="return confirm('Resolve report: soft delete post and BAN the author?')">⚡ Resolve</button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            <% } %>
                                         </tr>
                                     <% } %>
                                 </tbody>
@@ -512,16 +661,18 @@
                     <% } %>
                 </div>
             </div>
+            <% } %>
 
             <!-- COMMENT REPORTS -->
+            <% if (!isPostType) { %>
             <div class="section-card">
                 <div class="section-header">
-                    <span>💬 Pending Comment Reports</span>
-                    <span class="count-badge"><%= totalCommentReports %> pending</span>
+                    <span><%= isHistoryView ? "📜 Comment Report History" : "📥 Pending Comment Reports" %></span>
+                    <span class="count-badge"><%= totalCommentReports %> <%= isHistoryView ? "records" : "pending" %></span>
                 </div>
                 <div class="section-body">
                     <% if (commentReports == null || commentReports.isEmpty()) { %>
-                        <div class="no-data">No pending comment reports found.</div>
+                        <div class="no-data"><%= isHistoryView ? "No comment report history found." : "No pending comment reports found." %></div>
                     <% } else { %>
                         <div class="table-wrap">
                             <table class="data-table">
@@ -530,17 +681,27 @@
                                         <th>Report Details</th>
                                         <th>Comment Info</th>
                                         <th>Parties Involved</th>
-                                        <th style="text-align: center;">Actions</th>
+                                        <% if (isHistoryView) { %>
+                                            <th>Outcome</th>
+                                        <% } else { %>
+                                            <th style="text-align: center;">Actions</th>
+                                        <% } %>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <% for (CommentReport r : commentReports) { %>
+                                    <% for (CommentReport r : commentReports) {
+                                        ReportStatus status = r.getStatus();
+                                        String statusClass = "status-other";
+                                        if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
+                                        else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
+                                    %>
                                         <tr>
                                             <td>
                                                 <span class="reason-badge"><%= r.getReason() %></span><br/>
                                                 <p style="margin-top:6px; font-size:13px; color:#475569; max-width:200px;">
                                                     <%= r.getDescription() %>
                                                 </p>
+                                                <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
                                             </td>
                                             <td>
                                                 <div class="comment-preview" title="<%= r.getComment().getContent() %>">
@@ -552,17 +713,23 @@
                                                 <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
                                                 <span style="font-size:12px;"><strong>Commenter:</strong> @<%= r.getComment().getUser().getUsername() %></span>
                                             </td>
-                                            <td style="text-align: center;">
-                                                <div class="action-cell" style="justify-content: center;">
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
-                                                        <button type="submit" class="action-btn dismiss" onclick="return confirm('Dismiss this report as false alarm?')">✕ Dismiss</button>
-                                                    </form>
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/resolve" method="POST" style="display:inline;">
-                                                        <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
-                                                        <button type="submit" class="action-btn resolve" onclick="return confirm('Resolve report: soft delete comment and BAN the commenter?')">⚡ Resolve</button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                                            <% if (isHistoryView) { %>
+                                                <td>
+                                                    <span class="status-badge <%= statusClass %>"><%= status %></span>
+                                                </td>
+                                            <% } else { %>
+                                                <td style="text-align: center;">
+                                                    <div class="action-cell" style="justify-content: center;">
+                                                        <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
+                                                            <button type="submit" class="action-btn dismiss" onclick="return confirm('Dismiss this report as false alarm?')">✕ Dismiss</button>
+                                                        </form>
+                                                        <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/resolve" method="POST" style="display:inline;">
+                                                            <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
+                                                            <button type="submit" class="action-btn resolve" onclick="return confirm('Resolve report: soft delete comment and BAN the commenter?')">⚡ Resolve</button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            <% } %>
                                         </tr>
                                     <% } %>
                                 </tbody>
@@ -571,6 +738,7 @@
                     <% } %>
                 </div>
             </div>
+            <% } %>
 
         </main>
     </div>

@@ -47,4 +47,14 @@ public class CommentReportRepositoryImpl implements CommentReportRepository {
                     CommentReport.class)
                 .getResultList();
     }
+
+    @Override
+    public List<CommentReport> findAllHistory() {
+        return getSession()
+                .createQuery(
+                    "FROM CommentReport r JOIN FETCH r.comment c JOIN FETCH c.post JOIN FETCH c.user JOIN FETCH r.reporter "
+                            + "WHERE r.status <> 'PENDING' ORDER BY r.createdAt DESC",
+                    CommentReport.class)
+                .getResultList();
+    }
 }

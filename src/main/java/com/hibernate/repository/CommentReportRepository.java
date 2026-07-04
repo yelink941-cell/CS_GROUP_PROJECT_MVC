@@ -8,4 +8,5 @@ public interface CommentReportRepository {
     CommentReport findPendingByCommentAndReporter(Integer commentId, Long reporterId);
     CommentReport findById(Integer id);
     List<CommentReport> findAllPending();
+    List<CommentReport> findAllHistory();
 }

@@ -85,10 +85,14 @@ public class UserRepositoryImpl implements UserRepository {
 	@Override
 	public List<User> searchByUsername(String keyword, Long excludeUserId, int limit) {
 		return getSession()
-				.createQuery("from User u where u.deletedAt is null " + "and u.id <> :excludeId "
-						+ "and lower(u.username) like lower(:keyword) " + "order by u.username asc", User.class)
-				.setParameter("excludeId", excludeUserId).setParameter("keyword", "%" + keyword + "%")
-				.setMaxResults(limit).getResultList();
+				.createQuery("from User u where u.deletedAt is null " 
+						+ "and u.id <> :excludeId "
+						+ "and lower(u.username) like lower(:keyword) " 
+						+ "order by u.username asc", User.class)
+				.setParameter("excludeId", excludeUserId)
+				.setParameter("keyword", "%" + keyword + "%")
+				.setMaxResults(limit)
+				.getResultList();
 	}
 
 	@Override
