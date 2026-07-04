@@ -214,11 +214,6 @@ public class PostController {
                 // Collections တွေကိုလည်း ဆွဲထုတ်ပေးပါ
                 model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
                 
-                boolean hasUserLiked = postLikeService.hasUserLiked(post.getId(), userId); 
-                model.addAttribute("hasUserLiked", hasUserLiked);
-                
-                boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, post.getId());
-                model.addAttribute("hasUserBookmarked", hasBookmarked);
                 
                 // 🟢 ဤနေရာတွင် ထည့်ပေးရန် - JSP ဘက်က Not Empty userLoggedIn ဟု စစ်ထားသည်နှင့် တိုက်ဆိုင်စေသည်
                 model.addAttribute("userLoggedIn", userId); 

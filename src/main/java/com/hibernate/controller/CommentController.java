@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -217,7 +219,7 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
-    @PostMapping("/report/{id}")
+    @PostMapping("/report-comment/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> reportComment(@PathVariable("id") Integer id,
                                                             @RequestParam("reason") String reason,

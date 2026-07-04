@@ -284,7 +284,9 @@ public class UserController {
             userService.saveUserPreference(existing);
         } else {
             incomingPref.setUser(current);
-            userService.saveUserPreference(incomingPref);
+        }
+        return "redirect:/settings"; // 🟢 Return ပိတ်ပေးပါ
+    }
     @GetMapping("/admin-dashboard")
     public String showAdminDashboard(HttpSession session) {
         // 🟢 ပြင်ဆင်ချက်- currentUser အစား ပိုမိုကျယ်ပြန့်သော user ကိုပါ ထည့်သွင်းစစ်ဆေးပေးခြင်း 
@@ -314,11 +316,6 @@ public class UserController {
         User current = (User) session.getAttribute("currentUser");
         userService.unfollowUser(current.getId(), targetId);
         return "redirect:/profile?id=" + targetId;
-    }
-
-    @GetMapping("/admin/dashboard")
-    public String showAdminDashboard() {
-        return "admin/admin-dashboard"; 
     }
 
     @GetMapping("/admin/users")

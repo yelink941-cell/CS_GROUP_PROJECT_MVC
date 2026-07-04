@@ -8,12 +8,11 @@
 
             <c:if test="${sessionScope.userId != null && sessionScope.userId != reply.user.id}">
                 <button type="button" class="button-link" style="color:#dc2626; margin-left:8px;"
-                        onclick="openReportModal('comment', ${reply.id})">Report</button>
+                        onclick="openReportModal('comment', ${reply.id})">
+                    Report
+                </button>
             </c:if>
 
-            <c:if test="${sessionScope.userId != null && sessionScope.userId == reply.user.id}">
-                <button type="button" class="button-link" style="color: #dc3545; margin-left: 8px;" onclick="deleteComment(${reply.id})">Delete</button>
-            </c:if>
             <!-- Header -->
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; margin-bottom:6px;">
                 <strong><c:out value="${reply.user.username}" /></strong>
@@ -27,7 +26,6 @@
 
             <!-- Actions -->
             <div class="comment-actions">
-
                 <button type="button"
                         class="btn-action"
                         onclick="toggleReplyForm('r-${reply.id}')">
@@ -41,7 +39,6 @@
                         Delete
                     </button>
                 </c:if>
-
             </div>
 
             <!-- Reply Form -->
@@ -68,19 +65,15 @@
                 </div>
             </c:if>
 
-            <!-- Nested Replies (FIXED) -->
+            <!-- Nested Replies (CLEAN FIXED VERSION) -->
             <c:if test="${not empty reply.replies}">
-
                 <ul id="replySubListContainer-${reply.id}"
                     style="margin-left:20px; padding-left:0; list-style:none;">
 
-                    <!-- ✅ IMPORTANT FIX -->
                     <c:set var="replyList" value="${reply.replies}" scope="request"/>
-
                     <jsp:include page="reply-recurse.jsp"/>
 
                 </ul>
-
             </c:if>
 
         </li>

@@ -104,8 +104,13 @@ public class CommentServiceImpl implements CommentService {
             comment.setDeletedAt(now);
             commentRepository.save(comment);
             
+            // Lazy loading ဖြစ်နေသော replies များကို initialize လုပ်ပြီးမှ cascade လုပ်ပါ
+            if (comment.getReplies() != null) {
+                Hibernate.initialize(comment.getReplies());
+                cascadeSoftDeleteReplies(comment.getReplies(), now);
+            }
+            
             System.out.println("DEBUG: Comment (ID: " + id + ") soft-deleted successfully.");
-            cascadeSoftDeleteReplies(comment.getReplies(), now);
         } else {
             System.err.println("🚨 Cannot delete: Comment not found with ID: " + id);
         }

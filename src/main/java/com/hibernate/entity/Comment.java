@@ -50,6 +50,9 @@ public class Comment {
 
     @Column(name = "is_approved")
     private Boolean isApproved = true;
+    
+    @Column(name = "is_deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isDeleted = false;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
