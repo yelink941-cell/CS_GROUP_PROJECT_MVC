@@ -670,15 +670,15 @@ commentForm.addEventListener('submit', function(e) {
             const safeContent = escapeHtml(data.content);
             const safeDate = escapeHtml(data.createdAt);
 
-            newComment.innerHTML =
-                '<div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">' +
+		            newComment.innerHTML =
+                '<div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px;">' +
                     '<strong>' + safeUser + '</strong>' +
                     '<span>' + safeDate + '</span>' +
                 '</div>' +
                 '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
-                '<div style="display: flex; gap: 12px; margin-bottom: 8px;">' +
-                    '<button type="button" class="button-link" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">Reply</button>' +
-                    '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.commentId + ')">Delete</button>' +
+                '<div class="comment-actions">' +
+                    '<button type="button" class="btn-action" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">Reply</button>' +
+                    '<button type="button" class="btn-action btn-delete" onclick="deleteComment(' + data.commentId + ')" style="' + (data.isOwner ? '' : 'display:none;') + '">Delete</button>' +
                 '</div>' +
                 '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
                     '<form onsubmit="submitReply(event, \'c-' + data.commentId + '\', ' + data.commentId + ', ${post.id})">' +
@@ -689,22 +689,15 @@ commentForm.addEventListener('submit', function(e) {
                 '</div>' +
                 '<div id="replyListContainer-' + data.commentId + '"></div>';
 
+            // အပေါ်ဆုံးမှာ ထည့် (newest first)
             container.prepend(newComment);
 
+            // "မရှိသေးပါ" message ဖယ်
+            const noMsg = document.getElementById('noCommentsMessage');
+            if (noMsg) noMsg.remove();
+
             // 🟢 Comment count တိုး
-            const header = document.getElementById('commentCountHeader');
-            if (header) {
-                const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
-                header.setAttribute('data-count', newCount);
-                header.innerText = ' Comments (' + newCount + ')';
-                const topBtn = document.querySelector('.like-section .button-secondary');
-                // Comments (n) ခလုတ်လည်း update
-                document.querySelectorAll('.like-section button').forEach(function (b) {
-                    if (b.innerText && b.innerText.indexOf('Comments') !== -1) {
-                        b.innerText = '💬 Comments (' + newCount + ')';
-                    }
-                });
-            }
+            updateCommentCount(1);
 
             showCommentsSection();
 
@@ -770,35 +763,45 @@ function submitReply(e, commentId, parentId, postId) {
         const replyInput = document.getElementById('replyText-' + commentId);
         if (replyInput) replyInput.value = '';
 
-        // reply ထည့်ရမည့် list container ကို ရှာရန်
-        // parentId ကို အသုံးပြုသည် (main comment အောက် reply ဖြစ်စေ, nested reply ဖြစ်စေ)
+        // reply ထည့်ရမည့် <ul> container ကို ရှာရန်
+        // JSP structure: replyListContainer-X (div) > ul#replySubListContainer-X > li.reply-item
         const realParentId = data.parentId || parentId;
-        let listContainer = document.getElementById('replyListContainer-' + realParentId)
-                         || document.getElementById('replySubListContainer-' + realParentId);
+        let listContainer = document.getElementById('replySubListContainer-' + realParentId);
 
-        // မရှိသေးလျှင် အသစ်တည်ဆောက်
+        // မရှိသေးလျှင် → replyListContainer (div) အထဲက <ul> ကို ရှာ
+        if (!listContainer) {
+            const wrapDiv = document.getElementById('replyListContainer-' + realParentId);
+            if (wrapDiv) {
+                listContainer = wrapDiv.querySelector('ul');
+            }
+        }
+
+        // စိတ်ဖြာ မရှိသေးလျှင် အသစ်ဖန်တီး
         if (!listContainer) {
             const parentReplyItem = document.getElementById('reply-item-' + realParentId);
-            const newSub = document.createElement('ul');
-            newSub.id = 'replySubListContainer-' + realParentId;
-            newSub.style.cssText = 'margin-left:20px; list-style-type: none; padding-left: 0;';
             if (parentReplyItem) {
+                const newSub = document.createElement('ul');
+                newSub.id = 'replySubListContainer-' + realParentId;
+                newSub.style.cssText = 'margin-left:20px; padding-left:0; list-style:none;';
                 parentReplyItem.appendChild(newSub);
                 listContainer = newSub;
             } else {
-                // main comment အောက်တွင် reply container ဖန်တီး
                 const mainComment = document.getElementById('comment-' + realParentId);
                 if (mainComment) {
-                    const wrap = document.createElement('div');
-                    wrap.id = 'replyListContainer-' + realParentId;
-                    mainComment.appendChild(wrap);
+                    const wrap = document.getElementById('replyListContainer-' + realParentId);
+                    if (!wrap) {
+                        const newWrap = document.createElement('div');
+                        newWrap.id = 'replyListContainer-' + realParentId;
+                        mainComment.appendChild(newWrap);
+                    }
                     const sub = document.createElement('ul');
                     sub.id = 'replySubListContainer-' + realParentId;
-                    sub.style.cssText = 'margin-left:20px; list-style-type: none; padding-left: 0;';
-                    wrap.appendChild(sub);
+                    sub.style.cssText = 'margin-left:20px; padding-left:0; list-style:none;';
+                    const targetWrap = document.getElementById('replyListContainer-' + realParentId);
+                    if (targetWrap) {
+                        targetWrap.appendChild(sub);
+                    }
                     listContainer = sub;
-                } else {
-                    listContainer = newSub;
                 }
             }
         }
@@ -806,28 +809,28 @@ function submitReply(e, commentId, parentId, postId) {
         const safeUser = escapeHtml(data.username);
         const safeContent = escapeHtml(data.content);
         const safeDate = escapeHtml(data.createdAt);
+        const isOwner = data.isOwner === true;
 
         const replyEl = document.createElement('li');
         replyEl.id = 'reply-item-' + data.replyId;
-        replyEl.className = 'comment-wrapper'; // အသစ်ထည့်လိုက်တဲ့ class
-        replyEl.style.cssText = 'list-style-type: none;';
+        replyEl.className = 'reply-item';
+        replyEl.style.cssText = 'list-style:none; margin-bottom:12px;';
 
-        replyEl.innerHTML = 
-            '<div class="comment-meta-header">' +
+        replyEl.innerHTML =
+            '<div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; margin-bottom:6px;">' +
                 '<strong>' + safeUser + '</strong>' +
-                '<small>' + safeDate + '</small>' +
+                '<span>' + safeDate + '</span>' +
             '</div>' +
-            '<div>' + safeContent + '</div>' +
-         // JavaScript ထဲက ခလုတ်နေရာ
+            '<p style="margin:0 0 6px 0; line-height:1.5; color:#333;">' + safeContent + '</p>' +
             '<div class="comment-actions">' +
                 '<button type="button" class="btn-action" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">Reply</button>' +
-                '<button type="button" class="btn-action btn-delete" onclick="deleteComment(' + data.replyId + ')">Delete</button>' +
+                '<button type="button" class="btn-action btn-delete" onclick="deleteComment(' + data.replyId + ')" style="' + (isOwner ? '' : 'display:none;') + '">Delete</button>' +
             '</div>' +
-            '<div id="replyFormContainer-r-' + data.replyId + '" style="display: none; margin-top: 8px; margin-left: 20px;">' +
+            '<div id="replyFormContainer-r-' + data.replyId + '" style="display:none; margin-top:8px; margin-left:20px;">' +
                 '<form onsubmit="submitReply(event, \'r-' + data.replyId + '\', ' + data.replyId + ', ${post.id})">' +
-                    '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
+                    '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Reply ပြန်ရန်..." style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;"></textarea>' +
                     '<br>' +
-                    '<button type="submit" class="button button-secondary" style="font-size: 12px; padding: 4px 10px; margin-top: 4px;">Submit Reply</button>' +
+                    '<button type="submit" class="button button-secondary" style="font-size:12px; padding:4px 10px; margin-top:4px;">Submit Reply</button>' +
                 '</form>' +
             '</div>';
 
@@ -838,12 +841,7 @@ function submitReply(e, commentId, parentId, postId) {
         if (replyForm) replyForm.style.display = 'none';
 
         // 🟢 Comment count တိုး
-        const header = document.getElementById('commentCountHeader');
-        if (header) {
-            const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
-            header.setAttribute('data-count', newCount);
-            header.innerText = ' Comments (' + newCount + ')';
-        }
+        updateCommentCount(1);
 
         showCommentsSection();
         updateUrlHash('reply');
@@ -856,6 +854,24 @@ function submitReply(e, commentId, parentId, postId) {
             alert('Reply failed');
         }
     });
+}
+
+/* =========================
+   📊 COMMENT COUNT HELPER (reusable)
+========================= */
+function updateCommentCount(delta) {
+    const header = document.getElementById('commentCountHeader');
+    if (header) {
+        let newCount = parseInt(header.getAttribute('data-count') || '0') + delta;
+        if (newCount < 0) newCount = 0;
+        header.setAttribute('data-count', newCount);
+        header.innerText = ' Comments (' + newCount + ')';
+        document.querySelectorAll('.like-section button').forEach(function (b) {
+            if (b.innerText && b.innerText.indexOf('Comments') !== -1) {
+                b.innerText = '💬 Comments (' + newCount + ')';
+            }
+        });
+    }
 }
 
 /* =========================
@@ -882,23 +898,14 @@ function deleteComment(commentId) {
         const mainEl = document.getElementById('comment-' + commentId);
         const replyEl = document.getElementById('reply-item-' + commentId);
         if (mainEl) {
+            // parent comment ဖျက်လိုက် → ထို comment အောက်က child replies အားလုံးကို ေရာက်မည်
+            const childReplies = mainEl.querySelectorAll('[id^="reply-item-"]');
+            const totalCount = 1 + childReplies.length; // parent + ရှိသေး child replies
             mainEl.remove();
+            updateCommentCount(-totalCount);
         } else if (replyEl) {
             replyEl.remove();
-        }
-
-        // 🟢 Comment count လျှော့
-        const header = document.getElementById('commentCountHeader');
-        if (header) {
-            let newCount = parseInt(header.getAttribute('data-count') || '0') - 1;
-            if (newCount < 0) newCount = 0;
-            header.setAttribute('data-count', newCount);
-            header.innerText = ' Comments (' + newCount + ')';
-            document.querySelectorAll('.like-section button').forEach(function (b) {
-                if (b.innerText && b.innerText.indexOf('Comments') !== -1) {
-                    b.innerText = '💬 Comments (' + newCount + ')';
-                }
-            });
+            updateCommentCount(-1);
         }
     })
     .catch(err => {
