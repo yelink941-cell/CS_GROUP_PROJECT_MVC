@@ -89,6 +89,13 @@ public class ChatEventBroadcaster {
         envelope.put("payload", response);
         broadcastPayload(response.getConversationId(), envelope);
     }
+
+    public void broadcastReaction(MessageResponse response) {
+        Map<String, Object> envelope = new HashMap<>();
+        envelope.put("type", "message_reaction");
+        envelope.put("payload", response);
+        broadcastPayload(response.getConversationId(), envelope);
+    }
     public void broadcastReadReceipt(MarkReadResponse response) {
         Map<String, Object> envelope = new HashMap<>();
         envelope.put("type", "messages_read");

@@ -876,7 +876,6 @@
             if (!msg) return;
             if (action === 'reply') startReply(msg);
             else if (action === 'edit') startEdit(msg);
-            else if (action === 'report') reportMessage(msg);
             else if (action === 'delete') deleteMessage(msg);
         });
 
@@ -1006,6 +1005,11 @@
 
                 if (data.type === 'message_edited' && data.payload) {
                     updateMessageDom(data.payload);
+                    return;
+                }
+
+                if (data.type === 'message_reaction' && data.payload) {
+                    updateMessageReactions(data.payload);
                     return;
                 }
 
@@ -1215,7 +1219,6 @@
             if (hasText) actions.push({ id: 'edit', label: 'Edit', icon: '✎' });
             actions.push({ id: 'delete', label: 'Delete', icon: '🗑', danger: true });
         } else {
-            actions.push({ id: 'report', label: 'Report', icon: '⚠' });
             if (canModerate) actions.push({ id: 'delete', label: 'Delete', icon: '🗑', danger: true });
         }
         return actions;
@@ -1226,6 +1229,18 @@
         contextMenuMessage = msg;
         var menu = $('#msgContextMenu');
         menu.empty();
+
+        var quickBar = $('<div class="quick-reaction-bar" style="display:flex; justify-content:space-around; align-items:center; padding:8px 12px; border-bottom:1px solid var(--border-clean, #334155);"></div>');
+        ['👍', '❤️', '😂', '😮', '😢', '🔥'].forEach(function(emoji) {
+            var btn = $('<button type="button" class="reaction-btn" style="background:none; border:none; font-size:18px; cursor:pointer; padding:4px 6px; border-radius:6px; transition:transform 0.15s ease;"></button>')
+                .text(emoji)
+                .click(function(e) {
+                    e.stopPropagation();
+                    toggleReaction(msg.id, emoji);
+                });
+            quickBar.append(btn);
+        });
+        menu.append(quickBar);
 
         getMessageActions(msg).forEach(function(action, idx) {
             if (action.danger && idx > 0) {
@@ -1256,15 +1271,49 @@
         $('#msgContextBackdrop').removeClass('active');
     }
 
-    function reportMessage(msg) {
+    function toggleReaction(messageId, emoji) {
+        closeMessageContextMenu();
         $.ajax({
-            url: ctx + '/api/chat/messages/' + msg.id + '/report',
+            url: ctx + '/api/chat/messages/' + messageId + '/reactions',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ reason: 'TEXT', description: 'Reported from chat UI' }),
-            success: function() { alert('Report submitted.'); },
-            error: function(xhr) { alert('Report failed: ' + xhr.responseText); }
+            data: JSON.stringify({ emoji: emoji }),
+            success: function(updatedMsg) {
+                updateMessageReactions(updatedMsg);
+            },
+            error: function(xhr) {
+                alert('Reaction failed: ' + (xhr.responseText || 'Error'));
+            }
         });
+    }
+
+    function updateMessageReactions(msg) {
+        var row = $('#msg-' + msg.id);
+        if (!row.length) return;
+        row.data('msg', msg);
+        var bubble = row.find('.bubble');
+        bubble.find('.message-reactions').remove();
+        if (msg.reactions && msg.reactions.length) {
+            var reactionsEl = renderReactionsHtml(msg);
+            bubble.append(reactionsEl);
+        }
+    }
+
+    function renderReactionsHtml(msg) {
+        var reactionsContainer = $('<div class="message-reactions" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;"></div>');
+        if (msg.reactions && msg.reactions.length) {
+            msg.reactions.forEach(function(r) {
+                var hasUserReacted = r.userIds && r.userIds.map(String).includes(String(myUserId));
+                var badge = $('<span class="reaction-badge ' + (hasUserReacted ? 'user-reacted' : '') + '" style="display:inline-flex; align-items:center; gap:3px; background:' + (hasUserReacted ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.15)') + '; border:1px solid ' + (hasUserReacted ? '#38bdf8' : 'rgba(255, 255, 255, 0.2)') + '; border-radius:12px; padding:2px 7px; font-size:12px; cursor:pointer; user-select:none;"></span>')
+                    .html(r.emoji + ' <span style="font-size:11px; opacity:0.9;">' + r.count + '</span>')
+                    .click(function(e) {
+                        e.stopPropagation();
+                        toggleReaction(msg.id, r.emoji);
+                    });
+                reactionsContainer.append(badge);
+            });
+        }
+        return reactionsContainer;
     }
 
     function deleteMessage(msg) {
@@ -1549,6 +1598,10 @@
         }
         timeHtml += '</span>';
         bubble.append(timeHtml);
+
+        if (msg.reactions && msg.reactions.length) {
+            bubble.append(renderReactionsHtml(msg));
+        }
 
         row.append(bubble);
         $('#chatBox').append(row);

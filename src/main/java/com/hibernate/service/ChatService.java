@@ -86,6 +86,8 @@ public interface ChatService {
 
 
 
+    MessageResponse toggleReaction(Long messageId, Long userId, String emoji);
+
     boolean isParticipant(Long conversationId, Long userId);
 
 

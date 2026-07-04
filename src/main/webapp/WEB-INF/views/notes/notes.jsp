@@ -300,7 +300,7 @@
         <div class="page-header">
             <div class="page-title-block">
                 <h1>📝 My Private Notes</h1>
-                <p>သင်တစ်ယောက်တည်းသာ မြင်ရမည့် personal notes များ</p>
+                <p>personal notes </p>
             </div>
             <a href="${pageContext.request.contextPath}/notes/new" class="btn-create" id="btn-new-note">
                 <i class="fas fa-plus"></i> New Note
