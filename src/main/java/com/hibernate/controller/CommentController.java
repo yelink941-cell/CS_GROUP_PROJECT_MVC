@@ -87,7 +87,7 @@ public class CommentController {
         return null;
     }
 
-    @PostMapping({"/add", "/comment"})
+    @PostMapping(value = {"/add", "/comment"}, produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addComment(@RequestParam("postId") Integer postId,
                                                           @RequestParam("commentText") String content,
@@ -101,9 +101,9 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        if (dbUser.isCurrentlyBanned()) {
+        if (dbUser.isCommentBanned()) {
             response.put("status", "error");
-            response.put("message", "သင်သည် အကောင့် ပိတ်ပင် (Ban) ခံထားရသောကြောင့် Comment ရေးသားခွင့် မရှိပါ။ (" + dbUser.getBanRemainingText() + ")");
+            response.put("message", "Your account is restricted from posting comments (" + dbUser.getBanRemainingText() + ")");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
 
@@ -160,7 +160,7 @@ public class CommentController {
         }
     }
 
-    @PostMapping("/reply")
+    @PostMapping(value = "/reply", produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addReply(@RequestParam("postId") Integer postId,
                                                         @RequestParam(value = "parentId", required = false) Integer parentId,
@@ -175,9 +175,9 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        if (dbUser.isCurrentlyBanned()) {
+        if (dbUser.isCommentBanned()) {
             response.put("status", "error");
-            response.put("message", "သင်သည် အကောင့် ပိတ်ပင် (Ban) ခံထားရသောကြောင့် Reply ရေးသားခွင့် မရှိပါ။ (" + dbUser.getBanRemainingText() + ")");
+            response.put("message", "Your account is restricted from replying (" + dbUser.getBanRemainingText() + ")");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
 
@@ -242,7 +242,7 @@ public class CommentController {
         }
     }
 
-    @PostMapping("/delete/{id}")
+    @PostMapping(value = "/delete/{id}", produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteComment(@PathVariable("id") Integer id, HttpSession session) {
         Map<String, Object> response = new HashMap<>();

@@ -95,14 +95,16 @@ public class AdminReportController {
     @PostMapping("/posts/group/{postId}/resolve")
     public String resolveGroupedPostReport(@PathVariable("postId") Integer postId,
                                            @RequestParam(value = "reason", required = false, defaultValue = "Violated terms") String reason,
+                                           @RequestParam(value = "duration", required = false, defaultValue = "1_WEEK") String duration,
+                                           @RequestParam(value = "banType", required = false, defaultValue = "POST_ONLY") String banType,
                                            HttpSession session) {
         if (!isAuthorizedAdmin(session)) {
             return "redirect:/login";
         }
 
         User admin = (User) session.getAttribute("currentUser");
-        reportService.resolveAllPostReportsByPostId(admin.getId(), postId, reason);
-        return "redirect:/admin/reports?type=posts&view=queue";
+        reportService.resolveAllPostReportsByPostId(admin.getId(), postId, reason, duration, banType);
+        return "redirect:/admin/reports?type=posts&view=history";
     }
 
     @PostMapping("/comments/{id}/dismiss")
@@ -126,7 +128,7 @@ public class AdminReportController {
 
         User admin = (User) session.getAttribute("currentUser");
         reportService.resolveCommentReport(admin.getId(), id, reason);
-        return "redirect:/admin/reports?type=comments&view=queue";
+        return "redirect:/admin/reports?type=comments&view=history";
     }
 
     @PostMapping("/comments/group/{commentId}/dismiss")
@@ -143,13 +145,15 @@ public class AdminReportController {
     @PostMapping("/comments/group/{commentId}/resolve")
     public String resolveGroupedCommentReport(@PathVariable("commentId") Integer commentId,
                                               @RequestParam(value = "reason", required = false, defaultValue = "Violated terms") String reason,
+                                              @RequestParam(value = "duration", required = false, defaultValue = "1_WEEK") String duration,
+                                              @RequestParam(value = "banType", required = false, defaultValue = "COMMENT_ONLY") String banType,
                                               HttpSession session) {
         if (!isAuthorizedAdmin(session)) {
             return "redirect:/login";
         }
 
         User admin = (User) session.getAttribute("currentUser");
-        reportService.resolveAllCommentReportsByCommentId(admin.getId(), commentId, reason);
-        return "redirect:/admin/reports?type=comments&view=queue";
+        reportService.resolveAllCommentReportsByCommentId(admin.getId(), commentId, reason, duration, banType);
+        return "redirect:/admin/reports?type=comments&view=history";
     }
 }

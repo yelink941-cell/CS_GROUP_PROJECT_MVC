@@ -1,6 +1,7 @@
 package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
+import com.hibernate.entity.User;
 import com.hibernate.entity.enums.ContentType;
 import com.hibernate.entity.enums.PostVisibility;
 import com.hibernate.service.BookmarkService;
@@ -63,6 +64,14 @@ public class PostController {
         if (!isLoggedIn(session)) {
             return "redirect:/login";
         }
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId != null) {
+            User u = userService.getUserById(userId);
+            if (u != null && u.isPostBanned()) {
+                session.setAttribute("error", "Your account is currently restricted from creating posts (" + u.getBanRemainingText() + ")");
+                return "redirect:/suspended";
+            }
+        }
 
         model.addAttribute("post", new Post());
         loadFormData(model);
@@ -87,6 +96,12 @@ public class PostController {
 
         if (userId == null) {
             return "redirect:/login";
+        }
+
+        User dbUser = userService.getUserById(userId);
+        if (dbUser != null && dbUser.isPostBanned()) {
+            session.setAttribute("error", "Your account is currently restricted from creating posts (" + dbUser.getBanRemainingText() + ")");
+            return "redirect:/suspended";
         }
 
         Post post = buildPost(title, slug, excerpt, visibility);
