@@ -427,6 +427,10 @@ public class UserController {
         
         return "admin/admin-user-management"; 
     }
+    @GetMapping("/admin/dashboard")
+    public String showAdminDashboard() {
+        return "admin/admin-dashboard"; 
+    }
 
     @PostMapping("/admin/users/update-status")
     public String updateStatusAndRole(
