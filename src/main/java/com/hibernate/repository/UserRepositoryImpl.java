@@ -99,6 +99,18 @@ public class UserRepositoryImpl implements UserRepository {
 	}
 
 	@Override
+	public long count() {
+		try {
+			Long count = getSession()
+					.createQuery("SELECT COUNT(u) FROM User u WHERE u.deletedAt IS NULL", Long.class)
+					.uniqueResult();
+			return count != null ? count : 0;
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
+	@Override
 	public Optional<String> findFullNameByUserId(Long userId) {
 		String fullName = getSession()
 				.createQuery("select p.fullName from UserProfile p where p.user.id = :userId", String.class)

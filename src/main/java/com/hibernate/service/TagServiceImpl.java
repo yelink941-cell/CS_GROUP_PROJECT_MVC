@@ -43,4 +43,18 @@ public class TagServiceImpl implements TagService {
     public boolean existsByName(String name) {
         return tagRepository.existsByName(name);
     }
+    @Override
+    public double getAverageTagsPerPost() {
+        return tagRepository.findAverageTagsPerPost();
+    }
+
+    @Override
+    public String getMostUsedTagName() {
+        return tagRepository.findMostUsedTagName();
+    }
+    @Override
+    public List<Tag> getAllTagsWithPostCount() {
+        return tagRepository.findAllWithPostCount();
+    }
+
 }

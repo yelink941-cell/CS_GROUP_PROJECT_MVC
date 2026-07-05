@@ -92,4 +92,8 @@ public class CollectionServiceImpl implements CollectionService {
         // Repo ထဲက ရေးခဲ့တဲ့ Custom Query မက်သတ်ကို တိုက်ရိုက် လှမ်းခေါ်ပြီး ပြန်ပေးခြင်း
         return collectionRepository.findPostsByCollectionId(collectionId);
     }
+    @Override
+    public long countAllCollections() {
+        return collectionRepository.count();
+    }
 }

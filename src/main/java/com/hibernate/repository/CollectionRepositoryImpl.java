@@ -78,4 +78,10 @@ public class CollectionRepositoryImpl implements CollectionRepository {
             .setParameter("postId", postId)
             .executeUpdate();
     }
+    @Override
+    public long count() {
+        return getCurrentSession()
+                .createQuery("SELECT COUNT(c) FROM Collection c", Long.class)
+                .getSingleResult();
+    }
 }

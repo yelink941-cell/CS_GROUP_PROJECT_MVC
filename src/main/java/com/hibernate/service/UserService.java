@@ -3,7 +3,7 @@ package com.hibernate.service;
 import java.util.List;
 
 import com.hibernate.entity.User;
-
+import com.hibernate.entity.UserPreference;  // ✅ ဒီ import ကိုထည့်ပါ
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
@@ -25,8 +25,6 @@ public interface UserService {
     void updateUserRoleAndStatus(Long userId, Role role, UserStatus status);
     void softDeleteUser(Long userId);
     
-    
-
     boolean isFollowing(Long followerId, Long followingId);
     void followUser(Long followerId, Long followingId);
     void unfollowUser(Long followerId, Long followingId);
@@ -43,6 +41,10 @@ public interface UserService {
     void updatePassword(User user, String newPassword);
     long getPostCountByUserId(Long userId);
 
-	void updateUserOnlineStatus(Long userId, boolean isOnline);
+    void updateUserOnlineStatus(Long userId, boolean isOnline);
+    long countAllUsers();
+    
+    // ✅ UserPreference methods
+    UserPreference getUserPreferenceByUserId(Long userId);
+    void saveUserPreference(UserPreference preference);
 }
-

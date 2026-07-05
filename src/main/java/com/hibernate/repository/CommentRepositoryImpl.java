@@ -16,7 +16,7 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public List<Comment> findByPostId(Integer postId) {
-        // 🔴 JOIN FETCH c.user ကို ထည့်ပေးခြင်းဖြင့် User data ကိုပါ တစ်ပါတည်း Lazy မဖြစ်စေဘဲ ဆွဲထုတ်ပေးမည် 🔴
+        // JOIN FETCH c.user ကို ထည့်ပေးခြင်းဖြင့် User data ကိုပါ တစ်ပါတည်း Lazy မဖြစ်စေဘဲ ဆွဲထုတ်ပေးမည်
         return entityManager.createQuery("SELECT c FROM Comment c JOIN FETCH c.user WHERE c.post.id = :postId", Comment.class)
                 .setParameter("postId", postId)
                 .getResultList();
@@ -24,7 +24,7 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public List<Comment> findByPostIdAndDeletedAtIsNull(Integer postId) {
-        // 🔴 JOIN FETCH c.user ကို ဤနေရာတွင်လည်း ထည့်ပေးပါ 🔴
+        // JOIN FETCH c.user ကို ဤနေရာတွင်လည်း ထည့်ပေးပါ
         return entityManager.createQuery("SELECT c FROM Comment c JOIN FETCH c.user WHERE c.post.id = :postId AND c.deletedAt IS NULL", Comment.class)
                 .setParameter("postId", postId)
                 .getResultList();
@@ -64,11 +64,24 @@ public class CommentRepositoryImpl implements CommentRepository {
                 .getResultList();
     }
     
- // CommentRepositoryImpl သို့မဟုတ် Repository interface တွင်
+    // ✅ Active Comments Count by Post ID
     public int countActiveCommentsByPostId(Integer postId) {
         return entityManager.createQuery(
             "SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.deletedAt IS NULL", Long.class)
             .setParameter("postId", postId)
             .getSingleResult().intValue();
+    }
+
+    // ✅ Total Comments Count (for dashboard statistics)
+    @Override
+    public long count() {
+        try {
+            Long count = entityManager.createQuery(
+                    "SELECT COUNT(c) FROM Comment c WHERE c.deletedAt IS NULL", Long.class)
+                    .getSingleResult();
+            return count != null ? count : 0;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }

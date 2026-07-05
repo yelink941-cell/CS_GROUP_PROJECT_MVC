@@ -40,4 +40,6 @@ public interface PostRepository {
 
     List<Post> findPublishedPublicPosts();
     
+    long count(); // စုစုပေါင်း Post အရေအတွက်
+    long countByStatus(PostStatus status); // Pending Post အရေအတွက်အတွက်
 }

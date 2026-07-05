@@ -1,3 +1,8 @@
+/* ============================================
+   NAVIGATION.CSS - Fixed & Clean Version
+   ============================================ */
+
+/* ---------- Site Navigation ---------- */
 .site-nav {
     position: sticky;
     top: 0;
@@ -16,16 +21,118 @@
     align-items: center;
     justify-content: space-between;
     gap: 24px;
+    padding: 0 16px;
 }
 
+/* ---------- Brand ---------- */
 .brand {
     color: #ffffff;
     font-size: 1.15rem;
     font-weight: 800;
     text-decoration: none;
     letter-spacing: 0.01em;
+    white-space: nowrap;
 }
 
+.brand:hover {
+    color: #38bdf8;
+}
+
+/* ---------- Right Zone (Search + Links) ---------- */
+.nav-right-zone {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    flex-grow: 1;
+    flex-wrap: wrap;
+}
+
+/* ---------- Search Form ---------- */
+.nav-search-form {
+    display: flex;
+    align-items: center;
+    width: 240px;
+    margin: 0;
+}
+
+.nav-search-input {
+    width: 100%;
+    padding: 6px 14px;
+    border: 1px solid #334155;
+    background-color: #1e293b;
+    color: #ffffff;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+    outline: none;
+    font-size: 13px;
+    transition: border-color 0.2s;
+}
+
+.nav-search-input:focus {
+    border-color: #38bdf8;
+    background-color: #0f172a;
+}
+
+.nav-search-input::placeholder {
+    color: #94a3b8;
+}
+
+.nav-search-button {
+    padding: 6px 16px;
+    background-color: #0f766e;
+    color: white;
+    border: none;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.nav-search-button:hover {
+    background-color: #0d9488;
+}
+
+/* ---------- History & Collections Buttons ---------- */
+.nav-history-btn,
+.nav-collections-btn {
+    text-decoration: none;
+    font-weight: 600;
+    padding: 6px 14px;
+    background: #1e293b;
+    border-radius: 20px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.nav-history-btn {
+    color: #38bdf8;
+    border: 1px solid #334155;
+}
+
+.nav-history-btn:hover {
+    background: #334155;
+    color: #7dd3fc;
+}
+
+.nav-collections-btn {
+    color: #10b981;
+    border: 1px solid #065f46;
+    gap: 6px;
+}
+
+.nav-collections-btn:hover {
+    background: #065f46;
+    color: #6ee7b7;
+}
+
+/* ---------- Navigation Links ---------- */
 .nav-links {
     min-height: 68px;
     display: flex;
@@ -43,6 +150,7 @@
     font-size: 0.92rem;
     font-weight: 600;
     transition: background 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -52,13 +160,14 @@
 
 .nav-link-primary {
     color: #ffffff;
-    background: var(--primary);
+    background: var(--primary, #3b82f6);
 }
 
 .nav-link-primary:hover {
-    background: var(--primary-dark);
+    background: var(--primary-dark, #2563eb);
 }
 
+/* ---------- Dropdown ---------- */
 .nav-dropdown {
     position: relative;
     align-self: stretch;
@@ -72,8 +181,8 @@
     top: 100%;
     left: 0;
     z-index: 9999;
-    min-width: 320px;
-    padding: 10px 0;
+    min-width: 280px;
+    padding: 8px 0;
     overflow: hidden;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
@@ -84,19 +193,24 @@
 .nav-dropdown-menu a {
     display: block;
     padding: 11px 18px;
-    color: #ea580c;
+    color: #1e293b;
     background: #ffffff;
     text-decoration: none;
-    font-size: 0.94rem;
-    font-weight: 600;
+    font-size: 0.92rem;
+    font-weight: 500;
     line-height: 1.4;
     white-space: nowrap;
     transition: color 0.15s ease, background 0.15s ease;
 }
 
 .nav-dropdown-menu a:hover {
-    color: #c2410c;
-    background: #f3f4f6;
+    color: #0f172a;
+    background: #f1f5f9;
+}
+
+.nav-dropdown-menu a::before {
+    content: "→ ";
+    opacity: 0.5;
 }
 
 .nav-dropdown:hover .nav-dropdown-menu,
@@ -104,19 +218,137 @@
     display: block;
 }
 
-@media (max-width: 720px) {
+/* ---------- Responsive Design ---------- */
+
+/* Tablet */
+@media (max-width: 1024px) {
     .nav-inner {
-        padding: 16px 0;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 12px 16px;
+    }
+    
+    .nav-right-zone {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+    
+    .nav-search-form {
+        width: 200px;
+    }
+    
+    .nav-links {
+        min-height: 0;
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 720px) {
+    .site-nav {
+        position: relative;
+    }
+    
+    .nav-inner {
+        padding: 12px 16px;
         align-items: flex-start;
         flex-direction: column;
+        gap: 12px;
+        min-height: auto;
     }
-
+    
+    .brand {
+        font-size: 1rem;
+        width: 100%;
+    }
+    
+    .nav-right-zone {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .nav-search-form {
+        width: 100%;
+    }
+    
+    .nav-search-input {
+        flex: 1;
+    }
+    
     .nav-links {
         min-height: 0;
         justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
     }
-
+    
+    .nav-link {
+        padding: 7px 10px;
+        font-size: 0.85rem;
+    }
+    
     .nav-dropdown {
         align-self: auto;
+    }
+    
+    .nav-dropdown-menu {
+        position: static;
+        min-width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-top: 4px;
+    }
+    
+    .nav-dropdown-menu a {
+        white-space: normal;
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+    
+    .nav-history-btn,
+    .nav-collections-btn {
+        font-size: 12px;
+        padding: 5px 12px;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .nav-inner {
+        padding: 10px 12px;
+    }
+    
+    .brand {
+        font-size: 0.9rem;
+    }
+    
+    .nav-link {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .nav-link-primary {
+        padding: 5px 12px;
+    }
+    
+    .nav-search-form {
+        flex-wrap: nowrap;
+    }
+    
+    .nav-search-input {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+    
+    .nav-search-button {
+        font-size: 12px;
+        padding: 5px 12px;
     }
 }

@@ -304,4 +304,28 @@ public class PostServiceImpl implements PostService {
         return postLikeService.hasUserLiked(postId, userId);
     }
     
+ // PostServiceImpl.java တွင် ထည့်ရန်
+    @Override
+    public long countAllPosts() {
+        return postRepository.count();
+    }
+
+    @Override
+    public long countPendingPosts() {
+        return postRepository.countByStatus(PostStatus.PENDING); // Repository မှာ ဒီ method ရှိဖို့လိုပါတယ်
+    }
+    @Override
+    public List<Post> getApprovedPosts() {
+        return postRepository.findByStatus(PostStatus.PUBLISHED);
+    }
+    @Override
+    public List<Post> getRejectedPosts() {
+        return postRepository.findByStatus(PostStatus.REJECTED);
+    }
+
+    @Override
+    public long countByStatus(PostStatus status) {
+        return postRepository.countByStatus(status);
+    }
+
 }

@@ -17,4 +17,7 @@ public interface SearchService {
     
     // 📂 သမိုင်းမှတ်တမ်းကို User ID (int) ဖြင့် ပြန်လည်ဆွဲထုတ်မည့် Method
     List<SearchHistory> getSearchHistoryByUserId(int userId);
+    // ✅ New method for suggestions
+    List<String> getSearchSuggestions(int userId, String query);
+    
 }

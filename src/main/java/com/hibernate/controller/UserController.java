@@ -3,16 +3,18 @@ package com.hibernate.controller;
 import com.hibernate.dto.RegistrationDto;
 import com.hibernate.entity.Post;
 import com.hibernate.entity.User;
+import com.hibernate.entity.UserPreference;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
-import com.hibernate.service.UserService;
-import com.hibernate.service.PostService;    
+import com.hibernate.service.CollectionService;
+import com.hibernate.service.CommentService;
 import com.hibernate.service.PostLikeService;
+import com.hibernate.service.PostService;
+import com.hibernate.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Base64;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -31,23 +33,36 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class UserController {
 
     private final UserService userService;
     private final JavaMailSender mailSender;
-    private final PostService postService;     
-    private final PostLikeService postLikeService; 
+    private final PostService postService;
+    private final PostLikeService postLikeService;
+    private final CommentService commentService;
+    private final CollectionService collectionService;  // ✅ CollectionService ထည့်ပါ
 
-    public UserController(UserService userService, JavaMailSender mailSender,PostService postService, PostLikeService postLikeService) {
+    // Constructor
+    public UserController(UserService userService, 
+                          JavaMailSender mailSender,
+                          PostService postService,
+                          PostLikeService postLikeService,
+                          CommentService commentService,
+                          CollectionService collectionService) {
         this.userService = userService;
         this.mailSender = mailSender;
         this.postService = postService;
         this.postLikeService = postLikeService;
+        this.commentService = commentService;
+        this.collectionService = collectionService;
     }
 
+    // =========================================================
+    // REGISTER
+    // =========================================================
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("registrationDto", new RegistrationDto());
@@ -99,6 +114,9 @@ public class UserController {
         return "register";
     }
 
+    // =========================================================
+    // LOGIN
+    // =========================================================
     @GetMapping("/login")
     public String showLoginForm(@RequestParam(value = "error", required = false) String error, Model model) {
         if ("inactive".equals(error)) {
@@ -116,28 +134,60 @@ public class UserController {
             User user = userService.findUserByEmail(identifier); 
             
             if (user != null) {
-                // 🔴 LOGIC BLOCK: If user account is marked INACTIVE, block access immediately
-                if (user.getStatus() == com.hibernate.entity.enums.UserStatus.INACTIVE) {
-                    session.invalidate(); // Clear out session variables
-                    SecurityContextHolder.clearContext(); // Disconnect Spring Security authentication
+                // LOGIC BLOCK: If user account is marked INACTIVE, block access immediately
+                if (user.getStatus() == UserStatus.INACTIVE) {
+                    session.invalidate();
+                    SecurityContextHolder.clearContext();
                     return;
                 }
                 
                 if (session.getAttribute("currentUser") == null) {
                     session.setAttribute("currentUser", user);
                     session.setAttribute("userId", user.getId());
+                    
+                    // ✅ Login ဝင်တာနဲ့ Default Collection Create လုပ်ပါ
+                    createDefaultCollectionIfNotExists(user);
                 }
             }
         }
     }
 
+    // ✅ Default Collection Auto Create Method
+    private void createDefaultCollectionIfNotExists(User user) {
+        try {
+            Long userId = user.getId();
+            
+            // User ရဲ့ Collection တွေကိုယူ
+            List<com.hibernate.entity.Collection> collections = collectionService.getCollectionsByUserId(userId);
+            
+            // Collection မရှိဘူးဆိုရင် Default Collection Create လုပ်ပါ
+            if (collections.isEmpty()) {
+                collectionService.createCollection(
+                    "My Collection", 
+                    "A collection of my favorite cheat sheets.", 
+                    false,
+                    userId
+                );
+                System.out.println("✅ Default collection created for user: " + user.getUsername());
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error creating default collection: " + e.getMessage());
+        }
+    }
+
+    // =========================================================
+    // FORGOT PASSWORD
+    // =========================================================
     @GetMapping("/forgot-password")
     public String showForgotPasswordForm() {
         return "forgot-password";
     }
 
     @PostMapping("/forgot-password")
-    public String processForgotPassword(@RequestParam("email") String email, Model model) {
+    public String processForgotPassword(
+            @RequestParam("email") String email,
+            Model model) {
+
         User user = userService.findUserByEmail(email);
 
         if (user == null) {
@@ -218,6 +268,9 @@ public class UserController {
         return "redirect:/login?resetSuccess=true";
     }
 
+    // =========================================================
+    // PROFILE
+    // =========================================================
     @GetMapping("/profile")
     public String showUserProfilePage(HttpSession session, Model model) {
        
@@ -257,7 +310,7 @@ public class UserController {
         List<Post> userPosts = postService.getPostsByAuthorId(profileOwnerId);
         model.addAttribute("userPosts", userPosts);
 
-        // --- 3. OPTION A FIX: Dynamically filter what platform sheets the user LIKED ---
+        // --- 3. Dynamically filter what platform sheets the user LIKED ---
         List<Post> allPosts = postService.getAllPosts();
         List<Post> savedPosts = new java.util.ArrayList<>();
         
@@ -294,6 +347,9 @@ public class UserController {
     @GetMapping("/profile/edit")
     public String showEditProfilePage(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         UserProfile profile = userService.getUserProfileByUserId(currentUser.getId());
         if (profile != null && profile.getAvatar() != null) {
             String base64Avatar = Base64.getEncoder().encodeToString(profile.getAvatar());
@@ -311,6 +367,9 @@ public class UserController {
             Model model) {
         
         User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
 
         try {
             UserProfile existingProfile = userService.getUserProfileByUserId(currentUser.getId());
@@ -328,6 +387,7 @@ public class UserController {
                 userService.updateUserProfile(existingProfile);
             } else {
                 updatedProfile.setUser(currentUser);
+                userService.updateUserProfile(updatedProfile);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -337,12 +397,59 @@ public class UserController {
         
         return "redirect:/profile";
     }
-    
-    
-    
-    @PostMapping("/user/follow")
-    public String followAction(@RequestParam("targetId") Long targetId,HttpServletRequest request, HttpSession session) {
+
+    // =========================================================
+    // SETTINGS
+    // =========================================================
+    @GetMapping("/settings")
+    public String showSettingsSpace(HttpSession session, Model model) {
         User current = (User) session.getAttribute("currentUser");
+        if (current == null) {
+            return "redirect:/login";
+        }
+        UserPreference pref = userService.getUserPreferenceByUserId(current.getId());
+        if (pref == null) {
+            pref = new UserPreference();
+        }
+
+        model.addAttribute("userPreference", pref);
+        return "profile/account-settings";
+    }
+
+    @PostMapping("/settings/save")
+    public String saveSettingsAction(
+            @ModelAttribute("userPreference") UserPreference incomingPref,
+            HttpSession session) {
+        User current = (User) session.getAttribute("currentUser");
+        if (current == null) {
+            return "redirect:/login";
+        }
+        UserPreference existing = userService.getUserPreferenceByUserId(current.getId());
+        if (existing != null) {
+            existing.setTheme(incomingPref.getTheme());
+            existing.setLanguageCode(incomingPref.getLanguageCode());
+            existing.setEmailNotifications(incomingPref.getEmailNotifications());
+            existing.setPushNotifications(incomingPref.getPushNotifications());
+            existing.setAllowMessages(incomingPref.getAllowMessages());
+            existing.setProfileVisibility(incomingPref.getProfileVisibility());
+            userService.saveUserPreference(existing);
+        } else {
+            incomingPref.setUser(current);
+            userService.saveUserPreference(incomingPref);
+        }
+
+        return "redirect:/settings";
+    }
+
+    // =========================================================
+    // FOLLOW / UNFOLLOW
+    // =========================================================
+    @PostMapping("/user/follow")
+    public String followAction(@RequestParam("targetId") Long targetId, HttpServletRequest request, HttpSession session) {
+        User current = (User) session.getAttribute("currentUser");
+        if (current == null) {
+            return "redirect:/login";
+        }
         userService.followUser(current.getId(), targetId);
         
         String referer = request.getHeader("Referer");
@@ -350,23 +457,54 @@ public class UserController {
     }
 
     @PostMapping("/user/unfollow")
-    public String unfollowAction(@RequestParam("targetId") Long targetId,HttpServletRequest request, HttpSession session) {
+    public String unfollowAction(@RequestParam("targetId") Long targetId, HttpServletRequest request, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
+        if (current == null) {
+            return "redirect:/login";
+        }
         userService.unfollowUser(current.getId(), targetId);
         
         String referer = request.getHeader("Referer");
         return "redirect:" + (referer != null ? referer : "/posts/public");
     }
 
+    // =========================================================
+    // ADMIN - DASHBOARD
+    // =========================================================
+    @GetMapping("/admin/dashboard")
+    public String showAdminDashboard(HttpSession session, Model model) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+        
+        // Statistics
+        model.addAttribute("totalPosts", postService.countAllPosts());
+        model.addAttribute("pendingPosts", postService.countPendingPosts());
+        model.addAttribute("totalUsers", userService.countAllUsers());
+        model.addAttribute("totalComments", commentService.countAllComments());
+        
+        return "admin/admin-dashboard";
+    }
+
+    // =========================================================
+    // ADMIN - USER MANAGEMENT
+    // =========================================================
     @GetMapping("/admin/users")
     public String listAllUsers(
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "search", required = false) String search,
-            Model model) {
+            Model model,
+            HttpSession session) {
+        
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
+            return "redirect:/login";
+        }
         
         int pageSize = 10; 
 
-        // 🛠️ Pass the search parameter right down to the database query layers
         List<User> userList = userService.getAllUsersPaginated(page, pageSize, search);
         long totalUsers = userService.getTotalUserCount(search);
         
@@ -378,36 +516,84 @@ public class UserController {
         model.addAttribute("users", userList);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalUsers", totalUsers);
+        
+        // Statistics for cards
+        long activeUsers = userList.stream()
+                .filter(u -> u.getStatus() != null && u.getStatus() == UserStatus.ACTIVE)
+                .count();
+        model.addAttribute("activeUsers", activeUsers);
+        
+        long inactiveUsers = userList.stream()
+                .filter(u -> u.getStatus() != null && u.getStatus() == UserStatus.INACTIVE)
+                .count();
+        model.addAttribute("inactiveUsers", inactiveUsers);
+        model.addAttribute("suspendedUsers", 0);
         
         return "admin/admin-user-management"; 
     }
-    @GetMapping("/admin/dashboard")
-    public String showAdminDashboard() {
-        return "admin/admin-dashboard"; 
-    }
 
+    // =========================================================
+    // ADMIN - UPDATE USER STATUS & ROLE
+    // =========================================================
     @PostMapping("/admin/users/update-status")
     public String updateStatusAndRole(
             @RequestParam("userId") Long userId,
             @RequestParam("role") String roleStr,
-            @RequestParam("status") String statusStr) {
-
-        userService.updateUserRoleAndStatus(userId, Role.valueOf(roleStr), UserStatus.valueOf(statusStr));
+            @RequestParam("status") String statusStr,
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
+        
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
+            return "redirect:/login";
+        }
+        
+        try {
+            userService.updateUserRoleAndStatus(userId, Role.valueOf(roleStr), UserStatus.valueOf(statusStr));
+            redirectAttributes.addFlashAttribute("successMessage", "User updated successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error updating user: " + e.getMessage());
+        }
         return "redirect:/admin/users";
     }
 
+    // =========================================================
+    // ADMIN - EDIT USER
+    // =========================================================
     @GetMapping("/admin/users/edit")
-    public String showAdminEditUserPage(@RequestParam("id") Long userId, Model model) {
+    public String showAdminEditUserPage(@RequestParam("id") Long userId, Model model, HttpSession session) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
+            return "redirect:/login";
+        }
         model.addAttribute("targetUser", userService.getUserById(userId));
         return "admin/admin-edit-user";
     }
 
+    // =========================================================
+    // ADMIN - DELETE USER
+    // =========================================================
     @GetMapping("/admin/users/delete")
-    public String deleteUserAccount(@RequestParam("id") Long userId) {
-        userService.softDeleteUser(userId);
+    public String deleteUserAccount(@RequestParam("id") Long userId, 
+                                    RedirectAttributes redirectAttributes,
+                                    HttpSession session) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
+            return "redirect:/login";
+        }
+        try {
+            userService.softDeleteUser(userId);
+            redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting user: " + e.getMessage());
+        }
         return "redirect:/admin/users";
     }
 
+    // =========================================================
+    // LOGOUT
+    // =========================================================
     @GetMapping("/logout")
     public String processLogout(HttpSession session) {
         User currentUser = (User) session.getAttribute("currentUser");

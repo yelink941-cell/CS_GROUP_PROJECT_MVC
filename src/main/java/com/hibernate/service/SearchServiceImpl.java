@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -100,5 +102,38 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public void deleteHistory(int historyId) {
         searchHistoryRepository.deleteById(historyId);
+    }
+    @Override
+    public List<String> getSearchSuggestions(int userId, String query) {
+        String searchParam = "%" + query.trim().toLowerCase() + "%";
+        
+        // Get from search history
+        List<String> historySuggestions = searchHistoryRepository.findByUserIdAndKeywordLike(userId, searchParam);
+        
+        // Also get from categories
+        List<String> categorySuggestions = sessionFactory.getCurrentSession()
+                .createQuery("SELECT LOWER(c.name) FROM Category c WHERE LOWER(c.name) LIKE :kw", String.class)
+                .setParameter("kw", searchParam)
+                .setMaxResults(5)
+                .getResultList();
+        
+        // Also get from posts
+        List<String> postSuggestions = sessionFactory.getCurrentSession()
+                .createQuery("SELECT LOWER(p.title) FROM Post p WHERE LOWER(p.title) LIKE :kw", String.class)
+                .setParameter("kw", searchParam)
+                .setMaxResults(5)
+                .getResultList();
+        
+        // Combine and deduplicate
+        List<String> allSuggestions = new java.util.ArrayList<>();
+        allSuggestions.addAll(historySuggestions);
+        allSuggestions.addAll(categorySuggestions);
+        allSuggestions.addAll(postSuggestions);
+        
+        // Remove duplicates and limit to 10
+        return allSuggestions.stream()
+                .distinct()
+                .limit(10)
+                .collect(Collectors.toList());
     }
 }

@@ -268,4 +268,18 @@ public class PostRepositoryImpl implements PostRepository {
                 .setParameter("visibility", PostVisibility.PUBLIC)
                 .getResultList();
     }
+    @Override
+    public long count() {
+        return getCurrentSession()
+                .createQuery("SELECT COUNT(p) FROM Post p WHERE p.deletedAt IS NULL", Long.class)
+                .getSingleResult();
+    }
+
+    @Override
+    public long countByStatus(PostStatus status) {
+        return getCurrentSession()
+                .createQuery("SELECT COUNT(p) FROM Post p WHERE p.status = :status AND p.deletedAt IS NULL", Long.class)
+                .setParameter("status", status)
+                .getSingleResult();
+    }
 }

@@ -10,6 +10,7 @@ import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.RatingService;
+import com.hibernate.service.UserService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,27 +24,39 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.ui.Model;
 
 @Controller
 @RequiredArgsConstructor
 public class HomePageController {
     private final PostService postService;
+    private final PostContentService postContentService;
     private final PostFileService postFileService;
     private final CollectionService collectionService; 
-    private final PostContentService postContentService;
     private final CommentService commentService;
     private final PostLikeService postLikeService;
     private final BookmarkService bookmarkService;
     private final RatingService ratingService;
+    private final UserService userService; 
 
+    // =========================================================
+    // 1. HOME PAGE (index)
+    // =========================================================
     @GetMapping("/")
-    public String homePage(Model model, HttpSession session) {
+    public String home(HttpSession session, Model model) {
+        // Get published posts
         model.addAttribute("posts", postService.getPublishedPublicPosts());
-
+        
+        // Statistics
+        long totalPosts = postService.countAllPosts();
+        long totalCollections = collectionService.countAllCollections();
+        model.addAttribute("totalPosts", totalPosts);
+        model.addAttribute("totalCollections", totalCollections);
+        
+        // Check if user is logged in
         Object currentUser = session.getAttribute("currentUser");
         if (currentUser == null) {
             currentUser = session.getAttribute("user");
@@ -52,9 +65,13 @@ public class HomePageController {
             model.addAttribute("currentUser", currentUser);
             model.addAttribute("user", currentUser);
         }
-        return "index";
+        
+        return "index"; 
     }
 
+    // =========================================================
+    // 2. POST DETAILS (by slug)
+    // =========================================================
     @GetMapping("/posts/public/details")
     public String publicPostDetails(@RequestParam("slug") String slug, Model model, HttpSession session) {
         return publicPostDetailsBySlug(slug, model, session);
@@ -65,13 +82,11 @@ public class HomePageController {
         return postService.getPostBySlug(slug)
                 .map(post -> {
                     model.addAttribute("post", post);
-                 // PostContentService (စာလုံးအကြီး) နေရာတွင် postContentService (စာလုံးအသေး) ကို သုံးပါ
                     model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
                     model.addAttribute("postFiles", postFileService.getFilesByPostId(post.getId()));
-
-                    model.addAttribute("currentPostSlug", slug);
-
-                    // 🟢 userId ကို session ထဲကနေ ထုတ်ယူပြီး fallback လုပ်ပေးခြင်း
+                    model.addAttribute("currentPostSlug", slug); 
+                    
+                    // Get userId from session
                     Long userId = (Long) session.getAttribute("userId");
 
                     if (userId == null) {
@@ -86,19 +101,19 @@ public class HomePageController {
                         }
                     }
 
-                    // 🟢 Comments (parent + nested replies) - comment box ပေါ်ရန် လိုအပ်ပါသည်
+                    // Comments (parent + nested replies)
                     model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
                     model.addAttribute("totalComments", commentService.getTotalActiveComments(post.getId()));
 
-                    // 🟢 Like count
+                    // Like count
                     model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
 
-                    // 🟢 Rating data
+                    // Rating data
                     model.addAttribute("averageRating", ratingService.getAverageRating(post.getId()));
                     model.addAttribute("totalRatings", ratingService.getRatingCount(post.getId()));
 
                     if (userId != null) {
-                        // 🟢 Logged-in user ၏ state များ - comment box / rating stars / button color အတွက်
+                        // Logged-in user state
                         model.addAttribute("userLoggedIn", userId);
                         model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
                         model.addAttribute("hasUserLiked", postLikeService.hasUserLiked(post.getId(), userId));
@@ -111,6 +126,9 @@ public class HomePageController {
                 .orElse("redirect:/posts/public");
     }
 
+    // =========================================================
+    // 3. VIEW FILE
+    // =========================================================
     @GetMapping("/posts/{slug}/files/{fileId}")
     public ResponseEntity<?> viewPublicFile(
             @PathVariable String slug,

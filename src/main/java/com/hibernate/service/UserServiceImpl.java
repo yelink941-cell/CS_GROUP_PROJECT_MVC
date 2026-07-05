@@ -12,17 +12,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hibernate.entity.Follower;
 import com.hibernate.entity.User;
+import com.hibernate.entity.UserPreference;      // ✅ UserPreference import ထည့်ပါ
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
+import com.hibernate.repository.UserPreferenceRepository;  // ✅ UserPreferenceRepository import ထည့်ပါ
 import com.hibernate.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final SessionFactory sessionFactory;
     private final UserRepository userRepository;
+    private final UserPreferenceRepository userPreferenceRepository;  // ✅ UserPreferenceRepository ထည့်ပါ
 
     private Session getCurrentSession() {
         return sessionFactory.getCurrentSession();
@@ -120,7 +124,24 @@ public class UserServiceImpl implements UserService {
         return getCurrentSession().get(User.class, userId);
     }
     
-    
+    // =========================================================
+    // ✅ UserPreference Methods
+    // =========================================================
+    @Override
+    @Transactional(readOnly = true)
+    public UserPreference getUserPreferenceByUserId(Long userId) {
+        return userPreferenceRepository.findByUserId(userId).orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public void saveUserPreference(UserPreference preference) {
+        if (preference.getId() == null) {
+            userPreferenceRepository.save(preference);
+        } else {
+            userPreferenceRepository.update(preference);
+        }
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -132,7 +153,7 @@ public class UserServiceImpl implements UserService {
                 .setParameter("fId", followerId)
                 .setParameter("gId", followingId) 
                 .uniqueResult();
-        return count > 0;
+        return count != null && count > 0;
     }
 
     @Override
@@ -184,7 +205,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<User> getFollowersByUserId(Long userId) {
-        // Grab all User objects who are following this target userId
         String hql = "SELECT f.follower FROM Follower f LEFT JOIN FETCH f.follower.profile WHERE f.following.id = :userId";
         return getCurrentSession().createQuery(hql, User.class)
                 .setParameter("userId", userId)
@@ -194,7 +214,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<User> getFollowingByUserId(Long userId) {
-        // Grab all User objects that this specific userId is actively following
         String hql = "SELECT f.following FROM Follower f LEFT JOIN FETCH f.following.profile WHERE f.follower.id = :userId";
         return getCurrentSession().createQuery(hql, User.class)
                 .setParameter("userId", userId)
@@ -209,7 +228,6 @@ public class UserServiceImpl implements UserService {
                 .getResultList();
     }
     
- // 🛠️ Updated paginated method with smart parameter check logic
     @Override
     @Transactional(readOnly = true)
     public List<User> getAllUsersPaginated(int page, int pageSize, String search) {
@@ -218,7 +236,6 @@ public class UserServiceImpl implements UserService {
         StringBuilder hql = new StringBuilder("FROM User u LEFT JOIN FETCH u.profile ");
         boolean hasSearch = (search != null && !search.trim().isEmpty());
         
-        // Group conditions inside brackets so OR clauses don't break row filters
         if (hasSearch) {
             hql.append("WHERE u.deletedAt IS NULL AND (u.username LIKE :search OR u.email LIKE :search OR u.profile.fullName LIKE :search) ");
         } else {
@@ -236,7 +253,6 @@ public class UserServiceImpl implements UserService {
                     .getResultList();
     }
 
-    // 🛠️ Updated helper counter method with matching logic grouping
     @Override
     @Transactional(readOnly = true)
     public long getTotalUserCount(String search) {
@@ -278,6 +294,7 @@ public class UserServiceImpl implements UserService {
             session.merge(user);
         }
     }
+    
     @Override
     @Transactional(readOnly = true)
     public long getPostCountByUserId(Long userId) {
@@ -288,6 +305,7 @@ public class UserServiceImpl implements UserService {
                 .uniqueResult();
         return count != null ? count : 0L;
     }
+    
     @Override
     @Transactional
     public void updateUserOnlineStatus(Long userId, boolean isOnline) {
@@ -300,5 +318,13 @@ public class UserServiceImpl implements UserService {
             session.merge(user);
         }
     }
+    
+    @Override
+    public long countAllUsers() {
+        try {
+            return userRepository.count();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 }
-

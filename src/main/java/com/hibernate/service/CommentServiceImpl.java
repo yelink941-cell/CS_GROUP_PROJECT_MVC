@@ -135,4 +135,13 @@ public class CommentServiceImpl implements CommentService {
     public int getTotalActiveParentComments(Integer postId) {
         return getActiveParentComments(postId).size();
     }
+    @Override
+    public long countAllComments() {
+        try {
+            return commentRepository.count();
+        } catch (Exception e) {
+            System.err.println("Error counting comments: " + e.getMessage());
+            return 0;
+        }
+    }
 }

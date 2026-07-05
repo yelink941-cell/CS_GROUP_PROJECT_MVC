@@ -64,4 +64,11 @@ public interface PostService {
     
     boolean hasUserLiked(Integer postId, Long userId);
     
+    List<Post> getApprovedPosts();
+    List<Post> getRejectedPosts();
+    long countAllPosts();
+    long countByStatus(PostStatus status);
+    
+    long countPendingPosts();
+    
 }

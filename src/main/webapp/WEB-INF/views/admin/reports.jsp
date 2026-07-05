@@ -8,78 +8,530 @@
 <%@ page import="com.hibernate.entity.enums.ReportStatus" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Report Logs Queue</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Logs</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin.css">
+    
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { display: flex; min-height: 100vh; background-color: #f8fafc; color: #1e293b; }
-        .sidebar { width: 260px; background-color: #1e293b; color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; }
-        .sidebar-brand { padding: 24px; font-size: 20px; font-weight: bold; background-color: #0f172a; text-align: center; color: #38bdf8; }
-        .sidebar-menu { list-style: none; flex-grow: 1; padding: 20px 0; }
-        .sidebar-item { margin: 4px 15px; }
-        .sidebar-link { display: flex; align-items: center; padding: 12px 16px; color: #cbd5e1; text-decoration: none; border-radius: 6px; font-size: 15px; transition: all 0.2s; }
-        .sidebar-link:hover { background-color: #334155; color: #fff; }
-        .sidebar-link.active { background-color: #0284c7; color: #fff; font-weight: 600; }
-        .main-workspace { margin-left: 260px; flex-grow: 1; display: flex; flex-direction: column; }
-        .top-navbar { height: 70px; background-color: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .nav-title { font-size: 18px; font-weight: 600; color: #475569; }
-        .user-profile-badge { display: flex; align-items: center; gap: 10px; }
-        .badge { background-color: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-        .content-area { padding: 40px; max-width: 1200px; width: 100%; margin: 0 auto; }
+        /* ============================================
+           REPORT LOGS - ADDITIONAL STYLES
+           ============================================ */
         
-        .section-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 40px; overflow: hidden; }
-        .section-header { background: #0f172a; color: white; padding: 18px 24px; font-size: 18px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-        .section-body { padding: 0; }
+        /* Alert Messages */
+        .alert-success {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #16a34a;
+        }
         
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: #f1f5f9; padding: 16px 20px; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; font-size: 14px; text-transform: uppercase; }
-        td { padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #334155; vertical-align: top; }
-        tr:hover { background: #f8fafc; }
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
         
-        .reason-badge { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: inline-block; }
-        .status-badge { background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: inline-block; }
+        /* Welcome Card */
+        .welcome-card {
+            background: #ffffff;
+            padding: 30px 35px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-left: 8px solid #ef4444;
+            margin-bottom: 30px;
+        }
         
-        .action-cell { display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn { padding: 8px 14px; border: none; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; }
-        .btn-dismiss { background-color: #cbd5e1; color: #334155; }
-        .btn-dismiss:hover { background-color: #94a3b8; color: white; }
-        .btn-resolve { background-color: #ef4444; color: white; }
-        .btn-resolve:hover { background-color: #dc2626; }
+        .welcome-card h2 {
+            font-size: 24px;
+            color: #1e293b;
+            margin: 0 0 8px 0;
+        }
         
-        .input-reason { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 150px; margin-right: 5px; }
+        .welcome-card p {
+            color: #64748b;
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
         
-        .no-data { padding: 30px; text-align: center; color: #64748b; font-style: italic; }
-        .btn-logout { background-color: #64748b; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-size: 14px; }
-        .btn-logout:hover { background-color: #475569; }
-
-        .view-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-        .view-tab { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #475569; background: #e2e8f0; transition: all 0.2s; }
-        .view-tab:hover { background: #cbd5e1; color: #1e293b; }
-        .view-tab.active { background: #0284c7; color: white; }
-
-        .type-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-        .type-tab { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #475569; background: #f1f5f9; border: 2px solid #e2e8f0; transition: all 0.2s; }
-        .type-tab:hover { border-color: #94a3b8; color: #1e293b; }
-        .type-tab.active { background: #0f172a; border-color: #0f172a; color: white; }
-
-        .status-resolved { background: #dcfce7; color: #166534; }
-        .status-dismissed { background: #e2e8f0; color: #475569; }
-        .status-other { background: #fef3c7; color: #92400e; }
-        .date-meta { font-size: 12px; color: #64748b; margin-top: 6px; }
-
+        /* Stats Cards */
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .report-stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-left: 6px solid #ef4444;
+            transition: all 0.3s ease;
+        }
+        
+        .report-stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .report-stat-card.blue { border-left-color: #3b82f6; }
+        .report-stat-card.green { border-left-color: #10b981; }
+        .report-stat-card.orange { border-left-color: #f59e0b; }
+        .report-stat-card.purple { border-left-color: #8b5cf6; }
+        .report-stat-card.red { border-left-color: #ef4444; }
+        
+        .report-stat-number {
+            font-size: 30px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        
+        .report-stat-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        .report-stat-icon {
+            float: right;
+            font-size: 26px;
+            opacity: 0.25;
+        }
+        
+        /* Section Cards */
+        .section-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header .count-badge {
+            font-size: 13px;
+            font-weight: 600;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 4px 16px;
+            border-radius: 20px;
+        }
+        
+        .section-body {
+            padding: 0;
+        }
+        
+        /* View Tabs */
+        .view-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .view-tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #475569;
+            background: #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .view-tab:hover {
+            background: #cbd5e1;
+            color: #1e293b;
+        }
+        
+        .view-tab.active {
+            background: #0284c7;
+            color: white;
+        }
+        
+        /* Type Tabs */
+        .type-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .type-tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #475569;
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .type-tab:hover {
+            border-color: #94a3b8;
+            color: #1e293b;
+        }
+        
+        .type-tab.active {
+            background: #0f172a;
+            border-color: #0f172a;
+            color: white;
+        }
+        
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+        
+        .data-table thead {
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .data-table th {
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #475569;
+            white-space: nowrap;
+        }
+        
+        .data-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Reason Badge */
+        .reason-badge {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            border: 1px solid #fecaca;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-resolved {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-dismissed {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        .status-other {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .date-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+        
+        /* Comment Preview */
+        .comment-preview {
+            background: #f8fafc;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            border-left: 3px solid #3b82f6;
+            color: #475569;
+            margin: 0;
+            font-style: italic;
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .comment-meta {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+            display: block;
+        }
+        
+        /* Action Buttons */
+        .action-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .action-btn.dismiss {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .action-btn.dismiss:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        
+        .action-btn.resolve {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .action-btn.resolve:hover {
+            background: #dc2626;
+        }
+        
+        .action-btn.resolve:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Input */
+        .input-reason {
+            padding: 6px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 12px;
+            width: 140px;
+            transition: border-color 0.2s;
+            background: #f8fafc;
+        }
+        
+        .input-reason:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .input-reason::placeholder {
+            color: #94a3b8;
+            font-style: italic;
+        }
+        
+        /* Action Cell */
+        .action-cell {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        /* No Data */
+        .no-data {
+            padding: 40px 20px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 15px;
+            background: #fafcff;
+        }
+        
+        .no-data::before {
+            content: "📭 ";
+        }
+        
+        .btn-logout {
+            background-color: #64748b;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .btn-logout:hover {
+            background-color: #475569;
+        }
+        
         /* Grouped Reports UI Styles */
-        .count-badge { background: #ef4444; color: white; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
-        .reason-pill { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 4px; margin-bottom: 4px; display: inline-block; }
-        .btn-toggle-details { background: #f1f5f9; color: #0284c7; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; margin-top: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s; }
-        .btn-toggle-details:hover { background: #e2e8f0; color: #0369a1; }
-        .details-row { display: none; background: #f8fafc; }
-        .details-container { padding: 16px 20px; border-top: 1px dashed #cbd5e1; }
-        .details-table { width: 100%; margin-top: 8px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background: white; border-collapse: collapse; }
-        .details-table th { background: #f1f5f9; font-size: 12px; padding: 10px; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; color: #475569; }
-        .details-table td { padding: 10px; font-size: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+        .count-badge-group {
+            background: #ef4444;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .reason-pill {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 4px;
+            margin-bottom: 4px;
+            display: inline-block;
+        }
+        
+        .btn-toggle-details {
+            background: #f1f5f9;
+            color: #0284c7;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+        
+        .btn-toggle-details:hover {
+            background: #e2e8f0;
+            color: #0369a1;
+        }
+        
+        .details-row {
+            display: none;
+            background: #f8fafc;
+        }
+        
+        .details-container {
+            padding: 16px 20px;
+            border-top: 1px dashed #cbd5e1;
+        }
+        
+        .details-table {
+            width: 100%;
+            margin-top: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            background: white;
+            border-collapse: collapse;
+        }
+        
+        .details-table th {
+            background: #f1f5f9;
+            font-size: 12px;
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            text-transform: uppercase;
+            color: #475569;
+        }
+        
+        .details-table td {
+            padding: 10px;
+            font-size: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .report-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .report-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-table {
+                min-width: 700px;
+            }
+            
+            .welcome-card {
+                padding: 20px;
+            }
+            
+            .welcome-card h2 {
+                font-size: 20px;
+            }
+            
+            .action-cell {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .input-reason {
+                width: 100%;
+            }
+            
+            .action-btn {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+        }
     </style>
     <script>
         function toggleDetails(id) {
@@ -113,52 +565,65 @@
     boolean isPostType = "posts".equals(reportType);
     boolean isHistoryView = "history".equals(reportView);
     String ctx = request.getContextPath();
+    
+    int totalPostReports = postReports != null ? postReports.size() : 0;
+    int totalCommentReports = commentReports != null ? commentReports.size() : 0;
+    int totalReports = totalPostReports + totalCommentReports;
 %>
 
+    <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="sidebar-brand">CheatSheet Admin Panel &#128081;</div>
+        <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link">
-                    <span>&#128202; Core Dashboard</span>
+                    <span>📊 Core Dashboard</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/categories" class="sidebar-link">
-                    <span>&#128451; Category Management</span>
+                    <span>📁 Category Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
+                    <span>🏷️ Tags Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
-                    <span>&#128221; Post Management</span>
+                    <span>📄 Post Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
-                    <span>&#9203; Pending Posts</span>
+                    <span>⏳ Pending Posts</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/comments" class="sidebar-link">
-                    <span>&#128172; Comment Management</span>
+                    <span>💬 Comment Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
-                    <span>&#128101; User Management</span>
+                    <span>👥 User Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link active">
-                    <span>&#128680; Report Logs</span>
+                    <span>🚨 Report Logs</span>
                 </a>
             </li>
         </ul>
     </aside>
 
+    <!-- Main Workspace -->
     <div class="main-workspace">
+        
+        <!-- Top Navbar -->
         <header class="top-navbar">
-            <div class="nav-title"><%= isPostType ? "Post Report Logs" : "Comment Report Logs" %></div>
+            <div class="nav-title"><%= isPostType ? "📄 Post Report Logs" : "💬 Comment Report Logs" %></div>
             <div class="user-profile-badge">
                 <span>Welcome, <strong><%= displayUsername %></strong></span>
                 <span class="badge"><%= displayRole %></span>
@@ -166,29 +631,72 @@
             </div>
         </header>
 
+        <!-- Content Area -->
         <main class="content-area">
+            
+            <!-- Welcome Card -->
+            <div class="welcome-card">
+                <h2>🚨 Report Logs</h2>
+                <p>Review and manage all reported content. Dismiss false reports or resolve legitimate ones.</p>
+            </div>
 
+            <!-- Success/Error Messages -->
+            <c:if test="${not empty successMessage}">
+                <div class="alert-success">✅ ${successMessage}</div>
+            </c:if>
+            
+            <c:if test="${not empty errorMessage}">
+                <div class="alert-error">❌ ${errorMessage}</div>
+            </c:if>
+
+            <!-- Statistics Cards -->
+            <div class="report-stats">
+                <div class="report-stat-card">
+                    <span class="report-stat-icon">🚨</span>
+                    <div class="report-stat-number"><%= totalReports %></div>
+                    <div class="report-stat-label">Total Reports</div>
+                </div>
+                <div class="report-stat-card blue">
+                    <span class="report-stat-icon">📄</span>
+                    <div class="report-stat-number"><%= totalPostReports %></div>
+                    <div class="report-stat-label">Post Reports</div>
+                </div>
+                <div class="report-stat-card orange">
+                    <span class="report-stat-icon">💬</span>
+                    <div class="report-stat-number"><%= totalCommentReports %></div>
+                    <div class="report-stat-label">Comment Reports</div>
+                </div>
+                <div class="report-stat-card green">
+                    <span class="report-stat-icon">✅</span>
+                    <div class="report-stat-number">0</div>
+                    <div class="report-stat-label">Resolved Today</div>
+                </div>
+            </div>
+
+            <!-- Type Tabs -->
             <div class="type-tabs">
                 <a href="<%= ctx %>/admin/reports?type=posts&view=<%= reportView %>"
-                   class="type-tab <%= isPostType ? "active" : "" %>">&#128196; Post Reports</a>
+                   class="type-tab <%= isPostType ? "active" : "" %>">📄 Post Reports</a>
                 <a href="<%= ctx %>/admin/reports?type=comments&view=<%= reportView %>"
-                   class="type-tab <%= !isPostType ? "active" : "" %>">&#128172; Comment Reports</a>
+                   class="type-tab <%= !isPostType ? "active" : "" %>">💬 Comment Reports</a>
             </div>
 
+            <!-- View Tabs -->
             <div class="view-tabs">
                 <a href="<%= ctx %>/admin/reports?type=<%= reportType %>&view=queue"
-                   class="view-tab <%= !isHistoryView ? "active" : "" %>">&#128203; Pending Queue</a>
+                   class="view-tab <%= !isHistoryView ? "active" : "" %>">📥 Pending Queue</a>
                 <a href="<%= ctx %>/admin/reports?type=<%= reportType %>&view=history"
-                   class="view-tab <%= isHistoryView ? "active" : "" %>">&#128337; History</a>
+                   class="view-tab <%= isHistoryView ? "active" : "" %>">📜 History</a>
             </div>
             
-            <% if (isPostType) { %>
             <!-- POST REPORTS -->
+            <% if (isPostType) { %>
             <div class="section-card">
                 <div class="section-header">
-                    <span><%= isHistoryView ? "&#128218; Post Report History" : "&#128196; Pending Grouped Post Reports" %></span>
-                    <span style="font-size: 13px; font-weight: normal; background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 9999px;">
-                        <%= isHistoryView ? (postReports != null ? postReports.size() : 0) : (groupedPostReports != null ? groupedPostReports.size() : 0) %> <%= isHistoryView ? "records" : "reported posts" %>
+                    <span><%= isHistoryView ? "📜 Post Report History" : "📥 Pending Grouped Post Reports" %></span>
+                    <span class="count-badge">
+                        <%= isHistoryView ? (postReports != null ? postReports.size() : 0) : (groupedPostReports != null ? groupedPostReports.size() : 0) %> 
+                        <%= isHistoryView ? "records" : "reported posts" %>
                     </span>
                 </div>
                 <div class="section-body">
@@ -196,139 +704,146 @@
                         <% if (postReports == null || postReports.isEmpty()) { %>
                             <div class="no-data">No post report history found.</div>
                         <% } else { %>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Report Details</th>
-                                        <th>Post Info</th>
-                                        <th>Parties Involved</th>
-                                        <th>Outcome</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (PostReport r : postReports) {
-                                        ReportStatus status = r.getStatus();
-                                        String statusClass = "status-other";
-                                        if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
-                                        else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
-                                    %>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <span class="reason-badge"><%= r.getReason() %></span><br/>
-                                                <p style="margin-top:8px; font-size:13px; color:#475569;"><%= r.getDescription() %></p>
-                                                <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
-                                            </td>
-                                            <td>
-                                                <strong>Title:</strong> <%= r.getPost().getTitle() %><br/>
-                                                <span style="font-size:12px; color:#64748b;">Slug: <%= r.getPost().getSlug() %></span>
-                                            </td>
-                                            <td>
-                                                <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
-                                                <span style="font-size:12px;"><strong>Author:</strong> @<%= r.getPost().getAuthor().getUsername() %></span>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge <%= statusClass %>"><%= status %></span>
-                                            </td>
+                                            <th>Report Details</th>
+                                            <th>Post Info</th>
+                                            <th>Parties Involved</th>
+                                            <th>Outcome</th>
                                         </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <% for (PostReport r : postReports) {
+                                            ReportStatus status = r.getStatus();
+                                            String statusClass = "status-other";
+                                            if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
+                                            else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
+                                        %>
+                                            <tr>
+                                                <td>
+                                                    <span class="reason-badge"><%= r.getReason() %></span><br/>
+                                                    <p style="margin-top:8px; font-size:13px; color:#475569;"><%= r.getDescription() %></p>
+                                                    <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
+                                                </td>
+                                                <td>
+                                                    <strong>Title:</strong> <%= r.getPost().getTitle() %><br/>
+                                                    <span style="font-size:12px; color:#64748b;">Slug: <%= r.getPost().getSlug() %></span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
+                                                    <span style="font-size:12px;"><strong>Author:</strong> @<%= r.getPost().getAuthor().getUsername() %></span>
+                                                </td>
+                                                <td>
+                                                    <span class="status-badge <%= statusClass %>"><%= status %></span>
+                                                </td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
                         <% } %>
                     <% } else { %>
                         <!-- PENDING QUEUE (GROUPED BY POST) -->
                         <% if (groupedPostReports == null || groupedPostReports.isEmpty()) { %>
                             <div class="no-data">No pending post reports found.</div>
                         <% } else { %>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Post Details & Author</th>
-                                        <th>Report Summary</th>
-                                        <th style="width: 340px;">Group Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (GroupedPostReportDto g : groupedPostReports) {
-                                        String detailsId = "post-details-" + g.getPost().getId();
-                                    %>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <strong style="font-size: 15px; color: #0f172a;"><%= g.getPost().getTitle() %></strong><br/>
-                                                <span style="font-size: 12px; color: #64748b;">Slug: <%= g.getPost().getSlug() %></span><br/>
-                                                <span style="font-size: 12px; color: #475569;">Author: <strong>@<%= g.getPost().getAuthor().getUsername() %></strong></span>
-                                                <br/>
-                                                <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
-                                                    &#128065; View Reporter Details (<%= g.getReportCount() %>)
-                                                </button>
-                                            </td>
-                                            <td>
-                                                <span class="count-badge">&#128293; <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
-                                                <div style="margin-top: 8px;">
-                                                    <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
-                                                        <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
-                                                    <% } %>
-                                                </div>
-                                                <div class="date-meta">Latest: <%= g.getLatestReportedAt() %></div>
-                                            </td>
-                                            <td>
-                                                <div class="action-cell">
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/group/<%= g.getPost().getId() %>/dismiss" method="POST" style="display:inline;">
-                                                        <button type="submit" class="btn btn-dismiss" onclick="return confirm('Dismiss ALL <%= g.getReportCount() %> reports for this post as false alarm?')">Dismiss Group</button>
-                                                    </form>
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/group/<%= g.getPost().getId() %>/resolve" method="POST" style="display:inline; margin-top:4px;">
-                                                        <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
-                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve group: remove post and clear all <%= g.getReportCount() %> pending reports?')">Resolve & Remove</button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                                            <th>Post Details & Author</th>
+                                            <th>Report Summary</th>
+                                            <th style="width: 340px;">Group Actions</th>
                                         </tr>
-                                        <tr id="<%= detailsId %>" class="details-row">
-                                            <td colspan="3">
-                                                <div class="details-container">
-                                                    <strong style="font-size: 13px; color: #0284c7;">&#128203; Individual Reports (<%= g.getReportCount() %>):</strong>
-                                                    <table class="details-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Reporter</th>
-                                                                <th>Reason</th>
-                                                                <th>Description</th>
-                                                                <th>Date</th>
-                                                                <th>Individual Action</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <% for (PostReport r : g.getReports()) { %>
+                                    </thead>
+                                    <tbody>
+                                        <% for (GroupedPostReportDto g : groupedPostReports) {
+                                            String detailsId = "post-details-" + g.getPost().getId();
+                                        %>
+                                            <tr>
+                                                <td>
+                                                    <strong style="font-size: 15px; color: #0f172a;"><%= g.getPost().getTitle() %></strong><br/>
+                                                    <span style="font-size: 12px; color: #64748b;">Slug: <%= g.getPost().getSlug() %></span><br/>
+                                                    <span style="font-size: 12px; color: #475569;">Author: <strong>@<%= g.getPost().getAuthor().getUsername() %></strong></span>
+                                                    <br/>
+                                                    <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
+                                                        👁️ View Reporter Details (<%= g.getReportCount() %>)
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    <span class="count-badge-group">🔥 <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
+                                                    <div style="margin-top: 8px;">
+                                                        <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
+                                                            <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="date-meta">Latest: <%= g.getLatestReportedAt() %></div>
+                                                </td>
+                                                <td>
+                                                    <div class="action-cell">
+                                                        <form action="${pageContext.request.contextPath}/admin/reports/posts/group/<%= g.getPost().getId() %>/dismiss" method="POST" style="display:inline;">
+                                                            <button type="submit" class="action-btn dismiss" onclick="return confirm('Dismiss ALL <%= g.getReportCount() %> reports for this post as false alarm?')">Dismiss Group</button>
+                                                        </form>
+                                                        <form action="${pageContext.request.contextPath}/admin/reports/posts/group/<%= g.getPost().getId() %>/resolve" method="POST" style="display:inline; margin-top:4px;">
+                                                            <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
+                                                            <button type="submit" class="action-btn resolve" onclick="return confirm('Resolve group: remove post and clear all <%= g.getReportCount() %> pending reports?')">Resolve & Remove</button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr id="<%= detailsId %>" class="details-row">
+                                                <td colspan="3">
+                                                    <div class="details-container">
+                                                        <strong style="font-size: 13px; color: #0284c7;">📄 Individual Reports (<%= g.getReportCount() %>):</strong>
+                                                        <table class="details-table">
+                                                            <thead>
                                                                 <tr>
-                                                                    <td><strong>@<%= r.getReporter().getUsername() %></strong></td>
-                                                                    <td><span class="reason-badge"><%= r.getReason() %></span></td>
-                                                                    <td><%= r.getDescription() != null && !r.getDescription().isEmpty() ? r.getDescription() : "<em>No description</em>" %></td>
-                                                                    <td><%= r.getCreatedAt() %></td>
-                                                                    <td>
-                                                                        <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
-                                                                            <button type="submit" class="btn btn-dismiss" style="padding: 4px 8px; font-size:11px;" onclick="return confirm('Dismiss only this single report?')">Dismiss</button>
-                                                                        </form>
-                                                                    </td>
+                                                                    <th>Reporter</th>
+                                                                    <th>Reason</th>
+                                                                    <th>Description</th>
+                                                                    <th>Date</th>
+                                                                    <th>Individual Action</th>
                                                                 </tr>
-                                                            <% } %>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
+                                                            </thead>
+                                                            <tbody>
+                                                                <% for (PostReport r : g.getReports()) { %>
+                                                                    <tr>
+                                                                        <td><strong>@<%= r.getReporter().getUsername() %></strong></td>
+                                                                        <td><span class="reason-badge"><%= r.getReason() %></span></td>
+                                                                        <td><%= r.getDescription() != null && !r.getDescription().isEmpty() ? r.getDescription() : "<em>No description</em>" %></td>
+                                                                        <td><%= r.getCreatedAt() %></td>
+                                                                        <td>
+                                                                            <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
+                                                                                <button type="submit" class="action-btn dismiss" style="padding: 4px 8px; font-size:11px;" onclick="return confirm('Dismiss only this single report?')">Dismiss</button>
+                                                                            </form>
+                                                                        </td>
+                                                                    </tr>
+                                                                <% } %>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
                         <% } %>
                     <% } %>
                 </div>
             </div>
-            <% } else { %>
+            <% } %>
+
             <!-- COMMENT REPORTS -->
+            <% if (!isPostType) { %>
             <div class="section-card">
                 <div class="section-header">
-                    <span><%= isHistoryView ? "&#128218; Comment Report History" : "&#128172; Pending Grouped Comment Reports" %></span>
-                    <span style="font-size: 13px; font-weight: normal; background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 9999px;">
-                        <%= isHistoryView ? (commentReports != null ? commentReports.size() : 0) : (groupedCommentReports != null ? groupedCommentReports.size() : 0) %> <%= isHistoryView ? "records" : "reported comments" %>
+                    <span><%= isHistoryView ? "📜 Comment Report History" : "📥 Pending Grouped Comment Reports" %></span>
+                    <span class="count-badge">
+                        <%= isHistoryView ? (commentReports != null ? commentReports.size() : 0) : (groupedCommentReports != null ? groupedCommentReports.size() : 0) %> 
+                        <%= isHistoryView ? "records" : "reported comments" %>
                     </span>
                 </div>
                 <div class="section-body">
@@ -336,132 +851,136 @@
                         <% if (commentReports == null || commentReports.isEmpty()) { %>
                             <div class="no-data">No comment report history found.</div>
                         <% } else { %>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Report Details</th>
-                                        <th>Comment Info</th>
-                                        <th>Parties Involved</th>
-                                        <th>Outcome</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (CommentReport r : commentReports) {
-                                        ReportStatus status = r.getStatus();
-                                        String statusClass = "status-other";
-                                        if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
-                                        else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
-                                    %>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <span class="reason-badge"><%= r.getReason() %></span><br/>
-                                                <p style="margin-top:8px; font-size:13px; color:#475569;"><%= r.getDescription() %></p>
-                                                <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
-                                            </td>
-                                            <td>
-                                                <p style="background: #f8fafc; padding: 8px; border-radius: 6px; font-size:13px; border-left:3px solid #cbd5e1;">
-                                                    "<%= r.getComment().getContent() %>"
-                                                </p>
-                                                <span style="font-size:11px; color:#64748b; margin-top:4px; display:block;">On Post: <%= r.getComment().getPost().getTitle() %></span>
-                                            </td>
-                                            <td>
-                                                <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
-                                                <span style="font-size:12px;"><strong>Commenter:</strong> @<%= r.getComment().getUser().getUsername() %></span>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge <%= statusClass %>"><%= status %></span>
-                                            </td>
+                                            <th>Report Details</th>
+                                            <th>Comment Info</th>
+                                            <th>Parties Involved</th>
+                                            <th>Outcome</th>
                                         </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <% for (CommentReport r : commentReports) {
+                                            ReportStatus status = r.getStatus();
+                                            String statusClass = "status-other";
+                                            if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
+                                            else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
+                                        %>
+                                            <tr>
+                                                <td>
+                                                    <span class="reason-badge"><%= r.getReason() %></span><br/>
+                                                    <p style="margin-top:8px; font-size:13px; color:#475569;"><%= r.getDescription() %></p>
+                                                    <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
+                                                </td>
+                                                <td>
+                                                    <p style="background: #f8fafc; padding: 8px; border-radius: 6px; font-size:13px; border-left:3px solid #cbd5e1;">
+                                                        "<%= r.getComment().getContent() %>"
+                                                    </p>
+                                                    <span style="font-size:11px; color:#64748b; margin-top:4px; display:block;">On Post: <%= r.getComment().getPost().getTitle() %></span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
+                                                    <span style="font-size:12px;"><strong>Commenter:</strong> @<%= r.getComment().getUser().getUsername() %></span>
+                                                </td>
+                                                <td>
+                                                    <span class="status-badge <%= statusClass %>"><%= status %></span>
+                                                </td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
                         <% } %>
                     <% } else { %>
                         <!-- PENDING QUEUE (GROUPED BY COMMENT) -->
                         <% if (groupedCommentReports == null || groupedCommentReports.isEmpty()) { %>
                             <div class="no-data">No pending comment reports found.</div>
                         <% } else { %>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Comment Content & Author</th>
-                                        <th>Report Summary</th>
-                                        <th style="width: 340px;">Group Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (GroupedCommentReportDto g : groupedCommentReports) {
-                                        String detailsId = "comment-details-" + g.getComment().getId();
-                                    %>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <p style="background: #f8fafc; padding: 10px; border-radius: 6px; font-size:13px; border-left:3px solid #0284c7; color: #1e293b;">
-                                                    "<%= g.getComment().getContent() %>"
-                                                </p>
-                                                <span style="font-size:12px; color:#64748b; margin-top:4px; display:block;">On Post: <strong><%= g.getComment().getPost().getTitle() %></strong></span>
-                                                <span style="font-size:12px; color:#475569;">Commenter: <strong>@<%= g.getComment().getUser().getUsername() %></strong></span>
-                                                <br/>
-                                                <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
-                                                    &#128065; View Reporter Details (<%= g.getReportCount() %>)
-                                                </button>
-                                            </td>
-                                            <td>
-                                                <span class="count-badge">&#128293; <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
-                                                <div style="margin-top: 8px;">
-                                                    <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
-                                                        <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
-                                                    <% } %>
-                                                </div>
-                                                <div class="date-meta">Latest: <%= g.getLatestReportedAt() %></div>
-                                            </td>
-                                            <td>
-                                                <div class="action-cell">
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/group/<%= g.getComment().getId() %>/dismiss" method="POST" style="display:inline;">
-                                                        <button type="submit" class="btn btn-dismiss" onclick="return confirm('Dismiss ALL <%= g.getReportCount() %> reports for this comment as false alarm?')">Dismiss Group</button>
-                                                    </form>
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/group/<%= g.getComment().getId() %>/resolve" method="POST" style="display:inline; margin-top:4px;">
-                                                        <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
-                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve group: delete comment, ban commenter, and clear all <%= g.getReportCount() %> pending reports?')">Resolve & Ban</button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                                            <th>Comment Content & Author</th>
+                                            <th>Report Summary</th>
+                                            <th style="width: 340px;">Group Actions</th>
                                         </tr>
-                                        <tr id="<%= detailsId %>" class="details-row">
-                                            <td colspan="3">
-                                                <div class="details-container">
-                                                    <strong style="font-size: 13px; color: #0284c7;">&#128203; Individual Reports (<%= g.getReportCount() %>):</strong>
-                                                    <table class="details-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Reporter</th>
-                                                                <th>Reason</th>
-                                                                <th>Description</th>
-                                                                <th>Date</th>
-                                                                <th>Individual Action</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <% for (CommentReport r : g.getReports()) { %>
+                                    </thead>
+                                    <tbody>
+                                        <% for (GroupedCommentReportDto g : groupedCommentReports) {
+                                            String detailsId = "comment-details-" + g.getComment().getId();
+                                        %>
+                                            <tr>
+                                                <td>
+                                                    <p style="background: #f8fafc; padding: 10px; border-radius: 6px; font-size:13px; border-left:3px solid #0284c7; color: #1e293b;">
+                                                        "<%= g.getComment().getContent() %>"
+                                                    </p>
+                                                    <span style="font-size:12px; color:#64748b; margin-top:4px; display:block;">On Post: <strong><%= g.getComment().getPost().getTitle() %></strong></span>
+                                                    <span style="font-size:12px; color:#475569;">Commenter: <strong>@<%= g.getComment().getUser().getUsername() %></strong></span>
+                                                    <br/>
+                                                    <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
+                                                        👁️ View Reporter Details (<%= g.getReportCount() %>)
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    <span class="count-badge-group">🔥 <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
+                                                    <div style="margin-top: 8px;">
+                                                        <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
+                                                            <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="date-meta">Latest: <%= g.getLatestReportedAt() %></div>
+                                                </td>
+                                                <td>
+                                                    <div class="action-cell">
+                                                        <form action="${pageContext.request.contextPath}/admin/reports/comments/group/<%= g.getComment().getId() %>/dismiss" method="POST" style="display:inline;">
+                                                            <button type="submit" class="action-btn dismiss" onclick="return confirm('Dismiss ALL <%= g.getReportCount() %> reports for this comment as false alarm?')">Dismiss Group</button>
+                                                        </form>
+                                                        <form action="${pageContext.request.contextPath}/admin/reports/comments/group/<%= g.getComment().getId() %>/resolve" method="POST" style="display:inline; margin-top:4px;">
+                                                            <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
+                                                            <button type="submit" class="action-btn resolve" onclick="return confirm('Resolve group: delete comment, ban commenter, and clear all <%= g.getReportCount() %> pending reports?')">Resolve & Ban</button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr id="<%= detailsId %>" class="details-row">
+                                                <td colspan="3">
+                                                    <div class="details-container">
+                                                        <strong style="font-size: 13px; color: #0284c7;">📄 Individual Reports (<%= g.getReportCount() %>):</strong>
+                                                        <table class="details-table">
+                                                            <thead>
                                                                 <tr>
-                                                                    <td><strong>@<%= r.getReporter().getUsername() %></strong></td>
-                                                                    <td><span class="reason-badge"><%= r.getReason() %></span></td>
-                                                                    <td><%= r.getDescription() != null && !r.getDescription().isEmpty() ? r.getDescription() : "<em>No description</em>" %></td>
-                                                                    <td><%= r.getCreatedAt() %></td>
-                                                                    <td>
-                                                                        <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
-                                                                            <button type="submit" class="btn btn-dismiss" style="padding: 4px 8px; font-size:11px;" onclick="return confirm('Dismiss only this single report?')">Dismiss</button>
-                                                                        </form>
-                                                                    </td>
+                                                                    <th>Reporter</th>
+                                                                    <th>Reason</th>
+                                                                    <th>Description</th>
+                                                                    <th>Date</th>
+                                                                    <th>Individual Action</th>
                                                                 </tr>
-                                                            <% } %>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
+                                                            </thead>
+                                                            <tbody>
+                                                                <% for (CommentReport r : g.getReports()) { %>
+                                                                    <tr>
+                                                                        <td><strong>@<%= r.getReporter().getUsername() %></strong></td>
+                                                                        <td><span class="reason-badge"><%= r.getReason() %></span></td>
+                                                                        <td><%= r.getDescription() != null && !r.getDescription().isEmpty() ? r.getDescription() : "<em>No description</em>" %></td>
+                                                                        <td><%= r.getCreatedAt() %></td>
+                                                                        <td>
+                                                                            <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
+                                                                                <button type="submit" class="action-btn dismiss" style="padding: 4px 8px; font-size:11px;" onclick="return confirm('Dismiss only this single report?')">Dismiss</button>
+                                                                            </form>
+                                                                        </td>
+                                                                    </tr>
+                                                                <% } %>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
                         <% } %>
                     <% } %>
                 </div>
