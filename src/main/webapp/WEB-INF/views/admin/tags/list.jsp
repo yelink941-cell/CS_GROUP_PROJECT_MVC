@@ -51,6 +51,12 @@
                     <span>👥 User Management</span>
                 </a>
             </li>
+            <!-- ✅ Report Logs ထည့်ပါ -->
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link">
+                    <span>📊 Report Logs</span>
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -128,7 +134,6 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Tag Name</th>
-                                <!-- ✅ Posts Count Column ကိုဖယ်လိုက်ပါ -->
                                 <th style="text-align: center;">Actions</th>
                             </tr>
                         </thead>
@@ -139,7 +144,6 @@
                                     <td>
                                         <span class="tag-badge"><c:out value="${tag.name}" /></span>
                                     </td>
-                                    <!-- ✅ Posts Count ကိုဖယ်လိုက်ပါ -->
                                     <td style="text-align: center; white-space: nowrap;">
                                         <a href="${pageContext.request.contextPath}/admin/tags/edit/${tag.id}" 
                                            class="action-btn edit">

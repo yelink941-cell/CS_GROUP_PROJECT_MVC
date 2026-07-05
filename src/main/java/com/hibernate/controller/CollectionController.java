@@ -1,7 +1,7 @@
 package com.hibernate.controller;
 
 import com.hibernate.entity.Collection;
-import com.hibernate.entity.Post; // 🎯 Post Entity အတွက် Import တိုးထားပါသည်
+import com.hibernate.entity.Post;
 import com.hibernate.service.CollectionService;
 import com.hibernate.service.PostService;
 import java.util.List;
@@ -31,6 +31,32 @@ public class CollectionController {
         }
         model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
         return "user/collection/list";
+    }
+
+    // ✅ VIEW COLLECTION BY ID (Path Variable)
+    @GetMapping("/{id}")
+    public String viewCollectionItems(@PathVariable("id") Integer id, Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+        
+        Collection folder = collectionService.getCollectionById(id).orElse(null);
+        if (folder == null) {
+            return "redirect:/user/collections";
+        }
+        
+        model.addAttribute("folder", folder);
+        List<Post> savedPosts = collectionService.getPostsByCollectionId(id);
+        model.addAttribute("savedPosts", savedPosts);
+
+        return "user/collection/view-items";
+    }
+
+    // ✅ VIEW COLLECTION BY ID (Query Parameter) - လိုအပ်ရင်
+    @GetMapping("/view")
+    public String viewCollectionById(@RequestParam("id") Integer id, Model model, HttpSession session) {
+        return viewCollectionItems(id, model, session);
     }
 
     @PostMapping("/new")
@@ -72,21 +98,6 @@ public class CollectionController {
         return "redirect:/user/collections";
     }
 
-    // 🎯 🌟 ဖိုဒါကို ကလစ်နှိပ်လိုက်ရင် ၎င်းထဲရှိ Cheat Sheet များကို ဆွဲထုတ်ပေးမည့် မက်သတ်အသစ်
- // 🎯 🌟 ဖိုဒါကို ကလစ်နှိပ်လိုက်ရင် ၎င်းထဲရှိ Cheat Sheet များကို ဆွဲထုတ်ပေးမည့် မက်သတ်
-    @GetMapping("/{id}")
-    public String viewCollectionItems(@PathVariable("id") Integer id, Model model, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/login";
-        }
-        Collection folder = collectionService.getCollectionById(id).orElse(null);
-        model.addAttribute("folder", folder);
-        List<Post> savedPosts = collectionService.getPostsByCollectionId(id);
-        model.addAttribute("savedPosts", savedPosts);
-
-        return "user/collection/view-items";
-    }
     @GetMapping("/{collectionId}/remove-post/{postId}")
     public String removePostFromCollection(
             @PathVariable("collectionId") Integer collectionId,
@@ -100,7 +111,7 @@ public class CollectionController {
         collectionService.removePostFromCollection(collectionId, postId);
         return "redirect:/user/collections/" + collectionId;
     }
- // 🎯 🌟 ၇။ Folder အချက်အလက် (Name, Description, Public/Private) ကို ပြင်ဆင်ပေးမည့် မက်သတ်အသစ်
+
     @PostMapping("/edit")
     public String editCollection(
             @RequestParam("id") Integer id,
@@ -114,9 +125,7 @@ public class CollectionController {
             return "redirect:/login";
         }
         
-        // Service Layer ကို လှမ်းခေါ်ပြီး အချက်အလက်များကို Update လုပ်ခြင်း
         collectionService.updateCollection(id, name, description, isPublic);
-        
         return "redirect:/user/collections";
     }
 }
