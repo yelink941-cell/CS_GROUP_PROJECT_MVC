@@ -30,19 +30,18 @@ public class CommentServiceImpl implements CommentService {
         } catch (Exception e) {
             System.err.println("🚨🚨 CRITICAL ERROR DURING COMMENT SAVE COMMENT 🚨🚨");
             e.printStackTrace();
+            throw e;
         }
     }
 
     @Override
     @Transactional 
     public List<Comment> getCommentsByPostId(Integer postId) {
-        // Active (deletedAt == null) ဖြစ်သော Parent Comments များကိုသာ တိုက်ရိုက်ဆွဲထုတ်သည်
-        List<Comment> activeParentComments = getActiveParentComments(postId);
-        return activeParentComments;
+        return getActiveParentComments(postId);
     }
 
     private void initializeReplies(Comment comment) {
-        if (comment.getReplies() != null) {
+        if (comment != null && comment.getReplies() != null) {
             Hibernate.initialize(comment.getReplies());
             for (Comment reply : comment.getReplies()) {
                 initializeReplies(reply);
@@ -83,7 +82,6 @@ public class CommentServiceImpl implements CommentService {
         if (replies == null || replies.isEmpty()) {
             return 0;
         }
-        // Active replies များကိုသာ အရေအတွက် ရေတွက်သည်
         int count = (int) replies.stream().filter(r -> r.getDeletedAt() == null).count();
         
         for (Comment reply : replies) {
@@ -104,28 +102,21 @@ public class CommentServiceImpl implements CommentService {
             comment.setDeletedAt(now);
             commentRepository.save(comment);
             
-            // Lazy loading ဖြစ်နေသော replies များကို initialize လုပ်ပြီးမှ cascade လုပ်ပါ
-            if (comment.getReplies() != null) {
-                Hibernate.initialize(comment.getReplies());
-                cascadeSoftDeleteReplies(comment.getReplies(), now);
-            }
-            
+            initializeAndCascadeDelete(comment, now);
             System.out.println("DEBUG: Comment (ID: " + id + ") soft-deleted successfully.");
         } else {
             System.err.println("🚨 Cannot delete: Comment not found with ID: " + id);
         }
     }
 
-    private void cascadeSoftDeleteReplies(List<Comment> replies, LocalDateTime deleteTime) {
-        if (replies != null && !replies.isEmpty()) {
-            for (Comment reply : replies) {
-                if (reply.getDeletedAt() == null) {
+    private void initializeAndCascadeDelete(Comment comment, LocalDateTime deleteTime) {
+        if (comment != null && comment.getReplies() != null) {
+            Hibernate.initialize(comment.getReplies());
+            for (Comment reply : comment.getReplies()) {
+                if (reply != null && reply.getDeletedAt() == null) {
                     reply.setDeletedAt(deleteTime);
                     commentRepository.save(reply);
-                    
-                    if (reply.getReplies() != null && !reply.getReplies().isEmpty()) {
-                        cascadeSoftDeleteReplies(reply.getReplies(), deleteTime);
-                    }
+                    initializeAndCascadeDelete(reply, deleteTime);
                 }
             }
         }
