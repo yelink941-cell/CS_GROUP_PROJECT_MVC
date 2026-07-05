@@ -1,0 +1,101 @@
+<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
+<jasperReport name="monthly_cheat_sheet_report" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="f51ca766-6e51-4f33-80f8-ff9fdd48d6df">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter (4)"/>
+	<query language="SQL"><![CDATA[SELECT * FROM monthly_cheat_sheet_report]]></query>
+	<field name="no" class="java.math.BigInteger"/>
+	<field name="author" class="java.lang.String"/>
+	<field name="created_date" class="java.time.LocalDateTime"/>
+	<field name="title" class="java.lang.String"/>
+	<field name="like_count" class="java.lang.Long"/>
+	<field name="total_cheat_sheets" class="java.lang.Long"/>
+	<background splitType="Stretch"/>
+	<title height="85" splitType="Stretch">
+		<element kind="rectangle" uuid="a3b8d41e-bc8d-4a1e-8481-2287950c4bb7" mode="Opaque" x="0" y="0" width="555" height="70" backcolor="#1A252F">
+			<pen lineWidth="0.0"/>
+		</element>
+		<element kind="staticText" uuid="d182b874-dc8d-4a1e-8481-2287950c4bb7" x="20" y="15" width="400" height="30" forecolor="#FFFFFF" fontSize="20.0" bold="true">
+			<text><![CDATA[Monthly Cheat Sheet Report]]></text>
+		</element>
+		<element kind="staticText" uuid="e3b8b17b-d8cb-4f34-8c87-8df19a84b0e5" x="20" y="45" width="300" height="15" forecolor="#BDC3C7" fontSize="9.0">
+			<text><![CDATA[Generated automatically via Spring MVC Enterprise System]]></text>
+		</element>
+	</title>
+	<columnHeader height="28" splitType="Stretch">
+		<element kind="rectangle" uuid="c0d7ad24-f7b5-4122-83b3-b45e85c2901a" mode="Opaque" x="0" y="0" width="555" height="28" backcolor="#34495E">
+			<pen lineWidth="0.5" lineColor="#34495E"/>
+		</element>
+		<element kind="staticText" uuid="b24e6c38-04fb-4b53-bc2a-87428f5bcf56" x="0" y="0" width="45" height="28" forecolor="#FFFFFF" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[No.]]></text>
+			<box>
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="1c8a6704-586b-4b13-bb18-a6d123e48ab4" x="45" y="0" width="105" height="28" forecolor="#FFFFFF" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Author]]></text>
+			<box>
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="fa8f8281-9c6f-4ef6-ac15-38c2ef84bde7" x="150" y="0" width="215" height="28" forecolor="#FFFFFF" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Cheat Sheet Title]]></text>
+			<box>
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="d2cf5f84-c8c7-4ab5-95a3-0cb5b81a7bdf" x="365" y="0" width="115" height="28" forecolor="#FFFFFF" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Created Date]]></text>
+			<box>
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="3d2cf574-d8bc-4ff5-bba3-27cb57a5cf2b" x="480" y="0" width="75" height="28" forecolor="#FFFFFF" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Likes]]></text>
+			<box>
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="25" splitType="Stretch">
+			<element kind="textField" uuid="4bfa2bd3-5853-4796-9817-cc25b399be7d" x="0" y="0" width="45" height="25" fontSize="9.0" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{no}]]></expression>
+				<box>
+					<pen lineWidth="0.5" lineColor="#BDC3C7"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="885747ea-bd58-4cc3-bb74-32537cb0b488" x="45" y="0" width="105" height="25" fontSize="9.0" hTextAlign="Left" vTextAlign="Middle">
+				<expression><![CDATA[" " + $F{author}]]></expression>
+				<box>
+					<pen lineWidth="0.5" lineColor="#BDC3C7"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="7cf42410-b99b-44ec-af81-c7d57be4962d" x="150" y="0" width="215" height="25" fontSize="9.0" textAdjust="StretchHeight" hTextAlign="Left" vTextAlign="Middle">
+				<expression><![CDATA[" " + $F{title}]]></expression>
+				<box>
+					<pen lineWidth="0.5" lineColor="#BDC3C7"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="62d2d6c1-ff39-4d64-8397-ff08cf2c4e2c" x="365" y="0" width="115" height="25" fontSize="9.0" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{created_date} != null ? $F{created_date}.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : ""]]></expression>
+				<box>
+					<pen lineWidth="0.5" lineColor="#BDC3C7"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="a65fdbbc-e57a-4cbb-bc78-75cbe61c8cbe" x="480" y="0" width="75" height="25" fontSize="9.0" hTextAlign="Right" vTextAlign="Middle">
+				<expression><![CDATA[$F{like_count} + " "]]></expression>
+				<box>
+					<pen lineWidth="0.5" lineColor="#BDC3C7"/>
+				</box>
+			</element>
+		</band>
+	</detail>
+	<pageFooter height="35" splitType="Stretch">
+		<element kind="line" uuid="ef94e241-d8ec-4fc2-baef-c5eeab25a72f" x="0" y="10" width="555" height="1">
+			<pen lineWidth="0.5" lineColor="#95A5A6"/>
+		</element>
+		<element kind="textField" uuid="bc2d7fa8-3694-4b57-a92c-54a73229bbf9" x="350" y="15" width="205" height="15" forecolor="#7F8C8D" fontSize="8.0" hTextAlign="Right">
+			<expression><![CDATA["Page " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+	</pageFooter>
+</jasperReport>

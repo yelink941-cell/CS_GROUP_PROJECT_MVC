@@ -7,6 +7,7 @@ public interface PostReportRepository {
     void save(PostReport report);
     PostReport findPendingByPostAndReporter(Integer postId, Long reporterId);
     PostReport findById(Integer id);
+    List<PostReport> findPendingByPostId(Integer postId);
     List<PostReport> findAllPending();
     List<PostReport> findAllHistory();
 }

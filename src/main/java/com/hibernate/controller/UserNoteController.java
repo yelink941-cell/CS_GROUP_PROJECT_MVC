@@ -45,20 +45,33 @@ public class UserNoteController {
         return "notes/note-form";
     }
 
-    // ─── GET /notes/edit?id={id} — Edit form ─────────────────────
+    // ─── GET /notes/{id}/edit — Edit form (Path Variable) ────────
+    @GetMapping("/{id}/edit")
+    public String showEditFormPath(
+            @PathVariable("id") Integer id,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttrs) {
+        return showEditFormInternal(id, session, model, redirectAttrs);
+    }
+
+    // ─── GET /notes/edit?id={id} — Legacy edit form ───────────────
     @GetMapping("/edit")
-    public String showEditForm(
+    public String showEditFormParam(
             @RequestParam("id") Integer id,
             HttpSession session,
             Model model,
             RedirectAttributes redirectAttrs) {
+        return showEditFormInternal(id, session, model, redirectAttrs);
+    }
 
+    private String showEditFormInternal(Integer id, HttpSession session, Model model, RedirectAttributes redirectAttrs) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) return "redirect:/login";
 
         UserNote note = userNoteService.getNoteById(id, currentUser.getId());
         if (note == null) {
-            redirectAttrs.addFlashAttribute("error", "Note ကို ရှာမတွေ့ပါ သို့မဟုတ် ခွင့်မပြုပါ။");
+            redirectAttrs.addFlashAttribute("error", "Note not found or access denied.");
             return "redirect:/notes";
         }
 
@@ -67,7 +80,28 @@ public class UserNoteController {
         return "notes/note-form";
     }
 
-    // ─── POST /notes/save — Save (create or update) ──────────────
+    // ─── POST /notes/{id}/update — Update existing note (Path Variable) ───
+    @PostMapping("/{id}/update")
+    public String updateNotePath(
+            @PathVariable("id") Integer id,
+            @ModelAttribute("note") UserNote note,
+            HttpSession session,
+            RedirectAttributes redirectAttrs) {
+
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
+
+        try {
+            note.setId(id);
+            userNoteService.updateNote(note, currentUser.getId());
+            redirectAttrs.addFlashAttribute("success", "Note updated successfully");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/notes";
+    }
+
+    // ─── POST /notes/save — Save (create or legacy update) ─────────
     @PostMapping("/save")
     public String saveNote(
             @ModelAttribute("note") UserNote note,
@@ -77,21 +111,18 @@ public class UserNoteController {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) return "redirect:/login";
 
-        // Editing existing note — ownership check
-        if (note.getId() != null) {
-            UserNote existing = userNoteService.getNoteById(note.getId(), currentUser.getId());
-            if (existing == null) {
-                redirectAttrs.addFlashAttribute("error", "ခွင့်မပြုသောလုပ်ဆောင်ချက်ဖြစ်သည်။");
-                return "redirect:/notes";
+        try {
+            if (note.getId() != null) {
+                userNoteService.updateNote(note, currentUser.getId());
+                redirectAttrs.addFlashAttribute("success", "Note updated successfully");
+            } else {
+                userNoteService.saveNote(note, currentUser.getId());
+                redirectAttrs.addFlashAttribute("success", "Note saved successfully");
             }
-            existing.setTitle(note.getTitle());
-            existing.setContent(note.getContent());
-            userNoteService.saveNote(existing, currentUser.getId());
-        } else {
-            userNoteService.saveNote(note, currentUser.getId());
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
         }
 
-        redirectAttrs.addFlashAttribute("success", "Note သိမ်းဆည်းပြီးပါပြီ ✅");
         return "redirect:/notes";
     }
 
@@ -105,8 +136,12 @@ public class UserNoteController {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) return "redirect:/login";
 
-        userNoteService.deleteNote(id, currentUser.getId());
-        redirectAttrs.addFlashAttribute("success", "Note ဖျက်ပြီးပါပြီ 🗑️");
+        try {
+            userNoteService.deleteNote(id, currentUser.getId());
+            redirectAttrs.addFlashAttribute("success", "Note deleted successfully");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/notes";
     }
 }

@@ -64,4 +64,8 @@ public class Message {
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MessageSeenStatus> seenStatuses = new ArrayList<>();
+
+    @BatchSize(size = 20)
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<MessageReaction> reactions = new ArrayList<>();
 }

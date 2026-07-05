@@ -14,14 +14,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg:        #0d1117;
-            --surface:   #161b22;
-            --surface2:  #1c2128;
-            --border:    #30363d;
-            --accent:    #7c3aed;
-            --accent-glow: rgba(124,58,237,0.25);
-            --text:      #e6edf3;
-            --muted:     #8b949e;
+            --bg:        #ffffff;
+            --surface:   #ffffff;
+            --surface2:  #f8fafc;
+            --border:    #e2e8f0;
+            --accent:    #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --text:      #0f172a;
+            --muted:     #64748b;
             --red:       #ef4444;
             --radius:    14px;
         }
@@ -30,8 +30,8 @@
 
         body {
             font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            background: #ffffff;
+            color: #0f172a;
             min-height: 100vh;
         }
 
@@ -48,12 +48,12 @@
             align-items: center;
             gap: 8px;
             font-size: 13px;
-            color: var(--muted);
+            color: #64748b;
             text-decoration: none;
             margin-bottom: 28px;
             transition: color 0.15s;
         }
-        .back-link:hover { color: var(--text); }
+        .back-link:hover { color: #0f172a; }
 
         /* ── Form header ────────────────────────── */
         .form-header {
@@ -63,24 +63,21 @@
             font-size: 26px;
             font-weight: 800;
             letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #a78bfa, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #0f172a;
         }
         .form-header p {
-            font-size: 13px;
-            color: var(--muted);
+            font-size: 14px;
+            color: #64748b;
             margin-top: 6px;
         }
 
         /* ── Card wrapper ───────────────────────── */
         .form-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 18px;
             padding: 36px 40px;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
 
         /* ── Private badge ──────────────────────── */
@@ -88,9 +85,9 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(124,58,237,0.12);
-            border: 1px solid rgba(124,58,237,0.3);
-            color: #a78bfa;
+            background: #eeeffe;
+            border: 1px solid #c7d2fe;
+            color: #4f46e5;
             font-size: 12px;
             font-weight: 600;
             padding: 6px 14px;
@@ -106,29 +103,30 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: var(--muted);
+            color: #64748b;
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
         .form-input, .form-textarea {
             width: 100%;
-            background: var(--surface2);
-            border: 1px solid var(--border);
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
             border-radius: 10px;
             padding: 13px 16px;
-            color: var(--text);
+            color: #0f172a;
             font-family: 'Inter', sans-serif;
             font-size: 15px;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         .form-input::placeholder,
-        .form-textarea::placeholder { color: var(--muted); }
+        .form-textarea::placeholder { color: #94a3b8; }
         .form-input:focus,
         .form-textarea:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
         }
         .form-textarea {
             resize: vertical;
@@ -139,7 +137,7 @@
         /* Character counter */
         .char-hint {
             font-size: 11px;
-            color: var(--muted);
+            color: #64748b;
             text-align: right;
             margin-top: 5px;
         }
@@ -154,14 +152,14 @@
         .btn-save {
             flex: 1;
             padding: 13px 28px;
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
             color: #fff;
             font-weight: 700;
             font-size: 15px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            box-shadow: 0 0 18px var(--accent-glow);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
             transition: transform 0.15s, box-shadow 0.15s;
             display: flex;
             align-items: center;
@@ -170,15 +168,15 @@
         }
         .btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 28px rgba(124,58,237,0.5);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
         }
         .btn-save:active { transform: translateY(0); }
 
         .btn-cancel {
             padding: 13px 24px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            color: var(--muted);
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
             font-weight: 600;
             font-size: 15px;
             border-radius: 10px;
@@ -190,14 +188,14 @@
             transition: background 0.15s, color 0.15s;
         }
         .btn-cancel:hover {
-            background: var(--border);
-            color: var(--text);
+            background: #e2e8f0;
+            color: #0f172a;
         }
 
         /* Divider */
         .divider {
             height: 1px;
-            background: var(--border);
+            background: #e2e8f0;
             margin: 24px 0;
         }
 
@@ -238,11 +236,15 @@
                 <i class="fas fa-lock"></i> This note is private — only you can see it
             </div>
 
-            <form action="${pageContext.request.contextPath}/notes/save" method="POST" id="noteForm">
-                <%-- Hidden id for edit mode --%>
-                <c:if test="${isEdit}">
-                    <input type="hidden" name="id" value="${note.id}">
-                </c:if>
+            <c:choose>
+                <c:when test="${isEdit}">
+                    <form action="${pageContext.request.contextPath}/notes/${note.id}/update" method="POST" id="noteForm">
+                        <input type="hidden" name="id" value="${note.id}">
+                </c:when>
+                <c:otherwise>
+                    <form action="${pageContext.request.contextPath}/notes/save" method="POST" id="noteForm">
+                </c:otherwise>
+            </c:choose>
 
                 <%-- Title --%>
                 <div class="form-group">

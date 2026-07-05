@@ -66,4 +66,11 @@ public class RatingServiceImpl implements RatingService {
     public boolean hasUserRated(Integer postId, Long userId) {
         return ratingRepository.existsByPostIdAndUserId(postId, userId);
     }
+
+    @Override
+    public Integer getUserRating(Integer postId, Long userId) {
+        return ratingRepository.findByPostIdAndUserId(postId, userId)
+                .map(Rating::getRating)
+                .orElse(null);
+    }
 }

@@ -15,14 +15,17 @@ import com.hibernate.dto.UserSearchResult;
 import com.hibernate.dto.MarkReadResponse;
 import com.hibernate.entity.MessageReport;
 import com.hibernate.entity.enums.ReportReason;
+import com.hibernate.entity.MessageReaction;
 import com.hibernate.repository.BlockedUserRepository;
 import com.hibernate.repository.ConversationRepository;
 import com.hibernate.repository.ConversationParticipantRepository;
 import com.hibernate.repository.MessageAttachmentRepository;
+import com.hibernate.repository.MessageReactionRepository;
 import com.hibernate.repository.MessageReportRepository;
 import com.hibernate.repository.MessageRepository;
 import com.hibernate.repository.MessageSeenStatusRepository;
 import com.hibernate.repository.UserRepository;
+import com.hibernate.util.LastSeenFormatter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -46,6 +49,7 @@ public class ChatServiceImpl implements ChatService {
     private final MessageAttachmentRepository attachmentRepository;
     private final MessageSeenStatusRepository seenStatusRepository;
     private final MessageReportRepository messageReportRepository;
+    private final MessageReactionRepository reactionRepository;
     private final FileStorageService fileStorageService;
     private final UserRepository userRepository;
     private final BlockedUserRepository blockedUserRepository;
@@ -131,6 +135,14 @@ public class ChatServiceImpl implements ChatService {
                     item.setPartnerUserId(partner.userId);
                     item.setDisplayName(partner.displayName);
                     item.setDisplayRole(partner.role);
+                    item.setBlockedByMe(blockedUserRepository.isBlocked(currentUserId, partner.userId));
+
+                    User partnerUser = userRepository.getUserById(partner.userId);
+                    if (partnerUser != null) {
+                        boolean isOnline = Boolean.TRUE.equals(partnerUser.getIsOnline());
+                        item.setPartnerOnline(isOnline);
+                        item.setPartnerLastSeenFormatted(LastSeenFormatter.format(isOnline, partnerUser.getLastSeen()));
+                    }
                 } else {
                     item.setDisplayName(getConversationTitle(conversation, "Chat"));
                 }
@@ -175,6 +187,19 @@ public class ChatServiceImpl implements ChatService {
             view.setTitle(partner.displayName);
             view.setPartnerUserId(partner.userId);
             view.setPartnerRole(partner.role);
+            boolean blockedByMe = blockedUserRepository.isBlocked(currentUserId, partner.userId);
+            boolean blockedByPartner = blockedUserRepository.isBlocked(partner.userId, currentUserId);
+            view.setBlockedByMe(blockedByMe);
+            view.setBlockedByPartner(blockedByPartner);
+            view.setBlockedEitherWay(blockedByMe || blockedByPartner);
+
+            User partnerUser = userRepository.getUserById(partner.userId);
+            if (partnerUser != null) {
+                boolean isOnline = Boolean.TRUE.equals(partnerUser.getIsOnline());
+                view.setPartnerOnline(isOnline);
+                view.setPartnerLastSeen(partnerUser.getLastSeen());
+                view.setPartnerLastSeenFormatted(LastSeenFormatter.format(isOnline, partnerUser.getLastSeen()));
+            }
             return view;
         }
 
@@ -304,14 +329,14 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
         blockedUserRepository.blockUser(currentUserId, targetUserId);
+    }
 
-        Long conversationId = participantRepository.findDirectConversationIdBetweenUsers(currentUserId, targetUserId);
-        if (conversationId != null) {
-            participantRepository.findParticipant(conversationId, currentUserId).ifPresent(participant -> {
-                participant.setHiddenAt(now());
-                participantRepository.updateParticipant(participant);
-            });
+    @Override
+    public void unblockUser(Long currentUserId, Long targetUserId) {
+        if (currentUserId.equals(targetUserId)) {
+            throw new IllegalArgumentException("You can't unblock yourself.");
         }
+        blockedUserRepository.unblockUser(currentUserId, targetUserId);
     }
 
     @Override
@@ -442,6 +467,49 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public MessageResponse toggleReaction(Long messageId, Long userId, String emoji) {
+        if (emoji == null || emoji.isBlank()) {
+            throw new IllegalArgumentException("Emoji is required.");
+        }
+
+        Message message = messageRepository.getById(messageId);
+        if (message == null || message.getDeletedAt() != null) {
+            throw new IllegalArgumentException("Message not found.");
+        }
+
+        validateParticipant(message.getConversation().getId(), userId);
+
+        String trimmedEmoji = emoji.trim();
+        Optional<MessageReaction> existing = reactionRepository.findByMessageIdAndUserId(messageId, userId);
+
+        if (existing.isPresent()) {
+            MessageReaction currentReaction = existing.get();
+            if (currentReaction.getEmoji().equals(trimmedEmoji)) {
+                // User clicked the SAME emoji -> Remove reaction (Toggle Off)
+                reactionRepository.delete(currentReaction);
+                if (message.getReactions() != null) {
+                    message.getReactions().remove(currentReaction);
+                }
+            } else {
+                // User clicked a DIFFERENT emoji -> Update existing reaction emoji (Switch Reaction)
+                currentReaction.setEmoji(trimmedEmoji);
+                currentReaction.setCreatedAt(java.time.LocalDateTime.now());
+                reactionRepository.save(currentReaction);
+            }
+        } else {
+            // First time reacting
+            MessageReaction reaction = new MessageReaction(message, userId, trimmedEmoji);
+            reactionRepository.save(reaction);
+            if (message.getReactions() != null) {
+                message.getReactions().add(reaction);
+            }
+        }
+
+        Message refreshedMessage = messageRepository.getByIdWithDetails(messageId);
+        return toMessageResponse(refreshedMessage);
+    }
+
+    @Override
     public boolean isParticipant(Long conversationId, Long userId) {
         return participantRepository.isUserParticipant(conversationId, userId);
     }
@@ -481,9 +549,6 @@ public class ChatServiceImpl implements ChatService {
     private PartnerInfo getPartnerInfo(Long conversationId, Long currentUserId) {
         Long otherUserId = findOtherParticipantId(conversationId, currentUserId);
         if (otherUserId == null) {
-            return null;
-        }
-        if (blockedUserRepository.isBlockedEitherWay(currentUserId, otherUserId)) {
             return null;
         }
         Optional<User> partner = userRepository.findById(otherUserId);
