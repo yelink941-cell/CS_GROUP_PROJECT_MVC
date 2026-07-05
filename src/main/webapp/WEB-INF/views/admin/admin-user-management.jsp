@@ -79,7 +79,7 @@
 <body>
 
     <aside class="sidebar">
-        <div class="sidebar-brand">CheatSheet Hub</div>
+        <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link">
@@ -88,47 +88,46 @@
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/categories" class="sidebar-link">
-                    <span>🗂 Category Management</span>
+                    <span>📁 Category Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
+                    <span>🏷️ Tags Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
-                    <span>📝 Post Management</span>
+                    <span>📄 Post Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
+                <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link active">
                     <span>⏳ Pending Posts</span>
                 </a>
             </li>
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/comments" class="sidebar-link">
-                    <span>💬 Comment Management</span>
-                </a>
-            </li>
-            <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link active">
-                    <span>👥 User Directory</span>
+                <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
+                    <span>👥 User Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/announcements" class="sidebar-link">
-                    <span>📢 Event Announcements</span>
+                    <span>&#128364; Event Announcements</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports/cheatsheet" class="sidebar-link">
-                    <span>📄 CheatSheet Report</span>
+                    <span>&#128196; CheatSheet Report</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link">
-                    <span>🚨 Report Logs & Moderation</span>
+                    <span>📊 Report Logs</span>
                 </a>
             </li>
         </ul>
     </aside>
-
     <main class="main-workspace">
         <h2>👥 User Directory & Status Registry</h2>
 

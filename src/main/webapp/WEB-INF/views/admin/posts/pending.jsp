@@ -243,14 +243,20 @@
                     <span>⏳ Pending Posts</span>
                 </a>
             </li>
-            <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/comments" class="sidebar-link">
-                    <span>💬 Comment Management</span>
-                </a>
-            </li>
+            
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
                     <span>👥 User Management</span>
+                </a>
+            </li>
+             <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/announcements" class="sidebar-link">
+                    <span>&#128364; Event Announcements</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/reports/cheatsheet" class="sidebar-link">
+                    <span>&#128196; CheatSheet Report</span>
                 </a>
             </li>
             <li class="sidebar-item">
