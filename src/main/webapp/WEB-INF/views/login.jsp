@@ -23,7 +23,18 @@
                 <p style="margin: 0; font-size: 0.92rem; color: var(--muted);">Access your personal technical references</p>
             </div>
 
-            <c:if test="${param.error != null}">
+            <c:if test="${param.error == 'inactive'}">
+                <div id="authAlert" class="form-message-error" style="margin-bottom: 24px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; background-color: #fee2e2; border-left: 4px solid #ef4444; color: #991b1b; padding: 12px 14px; border-radius: 8px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Access Denied. Your account is currently inactive.
+                </div>
+                <script>
+                    window.onload = function() {
+                        alert("Your account is currently inactive. Access Denied!");
+                    };
+                </script>
+            </c:if>
+
+            <c:if test="${param.error == 'true'}">
                 <div id="authAlert" class="form-message-error" style="margin-bottom: 24px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-triangle-exclamation"></i> Invalid credentials. Please try again.
                 </div>
