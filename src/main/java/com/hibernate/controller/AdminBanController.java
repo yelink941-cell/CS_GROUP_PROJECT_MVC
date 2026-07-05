@@ -2,6 +2,7 @@ package com.hibernate.controller;
 
 import com.hibernate.entity.User;
 import com.hibernate.service.ModerationService;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -38,40 +39,59 @@ public class AdminBanController {
         return null;
     }
 
+    private String getSafeRedirect(String redirectUrl, HttpServletRequest request, String fallback) {
+        if (redirectUrl == null || redirectUrl.trim().isEmpty()) {
+            return "redirect:" + fallback;
+        }
+        String ctx = request.getContextPath();
+        if (ctx != null && !ctx.isEmpty() && redirectUrl.startsWith(ctx)) {
+            redirectUrl = redirectUrl.substring(ctx.length());
+        }
+        if (!redirectUrl.startsWith("/")) {
+            redirectUrl = "/" + redirectUrl;
+        }
+        return "redirect:" + redirectUrl;
+    }
+
     @PostMapping("/users/{id}/ban")
     public String banUser(@PathVariable("id") Long userId,
                           @RequestParam(value = "reason", required = false, defaultValue = "Violated community guidelines") String reason,
                           @RequestParam(value = "duration", required = false, defaultValue = "PERMANENT") String duration,
+                          @RequestParam(value = "banType", required = false, defaultValue = "FULL") String banType,
+                          @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
                           HttpSession session,
+                          HttpServletRequest request,
                           RedirectAttributes redirectAttributes) {
         User admin = getAuthorizedAdmin(session);
         if (admin == null) return "redirect:/login";
 
         try {
-            moderationService.banUser(admin.getId(), userId, reason, duration);
-            redirectAttributes.addFlashAttribute("success", "User has been suspended/banned successfully.");
+            moderationService.banUser(admin.getId(), userId, reason, duration, banType);
+            redirectAttributes.addFlashAttribute("success", "User suspension status updated successfully.");
         } catch (SecurityException | IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to ban user: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Failed to suspend user: " + e.getMessage());
         }
-        return "redirect:/admin/users";
+        return getSafeRedirect(redirectUrl, request, "/admin/reports?type=comments&view=history");
     }
 
     @PostMapping("/users/{id}/unban")
     public String unbanUser(@PathVariable("id") Long userId,
+                            @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
                             HttpSession session,
+                            HttpServletRequest request,
                             RedirectAttributes redirectAttributes) {
         User admin = getAuthorizedAdmin(session);
         if (admin == null) return "redirect:/login";
 
         try {
             moderationService.unbanUser(admin.getId(), userId);
-            redirectAttributes.addFlashAttribute("success", "🎉 User has been unbanned and restored to ACTIVE status!");
+            redirectAttributes.addFlashAttribute("success", "🎉 User account restored (Unbanned) successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to unban user: " + e.getMessage());
         }
-        return "redirect:/admin/users";
+        return getSafeRedirect(redirectUrl, request, "/admin/reports?type=comments&view=history");
     }
 
     @PostMapping("/posts/{id}/hide")

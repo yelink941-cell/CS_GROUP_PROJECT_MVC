@@ -53,8 +53,7 @@
                                   rows="2"
                                   required
                                   placeholder="Reply ပြန်ရန်..."
-                                  style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
-                        </textarea>
+                                  style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;"></textarea>
 
                         <button type="submit"
                                 class="button button-secondary"
@@ -66,16 +65,13 @@
                 </div>
             </c:if>
 
-            <!-- Nested Replies (CLEAN FIXED VERSION) -->
-            <c:if test="${not empty reply.replies}">
-                <ul id="replySubListContainer-${reply.id}"
-                    style="margin-left:20px; padding-left:0; list-style:none;">
-
+            <!-- Nested Replies Container -->
+            <ul id="replySubListContainer-${reply.id}" style="margin-left:20px; padding-left:0; list-style:none;">
+                <c:if test="${not empty reply.replies}">
                     <c:set var="replyList" value="${reply.replies}" scope="request"/>
                     <jsp:include page="reply-recurse.jsp"/>
-
-                </ul>
-            </c:if>
+                </c:if>
+            </ul>
 
         </li>
 

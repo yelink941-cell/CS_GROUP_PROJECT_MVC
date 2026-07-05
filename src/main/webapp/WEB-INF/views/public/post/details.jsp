@@ -366,12 +366,12 @@
                             </div>
 
                             <div id="replyListContainer-${comment.id}">
-                                <c:if test="${not empty comment.replies}">
-                                    <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
+                                <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
+                                    <c:if test="${not empty comment.replies}">
                                         <c:set var="replyList" value="${comment.replies}" scope="request"/>
                                         <jsp:include page="reply-recurse.jsp" />
-                                    </ul>
-                                </c:if>
+                                    </c:if>
+                                </ul>
                             </div>
                         </div>
                     </c:forEach>
@@ -493,6 +493,7 @@ function getCsrfHeaders(contentType = 'application/json') {
 
     const headers = {
         'Content-Type': contentType,
+        'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
     };
 
@@ -609,10 +610,26 @@ commentForm.addEventListener('submit', function(e) {
         body: 'postId=' + postId + '&commentText=' + encodeURIComponent(commentText)
     })
     .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
+        return r.text().then(text => {
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                data = { status: 'error', message: text };
+            }
+            return { ok: r.ok, status: r.status, data: data };
+        });
     })
-    .then(data => {
+    .then(res => {
+        if (!res.ok) {
+            if (res.status === 401) {
+                window.location.href = '${pageContext.request.contextPath}/login';
+                return;
+            }
+            alert(res.data.message || 'Comment error (' + res.status + ')');
+            return;
+        }
+        const data = res.data;
         if (data.status === 'success') {
             // 🟢 No-reload: backend မှ ပြန်လာတဲ့ data နဲ့ comment DOM အသစ်တည်ဆောက်ပြီး
             //    comment list အောက်ဆုံးမှာ တိုက်ရိုက်ထည့်မည်။
@@ -682,11 +699,7 @@ commentForm.addEventListener('submit', function(e) {
     })
     .catch(err => {
         console.error('Comment request failed:', err);
-        if (err.message && err.message.includes('401')) {
-            window.location.href = '${pageContext.request.contextPath}/login';
-        } else {
-            alert('Comment error: ' + (err.message || 'Comment ပို့၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။'));
-        }
+        alert('Comment error: ' + (err.message || 'Comment ပို့၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။'));
     });
 });
 }
@@ -713,7 +726,16 @@ function toggleReplyForm(commentId) {
 function submitReply(e, commentId, parentId, postId) {
     e.preventDefault();
 
-    const replyText = document.getElementById('replyText-' + commentId).value;
+    const replyInput = document.getElementById('replyText-' + commentId);
+    if (!replyInput) {
+        console.error('Reply textarea element not found for ID: replyText-' + commentId);
+        return;
+    }
+    const replyText = replyInput.value.trim();
+    if (!replyText) {
+        alert('Reply content cannot be empty.');
+        return;
+    }
 
     fetch(getCleanUrl('/comments/reply'), {
         method: 'POST',
@@ -724,18 +746,33 @@ function submitReply(e, commentId, parentId, postId) {
             '&content=' + encodeURIComponent(replyText)
     })
     .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
+        return r.text().then(text => {
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                data = { status: 'error', message: text };
+            }
+            return { ok: r.ok, status: r.status, data: data };
+        });
     })
-    .then(data => {
+    .then(res => {
+        if (!res.ok) {
+            if (res.status === 401) {
+                window.location.href = '${pageContext.request.contextPath}/login';
+                return;
+            }
+            alert(res.data.message || 'Reply error (' + res.status + ')');
+            return;
+        }
+        const data = res.data;
         if (data.status !== 'success') {
             alert('Reply error: ' + (data.message || ''));
             return;
         }
 
         // 🟢 No-reload: textarea ရှင်း
-        const replyInput = document.getElementById('replyText-' + commentId);
-        if (replyInput) replyInput.value = '';
+        replyInput.value = '';
 
         // reply ထည့်ရမည့် list container (<ul>) ကို ရှာရန်/ဖန်တီးရန်
         const realParentId = data.parentId || parentId;
@@ -815,11 +852,7 @@ function submitReply(e, commentId, parentId, postId) {
     })
     .catch(err => {
         console.error('Reply request failed:', err);
-        if (err.message && err.message.includes('401')) {
-            window.location.href = '${pageContext.request.contextPath}/login';
-        } else {
-            alert('Reply failed');
-        }
+        alert('Reply error: ' + (err.message || 'Failed to submit reply'));
     });
 }
 
