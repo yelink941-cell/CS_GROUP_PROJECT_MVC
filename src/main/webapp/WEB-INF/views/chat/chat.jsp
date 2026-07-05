@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +14,7 @@
         /* Full Width Container */
         .app { width: 100%; max-width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* Topbar Layout - အစိမ်းမှ အမည်းရောင် (Black) သို့ ပြောင်းလဲထားသည် */
+        /* Topbar Layout */
         .topbar { background: #111111; color: #fff; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
         
         /* Back Button */
@@ -89,7 +89,7 @@
         }
         .status-dot-avatar.online { background-color: #22c55e; }
         
-        /* Group Avatar - အစိမ်းမှ Dark Charcoal အမည်းရောင်သန်းသော အရောင်သို့ ပြောင်းလဲထားသည် */
+        /* Group Avatar */
         .avatar.group { background: #333333; color: #fff; }
         
         .chat-row { display: flex; align-items: center; gap: 8px; padding: 0; border-bottom: 1px solid #f0f2f5; position: relative; }
@@ -169,7 +169,7 @@
             to { opacity: 1; transform: scale(1); }
         }
         
-        /* Badges - User Badge ကိုလည်း အမည်းရောင်သို့ ပြောင်းလဲထားသည် */
+        /* Badges */
         .badge-admin { background: #ff9800; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
         .badge-user { background: #111111; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
         .empty { text-align: center; color: #667781; padding: 80px 24px; }
@@ -204,7 +204,7 @@
         <div class="topbar-actions">
             <div class="search-container">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="လူရှာရန်..." autocomplete="off">
+                <input type="text" id="searchInput" placeholder="Search users..." autocomplete="off">
                 <div id="searchResults" class="search-results"></div>
             </div>
             <a href="${ctx}/chat/create-group" class="fab-group">+ Group</a>
@@ -245,7 +245,7 @@
                             </div>
                         </div>
                         <div class="chat-preview">
-                            <c:out value="${not empty item.lastMessagePreview ? item.lastMessagePreview : 'စကားမရှိသေးပါ'}"/>
+                            <c:out value="${not empty item.lastMessagePreview ? item.lastMessagePreview : 'No messages yet'}"/>
                         </div>
                     </div>
                 </a>
@@ -261,8 +261,8 @@
         <c:if test="${empty inboxItems}">
             <div class="empty">
                 <p style="font-size:40px;margin:0;">💬</p>
-                <p>Chat list မရှိသေးပါ</p>
-                <p style="font-size:14px;">အပေါ်ရှိ Search bar ဖြင့် user (Admin/User) ကို ရှာပြီး chat စတင်ပါ</p>
+                <p>No chats yet</p>
+                <p style="font-size:14px;">Use the Search bar above to find a user (Admin/User) and start chatting</p>
             </div>
         </c:if>
     </div>
@@ -384,7 +384,7 @@
 
     function deleteChatFromList(row) {
         var conversationId = row.data('conversation-id');
-        if (!confirm('ဒီ chat ကို inbox မှ ဖျက်မှာသေချာလား?')) return;
+        if (!confirm('Are you sure you want to delete this chat from your inbox?')) return;
 
         $.ajax({
             url: ctx + '/api/chat/conversations/' + conversationId,
@@ -406,7 +406,7 @@
     function blockUserFromList(row) {
         var partnerId = row.data('partner-id');
         if (!partnerId) return;
-        if (!confirm('ဒီ user ကို block လုပ်မှာသေချာလား?')) return;
+        if (!confirm('Are you sure you want to block this user?')) return;
 
         $.ajax({
             url: ctx + '/api/chat/users/' + partnerId + '/block',
@@ -423,7 +423,7 @@
     function unblockUserFromList(row) {
         var partnerId = row.data('partner-id');
         if (!partnerId) return;
-        if (!confirm('ဒီ user ကို unblock လုပ်မှာသေချာလား?')) return;
+        if (!confirm('Are you sure you want to unblock this user?')) return;
 
         $.ajax({
             url: ctx + '/api/chat/users/' + partnerId + '/unblock',
@@ -441,7 +441,7 @@
         $.get(ctx + '/api/chat/users/search', { q: keyword }, function(users) {
             const box = $('#searchResults').empty();
             if (!users.length) {
-                box.append('<div class="search-item" style="cursor:default;color:#667781;font-size:13px;justify-content:center;">ရှာမတွေ့ပါ</div>').show();
+                box.append('<div class="search-item" style="cursor:default;color:#667781;font-size:13px;justify-content:center;">No results found</div>').show();
                 return;
             }
             users.forEach(function(user) {
@@ -465,7 +465,7 @@
         $.post(ctx + '/api/chat/start', { userId: userId }, function(data) {
             window.location.href = ctx + '/chat/room?id=' + data.conversationId;
         }).fail(function(xhr) {
-            alert(xhr.responseText || 'Chat စတင်၍ မရပါ');
+            alert(xhr.responseText || 'Could not start chat');
         });
     }
 

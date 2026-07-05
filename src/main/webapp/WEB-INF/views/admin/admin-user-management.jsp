@@ -530,8 +530,8 @@
                                 <% if (isBanned) { %>
                                     <!-- 🎉 UNBAN / PARDON BUTTON -->
                                     <form action="${pageContext.request.contextPath}/admin/users/<%= u.getId() %>/unban" method="POST" style="margin:0;">
-                                        <button type="submit" class="btn btn-unban" onclick="return confirm('ဒီ User ကို Ban ခဲ့တာမှ ကင်းလွှတ်ခွင့်ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
-                                            <i class="fas fa-key"></i> 🎉 Unban (ကင်းလွှတ်ခွင့်)
+                                        <button type="submit" class="btn btn-unban" onclick="return confirm('Are you sure you want to unban this user?');">
+                                            <i class="fas fa-key"></i> 🎉 Unban
                                         </button>
                                     </form>
                                 <% } else { %>
@@ -631,19 +631,19 @@
             <form id="banForm" action="" method="POST">
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase;">
-                        Ban Duration (အချိန်ကာလ သတ်မှတ်ချက်):
+                        Ban Duration:
                     </label>
                     <select name="duration" style="width: 100%; padding: 10px; border-radius: 8px;">
-                        <option value="1_WEEK">1 Week (၁ ပတ်)</option>
-                        <option value="1_MONTH">1 Month (၁ လ)</option>
-                        <option value="1_YEAR">1 Year (၁ နှစ်)</option>
-                        <option value="PERMANENT">Permanent Ban (ထာဝရ ပိတ်ပင်မည်)</option>
+                        <option value="1_WEEK">1 Week</option>
+                        <option value="1_MONTH">1 Month</option>
+                        <option value="1_YEAR">1 Year</option>
+                        <option value="PERMANENT">Permanent Ban</option>
                     </select>
                 </div>
 
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase;">
-                        Reason for Suspension (အကြောင်းအရင်း):
+                        Reason for Suspension:
                     </label>
                     <textarea name="reason" rows="3" required placeholder="Violated community rules..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px;"></textarea>
                 </div>

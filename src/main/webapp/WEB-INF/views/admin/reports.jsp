@@ -265,8 +265,8 @@
                                                     <% if (author != null) { %>
                                                         <% if (isAuthorBanned) { %>
                                                             <form action="<%= ctx %>/admin/users/<%= author.getId() %>/unban" method="POST" style="margin:0;">
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Author အား ကင်းလွှတ်ခွင့် ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
-                                                                    <i class="fas fa-key"></i> 🎉 Unban (ကင်းလွှတ်ခွင့်)
+                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Are you sure you want to unban this author?');">
+                                                                    <i class="fas fa-key"></i> 🎉 Unban Author
                                                                 </button>
                                                             </form>
                                                             <span style="font-size:10px; color:#dc2626; font-weight:600;"><%= author.getBanRemainingText() %></span>
@@ -334,7 +334,7 @@
                                                     <% if (author != null) { %>
                                                         <% if (isAuthorBanned) { %>
                                                             <form action="<%= ctx %>/admin/users/<%= author.getId() %>/unban" method="POST" style="display:inline; margin-top:4px;">
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Author အား ကင်းလွှတ်ခွင့် ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
+                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Are you sure you want to unban this author?');">
                                                                     <i class="fas fa-key"></i> 🎉 Unban Author
                                                                 </button>
                                                             </form>
@@ -445,8 +445,8 @@
                                                         <% if (isCommenterBanned) { %>
                                                             <!-- 🎉 UNBAN / PARDON BUTTON IN HISTORY -->
                                                             <form action="<%= ctx %>/admin/users/<%= commenter.getId() %>/unban" method="POST" style="margin:0;">
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Commenter အား ကင်းလွှတ်ခွင့် ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
-                                                                    <i class="fas fa-key"></i> 🎉 Unban (ကင်းလွှတ်ခွင့်)
+                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Are you sure you want to unban this commenter?');">
+                                                                    <i class="fas fa-key"></i> 🎉 Unban Commenter
                                                                 </button>
                                                             </form>
                                                             <span style="font-size:10px; color:#dc2626; font-weight:600;"><%= commenter.getBanRemainingText() %></span>
@@ -516,7 +516,7 @@
                                                     <% if (commenter != null) { %>
                                                         <% if (isCommenterBanned) { %>
                                                             <form action="<%= ctx %>/admin/users/<%= commenter.getId() %>/unban" method="POST" style="display:inline; margin-top:4px;">
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Commenter အား ကင်းလွှတ်ခွင့် ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
+                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Are you sure you want to unban this commenter?');">
                                                                     <i class="fas fa-key"></i> 🎉 Unban Commenter
                                                                 </button>
                                                             </form>
@@ -586,19 +586,19 @@
             <form id="banForm" action="" method="POST">
                 <div style="margin-bottom: 14px;">
                     <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">
-                        Ban Duration (အချိန်ကာလ သတ်မှတ်ချက်):
+                        Ban Duration:
                     </label>
                     <select name="duration" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px;">
-                        <option value="1_WEEK">1 Week (၁ ပတ်)</option>
-                        <option value="1_MONTH">1 Month (၁ လ)</option>
-                        <option value="1_YEAR">1 Year (၁ နှစ်)</option>
-                        <option value="PERMANENT">Permanent Ban (ထာဝရ ပိတ်ပင်မည်)</option>
+                        <option value="1_WEEK">1 Week</option>
+                        <option value="1_MONTH">1 Month</option>
+                        <option value="1_YEAR">1 Year</option>
+                        <option value="PERMANENT">Permanent Ban</option>
                     </select>
                 </div>
 
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">
-                        Reason for Suspension (အကြောင်းအရင်း):
+                        Reason for Suspension:
                     </label>
                     <textarea name="reason" rows="3" required placeholder="Violated community guidelines..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px;"></textarea>
                 </div>

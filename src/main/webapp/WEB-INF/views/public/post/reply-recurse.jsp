@@ -19,11 +19,7 @@
 
             <!-- Actions -->
             <div class="comment-actions" style="display: flex; gap: 12px; margin-bottom: 8px;">
-                <button type="button"
-                        class="button-link"
-                        onclick="toggleReplyForm('r-${reply.id}')">
-                    Reply
-                </button>
+                <button type="button" onclick="toggleReplyForm('r-${reply.id}')" class="button button-secondary" style="font-size: 11px; padding: 3px 8px;">Reply</button>
 
                 <c:if test="${sessionScope.userId == reply.user.id}">
                     <button type="button"
@@ -49,18 +45,9 @@
 
                     <form onsubmit="submitReply(event,'r-${reply.id}',${reply.id},${post.id})">
 
-                        <textarea id="replyText-r-${reply.id}"
-                                  rows="2"
-                                  required
-                                  placeholder="Reply ပြန်ရန်..."
-                                  style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
-                        </textarea>
-
-                        <button type="submit"
-                                class="button button-secondary"
-                                style="font-size:12px; padding:4px 10px; margin-top:4px;">
-                            Submit Reply
-                        </button>
+                        <textarea id="replyText-r-${reply.id}" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+                        <br>
+                        <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Post Reply</button>
 
                     </form>
                 </div>

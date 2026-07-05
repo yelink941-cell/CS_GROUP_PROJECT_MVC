@@ -28,7 +28,7 @@
             margin-top: 2rem;
         }
         
-        /* 🎯 🌟 ၁။ 🗑️ Icon ကို ကတ်ပြားရဲ့အတွင်းမှာ အမှီပြုပြီး နေရာချနိုင်ရန် Wrapper ထည့်ပေးပါသည် */
+        /* 1. Wrapper to allow absolute positioning of the delete icon inside the card */
         .cheat-sheet-card-wrapper {
             position: relative; 
         }
@@ -44,7 +44,7 @@
             display: block;
             transition: transform 0.2s, border-color 0.2s;
             
-            /* 🎯 🌟 ၂။ စာသားခေါင်းစဉ်ရှည်သွားရင် 🗑️ Icon နဲ့ မထပ်မိစေရန် ညာဘက်ကို Padding 3rem ချန်ထားပေးပါသည် */
+            /* 2. Padding right to prevent title from overlapping the delete icon */
             padding-right: 3rem; 
         }
         .cheat-sheet-card:hover {
@@ -58,7 +58,7 @@
             font-size: 1.2rem;
         }
         
-        /* 🎯 🌟 ၃။ 🗑️ Icon အတွက် စတိုင်လ်အသစ် (ခပ်မှိန်မှိန်လေးပေါ်နေပြီး Mouse တင်ရင် အနီရောင်ပြောင်းမည့်စနစ်) */
+        /* 3. Delete icon style - faint by default, turns red on hover */
         .btn-delete-item {
             position: absolute;
             top: 1.5rem;
@@ -67,14 +67,14 @@
             border: none;
             font-size: 1.1rem;
             cursor: pointer;
-            color: #94a3b8; /* မူရင်းအရောင် ခပ်မှိန်မှိန် */
+            color: #94a3b8; /* default faint color */
             transition: color 0.2s, transform 0.2s;
             text-decoration: none;
-            z-index: 10; /* ကတ်ပြားရဲ့ အပေါ်ဆုံးလွှာမှာ ရှိနေစေရန် (မရှိရင် နှိပ်မရဖြစ်တတ်ပါသည်) */
+            z-index: 10; /* ensure clickable on top of card */
         }
         .btn-delete-item:hover {
-            color: #ef4444; /* Mouse တင်လိုက်ရင် အနီရောင်တောက်တောက်ပြောင်းရန် */
-            transform: scale(1.15); /* နည်းနည်းလေး ကြီးလာစေရန် */
+            color: #ef4444; /* red on hover */
+            transform: scale(1.15); /* slightly larger on hover */
         }
 
         .empty-state {
@@ -112,16 +112,16 @@
                 </c:when>
                 <c:otherwise>
                  <c:forEach var="post" items="${savedPosts}">
-    <!-- 🎯 အပြင်ဘက်ဆုံးမှာ Wrapper Class သေချာပေါက် ရှိနေရပါမည် -->
+    <!-- Outer Wrapper for card with positioned delete button -->
     <div class="cheat-sheet-card-wrapper">
         
-        <!-- မင်းရဲ့ မူရင်းကတ်ပြား -->
+        <!-- The post card link -->
         <a href="${pageContext.request.contextPath}/posts/${post.slug}" class="cheat-sheet-card">
             <h3 class="cheat-sheet-title">📄 <c:out value="${post.title}"/></h3>
             <span style="font-size: 0.85rem; color: #64748b;">View Details ➔</span>
         </a>
         
-        <!-- 🗑️ ခလုတ်လေးကို Wrapper ထဲတွင် သီးသန့် ညှပ်ပေးလိုက်ခြင်း -->
+        <!-- Delete button positioned inside the wrapper -->
         <a href="${pageContext.request.contextPath}/user/collections/${folder.id}/remove-post/${post.id}" 
            class="btn-delete-item" 
            onclick="return confirm('Are you sure you want to remove this item from this folder?');"
