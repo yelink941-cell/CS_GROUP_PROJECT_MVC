@@ -15,18 +15,9 @@ import com.hibernate.entity.User;
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
-
-import org.hibernate.query.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.mindrot.jbcrypt.BCrypt;
 import com.hibernate.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -296,7 +287,7 @@ public class UserServiceImpl implements UserService {
                 .setParameter("userId", userId) 
                 .uniqueResult();
         return count != null ? count : 0L;
-
+    }
     @Override
     @Transactional
     public void updateUserOnlineStatus(Long userId, boolean isOnline) {

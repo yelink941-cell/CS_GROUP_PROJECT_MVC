@@ -190,45 +190,9 @@
     <article class="detail-card">
         <h1><c:out value="${post.title}" /></h1>
 
-            <div class="post-meta" style="display: flex; gap: 20px; align-items: center;">
-    <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
-    <span>
-        <strong>Author:</strong> 
-        <a href="${pageContext.request.contextPath}/profile?id=${post.author.id}" style="color: #4038ff; text-decoration: none; font-weight: 600; margin-right: 8px;">
-            @<c:out value="${post.author.username}" />
-        </a>
-    </span>
-    <span><strong>Views:</strong> <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /></span>
-
-    <c:if test="${not empty userId && userId != post.author.id}">
-        <div style="margin-left: auto;">
-            <c:choose>
-                <%-- 🎯 FIX: Evaluate the direct model variable --%>
-                <c:when test="${isFollowing}">
-                    <form action="${pageContext.request.contextPath}/user/unfollow" method="POST" style="margin: 0;">
-                        <input type="hidden" name="targetId" value="${post.author.id}" />
-                        <button type="submit" style="color: #64748b; text-decoration: none; font-weight: 600; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 20px; background: #f8fafc; cursor: pointer;">
-                            ✓ Following
-                        </button>
-                    </form>
-                </c:when>
-                <c:otherwise>
-                    <form action="${pageContext.request.contextPath}/user/follow" method="POST" style="margin: 0;">
-                        <input type="hidden" name="targetId" value="${post.author.id}" />
-                        <button type="submit" class="button" style="background: #4038ff; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;">
-                            ➕ Follow Creator
-                        </button>
-                    </form>
-                </c:otherwise>
-            </c:choose>
-        </div>
-    </c:if>
-</div>
-
-
-            <button type="button" id="commentCountBtn" class="button button-secondary" onclick="toggleCommentsSection()">
-                💬 Comments (${not empty totalComments ? totalComments : 0})
-            </button>
+        <div class="post-meta">
+            <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
+            <span><strong>Author:</strong> <c:out value="${post.author.username}" /></span>
         </div>
 
         <div class="badge-row" style="margin-top: 18px;">
@@ -354,7 +318,7 @@
                 <form id="commentForm" style="margin-bottom: 30px;">
                     <input type="hidden" id="postId" name="postId" value="${post.id}" />
                     <div class="form-group">
-                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Comment တစ်ခုခုရေးပါ..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
+                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Write a comment..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
                     </div>
                     <button type="submit" class="button button-primary" style="margin-top: 10px;">Comment ပို့မည်</button>
                 </form>
@@ -537,6 +501,18 @@ function showCommentsSection() {
 /* =========================
    🔡 HTML ESCAPE HELPER
    Backend မှ user input (username/content) ကို DOM ထဲထည့်ခါက XSS ကာကွယ်ရန်
+========================= */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/* =========================
    💬 COMMENT COUNT UPDATE HELPER
 ========================= */
 function updateCommentCount(newCount) {
@@ -810,6 +786,130 @@ function submitReply(e, commentId, parentId, postId) {
 
 /* =========================
    🗑 DELETE COMMENT (No-reload)
+========================= */
+function deleteComment(commentId) {
+    if (!confirm('Delete?')) return;
+
+    fetch(getCleanUrl('/comments/delete/') + commentId, {
+        method: 'POST',
+        headers: getCsrfHeaders()
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if (data.status !== 'success') {
+            alert('Delete failed: ' + (data.message || ''));
+            return;
+        }
+
+        // 🟢 No-reload: main comment ဖြစ်စေ, reply ဖြစ်စေ DOM မှ တိုက်ရိုက်ဖယ်
+        let deletedCount = 0;
+        const mainEl = document.getElementById('comment-' + commentId);
+        const replyEl = document.getElementById('reply-item-' + commentId);
+        if (mainEl) {
+            // Count self + all nested replies
+            deletedCount = 1 + mainEl.querySelectorAll('[id^="reply-item-"]').length;
+            mainEl.remove();
+        } else if (replyEl) {
+            // Count self + all nested replies
+            deletedCount = 1 + replyEl.querySelectorAll('[id^="reply-item-"]').length;
+            replyEl.remove();
+        }
+
+        // ကွန်မန့်အားလုံးဖျက်ပြီးပါက "ကွန်မန့် မရှိသေးပါ။" ပြန်ပြမည်
+        const container = document.getElementById('commentListContainer');
+        if (container && container.children.length === 0) {
+            container.remove();
+            let msg = document.getElementById('noCommentsMessage');
+            if (!msg) {
+                msg = document.createElement('p');
+                msg.style.color = '#888';
+                msg.id = 'noCommentsMessage';
+                msg.innerText = 'ကွန်မန့် မရှိသေးပါ။';
+                document.getElementById('commentsToggleWrapper').appendChild(msg);
+            }
+        }
+
+        // 🟢 Comment count လျှော့
+        const header = document.getElementById('commentCountHeader');
+        if (header) {
+            let newCount = parseInt(header.getAttribute('data-count') || '0') - deletedCount;
+            if (newCount < 0) newCount = 0;
+            updateCommentCount(newCount);
+        }
+    })
+    .catch(err => {
+        console.error('Delete request failed:', err);
+        if (err.message && err.message.includes('401')) {
+            window.location.href = '${pageContext.request.contextPath}/login';
+        } else {
+            alert('Delete failed');
+        }
+    });
+}
+
+/* =========================
+   👍 LIKE
+========================= */
+function toggleLikePost(postId, btn) {
+    console.log("toggleLikePost called, postId:", postId);
+
+    var url = getCleanUrl('/api/toggle-like');
+    console.log("Fetching URL:", url);
+    console.log("CSRF headers:", JSON.stringify(getCsrfHeaders('application/x-www-form-urlencoded')));
+
+    fetch(url, {
+        method: 'POST',
+        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+        body: 'postId=' + postId
+    })
+    .then(function(r) {
+        console.log("HTTP Status =", r.status, r.statusText);
+        if (!r.ok) {
+            return r.text().then(function(txt) {
+                console.log("Error body:", txt);
+                throw new Error('HTTP ' + r.status + ': ' + txt);
+            });
+        }
+        return r.json();
+    })
+    .then(function(data) {
+        console.log("Response data =", JSON.stringify(data));
+
+        if (data.status === 'success') {
+
+            var countEl = document.getElementById('likeCount-' + postId);
+            if (countEl) countEl.innerText = data.totalLikes;
+
+            var icon = document.getElementById('likeIcon-' + postId);
+
+            if (data.isLiked) {
+                icon.innerHTML = "👍 Unlike";
+                btn.className = "button liked-btn";
+            } else {
+                icon.innerHTML = "👍🏻 Like";
+                btn.className = "button unliked-btn";
+            }
+
+            updateUrlHash('like');
+        } else {
+            console.warn("Server returned non-success:", data);
+            alert('Like မအောင်မြင်ပါ: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(function(err) {
+        console.error('Like request failed:', err);
+        if (err.message && err.message.includes('401')) {
+            window.location.href = '${pageContext.request.contextPath}/login';
+        } else {
+            alert('Like ပြုလုပ်၍မရပါ။ Error: ' + err.message);
+        }
+    });
+}
+
+/* =========================
    ⭐ RATING
 ========================= */
 function submitRating(postId, rating) {
