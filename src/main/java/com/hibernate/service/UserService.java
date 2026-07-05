@@ -42,5 +42,7 @@ public interface UserService {
     User findUserByResetToken(String token);
     void updatePassword(User user, String newPassword);
     long getPostCountByUserId(Long userId);
+
+	void updateUserOnlineStatus(Long userId, boolean isOnline);
 }
 
