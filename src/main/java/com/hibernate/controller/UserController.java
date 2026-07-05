@@ -32,13 +32,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.hibernate.dto.RegistrationDto;
-import com.hibernate.entity.User;
-import com.hibernate.entity.UserPreference;
-import com.hibernate.entity.UserProfile;
-import com.hibernate.entity.enums.Role;
-import com.hibernate.entity.enums.UserStatus;
-import com.hibernate.service.UserService;
 
 @Controller
 public class UserController {
@@ -200,10 +193,6 @@ public class UserController {
             model.addAttribute("email", email); 
             return "verify-otp"; 
         }
-
-        model.addAttribute("error", "Invalid OTP security code. Please check your email inbox again.");
-        model.addAttribute("email", email);
-        return "verify-otp";
     }
 
     @PostMapping("/reset-password")

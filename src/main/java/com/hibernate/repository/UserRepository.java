@@ -21,7 +21,7 @@ public interface UserRepository {
     
     void updateProfile(UserProfile profile);
     
-    UserProfile getUserProfileByUserId(int userId);
+    UserProfile getUserProfileByUserId(Long userId);
 
     Optional<User> findByEmail(String email);
     Optional<User> findByUsername(String username);
