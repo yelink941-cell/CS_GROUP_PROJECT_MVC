@@ -3,12 +3,11 @@ package com.hibernate.service;
 import com.hibernate.entity.Notification;
 import com.hibernate.entity.User;
 import com.hibernate.repository.NotificationRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +34,27 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setReferenceId(referenceId);
         notification.setIsRead(false);
         notificationRepository.save(notification);
+    }
+
+    @Override
+    @Transactional
+    public void broadcastNotification(String type, String title, String message,
+                                      String referenceType, Integer referenceId) {
+        List<User> users = sessionFactory.getCurrentSession()
+                .createQuery("SELECT u FROM User u WHERE u.deletedAt IS NULL", User.class)
+                .getResultList();
+
+        for (User user : users) {
+            Notification notification = new Notification();
+            notification.setUser(user);
+            notification.setType(type);
+            notification.setTitle(title);
+            notification.setMessage(message);
+            notification.setReferenceType(referenceType);
+            notification.setReferenceId(referenceId);
+            notification.setIsRead(false);
+            notificationRepository.save(notification);
+        }
     }
 
     @Override

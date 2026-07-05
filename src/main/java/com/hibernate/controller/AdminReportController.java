@@ -41,13 +41,13 @@ public class AdminReportController {
             if ("history".equals(view)) {
                 model.addAttribute("commentReports", reportService.getAllCommentReportHistory());
             } else {
-                model.addAttribute("commentReports", reportService.getAllPendingCommentReports());
+                model.addAttribute("groupedCommentReports", reportService.getGroupedPendingCommentReports());
             }
         } else {
             if ("history".equals(view)) {
                 model.addAttribute("postReports", reportService.getAllPostReportHistory());
             } else {
-                model.addAttribute("postReports", reportService.getAllPendingPostReports());
+                model.addAttribute("groupedPostReports", reportService.getGroupedPendingPostReports());
             }
         }
 
@@ -81,6 +81,32 @@ public class AdminReportController {
         return "redirect:/admin/reports?type=posts&view=queue";
     }
 
+    @PostMapping("/posts/group/{postId}/dismiss")
+    public String dismissGroupedPostReport(@PathVariable("postId") Integer postId, HttpSession session) {
+        if (!isAuthorizedAdmin(session)) {
+            return "redirect:/login";
+        }
+
+        User admin = (User) session.getAttribute("currentUser");
+        reportService.dismissAllPostReportsByPostId(admin.getId(), postId);
+        return "redirect:/admin/reports?type=posts&view=queue";
+    }
+
+    @PostMapping("/posts/group/{postId}/resolve")
+    public String resolveGroupedPostReport(@PathVariable("postId") Integer postId,
+                                           @RequestParam(value = "reason", required = false, defaultValue = "Violated terms") String reason,
+                                           @RequestParam(value = "duration", required = false, defaultValue = "1_WEEK") String duration,
+                                           @RequestParam(value = "banType", required = false, defaultValue = "POST_ONLY") String banType,
+                                           HttpSession session) {
+        if (!isAuthorizedAdmin(session)) {
+            return "redirect:/login";
+        }
+
+        User admin = (User) session.getAttribute("currentUser");
+        reportService.resolveAllPostReportsByPostId(admin.getId(), postId, reason, duration, banType);
+        return "redirect:/admin/reports?type=posts&view=history";
+    }
+
     @PostMapping("/comments/{id}/dismiss")
     public String dismissCommentReport(@PathVariable("id") Integer id, HttpSession session) {
         if (!isAuthorizedAdmin(session)) {
@@ -102,6 +128,32 @@ public class AdminReportController {
 
         User admin = (User) session.getAttribute("currentUser");
         reportService.resolveCommentReport(admin.getId(), id, reason);
+        return "redirect:/admin/reports?type=comments&view=history";
+    }
+
+    @PostMapping("/comments/group/{commentId}/dismiss")
+    public String dismissGroupedCommentReport(@PathVariable("commentId") Integer commentId, HttpSession session) {
+        if (!isAuthorizedAdmin(session)) {
+            return "redirect:/login";
+        }
+
+        User admin = (User) session.getAttribute("currentUser");
+        reportService.dismissAllCommentReportsByCommentId(admin.getId(), commentId);
         return "redirect:/admin/reports?type=comments&view=queue";
+    }
+
+    @PostMapping("/comments/group/{commentId}/resolve")
+    public String resolveGroupedCommentReport(@PathVariable("commentId") Integer commentId,
+                                              @RequestParam(value = "reason", required = false, defaultValue = "Violated terms") String reason,
+                                              @RequestParam(value = "duration", required = false, defaultValue = "1_WEEK") String duration,
+                                              @RequestParam(value = "banType", required = false, defaultValue = "COMMENT_ONLY") String banType,
+                                              HttpSession session) {
+        if (!isAuthorizedAdmin(session)) {
+            return "redirect:/login";
+        }
+
+        User admin = (User) session.getAttribute("currentUser");
+        reportService.resolveAllCommentReportsByCommentId(admin.getId(), commentId, reason, duration, banType);
+        return "redirect:/admin/reports?type=comments&view=history";
     }
 }

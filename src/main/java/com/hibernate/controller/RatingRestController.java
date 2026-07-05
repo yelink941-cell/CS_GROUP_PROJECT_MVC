@@ -1,5 +1,6 @@
 package com.hibernate.controller;
 
+import com.hibernate.entity.User;
 import com.hibernate.service.RatingService;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,15 +19,34 @@ public class RatingRestController {
 
     private final RatingService ratingService;
 
-    @PostMapping("/api/toggle-rating")
+    @PostMapping({"/api/toggle-rating", "/rating"})
     @ResponseBody
     public ResponseEntity<Map<String, Object>> toggleRating(
             @RequestParam("postId") Integer postId,
             @RequestParam("rating") Integer ratingValue,
             HttpSession session) {
         
-        // 🟢 User ID အမျိုးအစား Long ဖြင့် တသမတ်တည်း ထုတ်ယူခြင်း
-        Long userId = (Long) session.getAttribute("userId");
+Object sessionUserId = session.getAttribute("userId");
+        Long userId = null;
+        if (sessionUserId instanceof Number) {
+            userId = ((Number) sessionUserId).longValue();
+        } else if (sessionUserId != null) {
+            userId = Long.valueOf(sessionUserId.toString());
+        }
+        
+        // 🟢 ထည့်သွင်းရမည့်နေရာ: userId null ဖြစ်နေလျှင် session ထဲမှ user object ကို အမှီလိုက်ရှာပြီး ပြန်ထုတ်ပေးခြင်း
+        if (userId == null) {
+            User sessionUser = (User) session.getAttribute("user");
+            if (sessionUser == null) {
+                sessionUser = (User) session.getAttribute("currentUser");
+            }
+            
+            if (sessionUser != null) {
+                userId = Long.valueOf(sessionUser.getId());
+                session.setAttribute("userId", userId);
+            }
+        }
+        
         Map<String, Object> response = new HashMap<>();
         
         if (userId == null) {

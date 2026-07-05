@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>💬 1-to-1 Chat စတင်ရန်</title>
+    <title>💬 Start 1-to-1 Chat</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .create-container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
@@ -22,7 +22,7 @@
 
 <div class="create-container">
     <h2>💬 1-to-1 Chat</h2>
-    <p>စကားပြောလိုသော user ၏ username ကို ရိုက်ထည့်ပါ။</p>
+    <p>Enter the username of the user you want to chat with.</p>
 
     <c:if test="${not empty error}">
         <div class="error-msg">⚠️ <c:out value="${error}"/></div>
@@ -33,10 +33,10 @@
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" class="input-field" placeholder="john_doe" required autocomplete="off">
         </div>
-        <button type="submit" class="btn-submit">Chat စတင်မည်</button>
+        <button type="submit" class="btn-submit">Start Chat</button>
     </form>
 
-    <a href="${pageContext.request.contextPath}/chat" class="back-link">⬅ Inbox သို့</a>
+    <a href="${pageContext.request.contextPath}/chat" class="back-link">⬅ Back to Inbox</a>
 </div>
 
 </body>

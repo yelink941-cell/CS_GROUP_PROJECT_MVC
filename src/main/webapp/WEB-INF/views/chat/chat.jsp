@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +14,7 @@
         /* Full Width Container */
         .app { width: 100%; max-width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* Topbar Layout - အစိမ်းမှ အမည်းရောင် (Black) သို့ ပြောင်းလဲထားသည် */
+        /* Topbar Layout */
         .topbar { background: #111111; color: #fff; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
         
         /* Back Button */
@@ -75,9 +75,21 @@
         .search-item:hover { background: #f5f6f6; }
         
         /* Avatar & Chat Rows */
+        .avatar-wrap { position: relative; display: inline-flex; flex-shrink: 0; }
         .avatar { width: 48px; height: 48px; border-radius: 50%; background: #dfe5e7; color: #54656f; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+        .status-dot-avatar {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            background-color: #cbd5e1;
+        }
+        .status-dot-avatar.online { background-color: #22c55e; }
         
-        /* Group Avatar - အစိမ်းမှ Dark Charcoal အမည်းရောင်သန်းသော အရောင်သို့ ပြောင်းလဲထားသည် */
+        /* Group Avatar */
         .avatar.group { background: #333333; color: #fff; }
         
         .chat-row { display: flex; align-items: center; gap: 8px; padding: 0; border-bottom: 1px solid #f0f2f5; position: relative; }
@@ -157,7 +169,7 @@
             to { opacity: 1; transform: scale(1); }
         }
         
-        /* Badges - User Badge ကိုလည်း အမည်းရောင်သို့ ပြောင်းလဲထားသည် */
+        /* Badges */
         .badge-admin { background: #ff9800; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
         .badge-user { background: #111111; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
         .empty { text-align: center; color: #667781; padding: 80px 24px; }
@@ -192,7 +204,7 @@
         <div class="topbar-actions">
             <div class="search-container">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="လူရှာရန်..." autocomplete="off">
+                <input type="text" id="searchInput" placeholder="Search users..." autocomplete="off">
                 <div id="searchResults" class="search-results"></div>
             </div>
             <a href="${ctx}/chat/create-group" class="fab-group">+ Group</a>
@@ -204,18 +216,24 @@
             <div class="chat-row"
                  data-conversation-id="${item.conversationId}"
                  data-is-group="${item.group}"
-                 data-partner-id="${item.partnerUserId != null ? item.partnerUserId : ''}">
+                 data-partner-id="${item.partnerUserId != null ? item.partnerUserId : ''}"
+                 data-blocked-by-me="${item.blockedByMe}">
                 <a href="${ctx}/chat/room?id=${item.conversationId}" class="chat-row-link">
-                    <div class="avatar ${item.group ? 'group' : ''}">
-                        <c:choose>
-                            <c:when test="${item.group}">👥</c:when>
-                            <c:otherwise>
-                                <c:choose>
-                                    <c:when test="${not empty item.displayName}">${item.displayName.substring(0,1).toUpperCase()}</c:when>
-                                    <c:otherwise>?</c:otherwise>
-                                </c:choose>
-                            </c:otherwise>
-                        </c:choose>
+                    <div class="avatar-wrap">
+                        <div class="avatar ${item.group ? 'group' : ''}">
+                            <c:choose>
+                                <c:when test="${item.group}">👥</c:when>
+                                <c:otherwise>
+                                    <c:choose>
+                                        <c:when test="${not empty item.displayName}">${item.displayName.substring(0,1).toUpperCase()}</c:when>
+                                        <c:otherwise>?</c:otherwise>
+                                    </c:choose>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <c:if test="${!item.group}">
+                            <span class="status-dot-avatar ${item.partnerOnline ? 'online' : 'offline'}" title="${item.partnerOnline ? 'Online' : (not empty item.partnerLastSeenFormatted ? item.partnerLastSeenFormatted : 'Offline')}"></span>
+                        </c:if>
                     </div>
                     <div class="chat-meta">
                         <div class="chat-meta-top">
@@ -227,7 +245,7 @@
                             </div>
                         </div>
                         <div class="chat-preview">
-                            <c:out value="${not empty item.lastMessagePreview ? item.lastMessagePreview : 'စကားမရှိသေးပါ'}"/>
+                            <c:out value="${not empty item.lastMessagePreview ? item.lastMessagePreview : 'No messages yet'}"/>
                         </div>
                     </div>
                 </a>
@@ -243,8 +261,8 @@
         <c:if test="${empty inboxItems}">
             <div class="empty">
                 <p style="font-size:40px;margin:0;">💬</p>
-                <p>Chat list မရှိသေးပါ</p>
-                <p style="font-size:14px;">အပေါ်ရှိ Search bar ဖြင့် user (Admin/User) ကို ရှာပြီး chat စတင်ပါ</p>
+                <p>No chats yet</p>
+                <p style="font-size:14px;">Use the Search bar above to find a user (Admin/User) and start chatting</p>
             </div>
         </c:if>
     </div>
@@ -258,7 +276,12 @@
     let searchTimer;
     let activeChatRow = null;
 
+    let socket = null;
+    let reconnectTimer = null;
+
     $(document).ready(function() {
+        connectWebSocket();
+
         $(document).on('click', '.chat-menu-btn', function(e) {
        		     e.preventDefault();
             e.stopPropagation();
@@ -278,6 +301,8 @@
                 deleteChatFromList(row);
             } else if (action === 'block') {
                 blockUserFromList(row);
+            } else if (action === 'unblock') {
+                unblockUserFromList(row);
             }
         });
 
@@ -320,10 +345,18 @@
 
         if (!isGroup && partnerId) {
             menu.append('<div class="menu-divider"></div>');
-            menu.append(
-                '<button type="button" data-action="block" class="danger">' +
-                '<span class="menu-icon">🚫</span>Block user</button>'
-            );
+            var isBlocked = row.data('blocked-by-me') === true || String(row.data('blocked-by-me')) === 'true';
+            if (isBlocked) {
+                menu.append(
+                    '<button type="button" data-action="unblock">' +
+                    '<span class="menu-icon">🔓</span>Unblock user</button>'
+                );
+            } else {
+                menu.append(
+                    '<button type="button" data-action="block" class="danger">' +
+                    '<span class="menu-icon">🚫</span>Block user</button>'
+                );
+            }
         }
 
         menu.addClass('active');
@@ -351,7 +384,7 @@
 
     function deleteChatFromList(row) {
         var conversationId = row.data('conversation-id');
-        if (!confirm('ဒီ chat ကို inbox မှ ဖျက်မှာသေချာလား?')) return;
+        if (!confirm('Are you sure you want to delete this chat from your inbox?')) return;
 
         $.ajax({
             url: ctx + '/api/chat/conversations/' + conversationId,
@@ -373,21 +406,33 @@
     function blockUserFromList(row) {
         var partnerId = row.data('partner-id');
         if (!partnerId) return;
-        if (!confirm('ဒီ user ကို block လုပ်မှာသေချာလား? Chat လည်း inbox မှ ပျောက်သွားပါမည်။')) return;
+        if (!confirm('Are you sure you want to block this user?')) return;
 
         $.ajax({
             url: ctx + '/api/chat/users/' + partnerId + '/block',
             type: 'POST',
             success: function() {
-                row.fadeOut(200, function() {
-                    $(this).remove();
-                    if ($('.chat-row').length === 0) {
-                        location.reload();
-                    }
-                });
+                location.reload();
             },
             error: function(xhr) {
                 alert('Block failed: ' + xhr.responseText);
+            }
+        });
+    }
+
+    function unblockUserFromList(row) {
+        var partnerId = row.data('partner-id');
+        if (!partnerId) return;
+        if (!confirm('Are you sure you want to unblock this user?')) return;
+
+        $.ajax({
+            url: ctx + '/api/chat/users/' + partnerId + '/unblock',
+            type: 'POST',
+            success: function() {
+                location.reload();
+            },
+            error: function(xhr) {
+                alert('Unblock failed: ' + xhr.responseText);
             }
         });
     }
@@ -396,7 +441,7 @@
         $.get(ctx + '/api/chat/users/search', { q: keyword }, function(users) {
             const box = $('#searchResults').empty();
             if (!users.length) {
-                box.append('<div class="search-item" style="cursor:default;color:#667781;font-size:13px;justify-content:center;">ရှာမတွေ့ပါ</div>').show();
+                box.append('<div class="search-item" style="cursor:default;color:#667781;font-size:13px;justify-content:center;">No results found</div>').show();
                 return;
             }
             users.forEach(function(user) {
@@ -420,12 +465,128 @@
         $.post(ctx + '/api/chat/start', { userId: userId }, function(data) {
             window.location.href = ctx + '/chat/room?id=' + data.conversationId;
         }).fail(function(xhr) {
-            alert(xhr.responseText || 'Chat စတင်၍ မရပါ');
+            alert(xhr.responseText || 'Could not start chat');
         });
     }
 
     function escapeHtml(text) {
         return $('<div>').text(text).html();
+    }
+
+    function connectWebSocket() {
+        if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+            return;
+        }
+
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = wsProtocol + '//' + window.location.host + ctx + '/ws/chat';
+
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = function() {
+            console.log('[Inbox WebSocket] Connected successfully');
+            if (reconnectTimer) {
+                clearTimeout(reconnectTimer);
+                reconnectTimer = null;
+            }
+        };
+
+        socket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'error') return;
+
+                if (data.type === 'user_status_changed' && data.payload) {
+                    const userId = String(data.payload.userId);
+                    const isOnline = data.payload.isOnline;
+                    const lastSeen = data.payload.lastSeenFormatted || 'Offline';
+                    
+                    $('.chat-row[data-partner-id="' + userId + '"]').each(function() {
+                        const dot = $(this).find('.status-dot-avatar');
+                        if (isOnline) {
+                            dot.addClass('online').removeClass('offline').attr('title', 'Online');
+                        } else {
+                            dot.addClass('offline').removeClass('online').attr('title', lastSeen);
+                        }
+                    });
+                    return;
+                }
+
+                if (data.type === 'message' || data.type === 'message_edited') {
+                    const msg = data.payload;
+                    if (msg && msg.conversationId) {
+                        updateInboxRow(msg);
+                    }
+                } else if (data.type === 'conversation_cleared' || data.type === 'message_deleted') {
+                    refreshInbox();
+                }
+            } catch (e) {
+                console.error('[Inbox WebSocket] Error parsing message:', e);
+            }
+        };
+
+        socket.onclose = function() {
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(connectWebSocket, 3000);
+        };
+
+        socket.onerror = function() {
+            try { socket.close(); } catch(e) {}
+        };
+    }
+
+    function updateInboxRow(msg) {
+        const conversationId = String(msg.conversationId);
+        let row = $('.chat-row[data-conversation-id="' + conversationId + '"]');
+
+        let timeStr = '00:00';
+        if (msg.createdAt) {
+            try {
+                if (Array.isArray(msg.createdAt)) {
+                    var hrs = String(msg.createdAt[3]).padStart(2, '0');
+                    var mins = String(msg.createdAt[4]).padStart(2, '0');
+                    timeStr = hrs + ':' + mins;
+                } else {
+                    var parts = msg.createdAt.split('T');
+                    if (parts.length > 1) timeStr = parts[1].substring(0, 5);
+                }
+            } catch(e) {}
+        }
+
+        let previewText = msg.messageText || '';
+        if (!previewText) {
+            if (msg.messageType === 'IMAGE') previewText = '📷 Photo';
+            else if (msg.messageType === 'VIDEO') previewText = '🎬 Video';
+            else if (msg.attachments && msg.attachments.length) previewText = '📷 Photo';
+            else previewText = 'Message';
+        }
+
+        if (row.length > 0) {
+            row.find('.chat-preview').text(previewText);
+            let timeSpan = row.find('.chat-time');
+            if (timeSpan.length === 0) {
+                row.find('.chat-row-side').prepend('<span class="chat-time">' + timeStr + '</span>');
+            } else {
+                timeSpan.text(timeStr);
+            }
+            // Move row to the top of chatList
+            $('#chatList').prepend(row);
+        } else {
+            // New conversation row, refresh inbox list
+            refreshInbox();
+        }
+    }
+
+    function refreshInbox() {
+        $.ajax({
+            url: ctx + '/api/chat/inbox',
+            type: 'GET',
+            success: function(items) {
+                if (items && items.length) {
+                    location.reload();
+                }
+            }
+        });
     }
 </script>
 

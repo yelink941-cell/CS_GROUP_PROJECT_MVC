@@ -9,7 +9,12 @@ import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hibernate.dto.GroupedCommentReportDto;
+import com.hibernate.dto.GroupedPostReportDto;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -148,6 +153,13 @@ public class ReportServiceImpl implements ReportService {
             if (post != null) {
                 moderationService.softDeletePost(adminId, post.getId(),
                         "Resolved report " + reportId + ": " + reason);
+
+                User author = post.getAuthor();
+                User admin = getUser(adminId);
+                if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
+                    moderationService.banUser(adminId, author.getId(),
+                            "Banned due to resolved post report " + reportId + ": " + reason, "1_WEEK", "POST_ONLY");
+                }
             }
         }
     }
@@ -170,8 +182,96 @@ public class ReportServiceImpl implements ReportService {
                 User admin = getUser(adminId);
                 if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
                     moderationService.banUser(adminId, author.getId(),
-                            "Banned due to resolved comment report " + reportId + ": " + reason);
+                            "Banned due to resolved comment report " + reportId + ": " + reason, "PERMANENT", "FULL");
                 }
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void dismissAllPostReportsByPostId(Long adminId, Integer postId) {
+        List<PostReport> pendingList = postReportRepository.findPendingByPostId(postId);
+        for (PostReport report : pendingList) {
+            report.setStatus(ReportStatus.DISMISSED);
+            postReportRepository.save(report);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void resolveAllPostReportsByPostId(Long adminId, Integer postId, String reason) {
+        resolveAllPostReportsByPostId(adminId, postId, reason, "1_WEEK", "POST_ONLY");
+    }
+
+    @Override
+    @Transactional
+    public void resolveAllPostReportsByPostId(Long adminId, Integer postId, String reason, String duration, String banType) {
+        List<PostReport> pendingList = postReportRepository.findPendingByPostId(postId);
+        if (pendingList.isEmpty()) {
+            return;
+        }
+        for (PostReport report : pendingList) {
+            report.setStatus(ReportStatus.RESOLVED);
+            postReportRepository.save(report);
+        }
+
+        Post post = pendingList.get(0).getPost();
+        if (post != null) {
+            moderationService.softDeletePost(adminId, post.getId(),
+                    "Resolved all pending reports (" + pendingList.size() + "): " + reason);
+
+            User author = post.getAuthor();
+            User admin = getUser(adminId);
+            if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
+                moderationService.banUser(adminId, author.getId(),
+                        "Banned due to resolved post reports (" + pendingList.size() + "): " + reason,
+                        duration != null ? duration : "1_WEEK",
+                        banType != null ? banType : "POST_ONLY");
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void dismissAllCommentReportsByCommentId(Long adminId, Integer commentId) {
+        List<CommentReport> pendingList = commentReportRepository.findPendingByCommentId(commentId);
+        for (CommentReport report : pendingList) {
+            report.setStatus(ReportStatus.DISMISSED);
+            commentReportRepository.save(report);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void resolveAllCommentReportsByCommentId(Long adminId, Integer commentId, String reason) {
+        resolveAllCommentReportsByCommentId(adminId, commentId, reason, "1_WEEK", "COMMENT_ONLY");
+    }
+
+    @Override
+    @Transactional
+    public void resolveAllCommentReportsByCommentId(Long adminId, Integer commentId, String reason, String duration, String banType) {
+        List<CommentReport> pendingList = commentReportRepository.findPendingByCommentId(commentId);
+        if (pendingList.isEmpty()) {
+            return;
+        }
+        for (CommentReport report : pendingList) {
+            report.setStatus(ReportStatus.RESOLVED);
+            commentReportRepository.save(report);
+        }
+
+        Comment comment = pendingList.get(0).getComment();
+        if (comment != null) {
+            moderationService.softDeleteComment(adminId, comment.getId(),
+                    "Resolved all pending reports (" + pendingList.size() + "): " + reason);
+
+            User author = comment.getUser();
+            User admin = getUser(adminId);
+            if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
+                moderationService.banUser(adminId, author.getId(),
+                        "Banned due to resolved comment reports (" + pendingList.size() + "): " + reason,
+                        duration != null ? duration : "1_WEEK",
+                        banType != null ? banType : "COMMENT_ONLY");
             }
         }
     }
@@ -186,6 +286,34 @@ public class ReportServiceImpl implements ReportService {
     @Transactional(readOnly = true)
     public List<CommentReport> getAllPendingCommentReports() {
         return commentReportRepository.findAllPending();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupedPostReportDto> getGroupedPendingPostReports() {
+        List<PostReport> pendingList = postReportRepository.findAllPending();
+        Map<Integer, GroupedPostReportDto> map = new LinkedHashMap<>();
+        for (PostReport r : pendingList) {
+            if (r.getPost() == null) continue;
+            Integer postId = r.getPost().getId();
+            GroupedPostReportDto dto = map.computeIfAbsent(postId, id -> new GroupedPostReportDto(r.getPost()));
+            dto.addReport(r);
+        }
+        return new ArrayList<>(map.values());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupedCommentReportDto> getGroupedPendingCommentReports() {
+        List<CommentReport> pendingList = commentReportRepository.findAllPending();
+        Map<Integer, GroupedCommentReportDto> map = new LinkedHashMap<>();
+        for (CommentReport r : pendingList) {
+            if (r.getComment() == null) continue;
+            Integer commentId = r.getComment().getId();
+            GroupedCommentReportDto dto = map.computeIfAbsent(commentId, id -> new GroupedCommentReportDto(r.getComment()));
+            dto.addReport(r);
+        }
+        return new ArrayList<>(map.values());
     }
 
     @Override

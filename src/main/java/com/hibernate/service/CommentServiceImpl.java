@@ -2,7 +2,6 @@ package com.hibernate.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.hibernate.Hibernate;
@@ -31,29 +30,20 @@ public class CommentServiceImpl implements CommentService {
         } catch (Exception e) {
             System.err.println("🚨🚨 CRITICAL ERROR DURING COMMENT SAVE COMMENT 🚨🚨");
             e.printStackTrace();
+            throw e;
         }
     }
 
     @Override
     @Transactional 
     public List<Comment> getCommentsByPostId(Integer postId) {
-        // Active (deletedAt == null) ဖြစ်သော Parent Comments များကိုသာ တိုက်ရိုက်ဆွဲထုတ်သည်
-        List<Comment> activeParentComments = getActiveParentComments(postId);
-        return activeParentComments;
+        return getActiveParentComments(postId);
     }
 
     private void initializeReplies(Comment comment) {
-        if (comment.getReplies() != null) {
+        if (comment != null && comment.getReplies() != null) {
             Hibernate.initialize(comment.getReplies());
-            
-            // Reply များကိုပါ Active ဖြစ်သော replies များကိုသာ Filter စစ်ထုတ်ပြီး initialize လုပ်ပေးခြင်း
-            List<Comment> activeReplies = comment.getReplies().stream()
-                    .filter(r -> r.getDeletedAt() == null)
-                    .collect(Collectors.toList());
-            
-            comment.setReplies(activeReplies);
-
-            for (Comment reply : activeReplies) {
+            for (Comment reply : comment.getReplies()) {
                 initializeReplies(reply);
             }
         }
@@ -92,7 +82,6 @@ public class CommentServiceImpl implements CommentService {
         if (replies == null || replies.isEmpty()) {
             return 0;
         }
-        // Active replies များကိုသာ အရေအတွက် ရေတွက်သည်
         int count = (int) replies.stream().filter(r -> r.getDeletedAt() == null).count();
         
         for (Comment reply : replies) {
@@ -113,23 +102,21 @@ public class CommentServiceImpl implements CommentService {
             comment.setDeletedAt(now);
             commentRepository.save(comment);
             
+            initializeAndCascadeDelete(comment, now);
             System.out.println("DEBUG: Comment (ID: " + id + ") soft-deleted successfully.");
-            cascadeSoftDeleteReplies(comment.getReplies(), now);
         } else {
             System.err.println("🚨 Cannot delete: Comment not found with ID: " + id);
         }
     }
 
-    private void cascadeSoftDeleteReplies(List<Comment> replies, LocalDateTime deleteTime) {
-        if (replies != null && !replies.isEmpty()) {
-            for (Comment reply : replies) {
-                if (reply.getDeletedAt() == null) {
+    private void initializeAndCascadeDelete(Comment comment, LocalDateTime deleteTime) {
+        if (comment != null && comment.getReplies() != null) {
+            Hibernate.initialize(comment.getReplies());
+            for (Comment reply : comment.getReplies()) {
+                if (reply != null && reply.getDeletedAt() == null) {
                     reply.setDeletedAt(deleteTime);
                     commentRepository.save(reply);
-                    
-                    if (reply.getReplies() != null && !reply.getReplies().isEmpty()) {
-                        cascadeSoftDeleteReplies(reply.getReplies(), deleteTime);
-                    }
+                    initializeAndCascadeDelete(reply, deleteTime);
                 }
             }
         }

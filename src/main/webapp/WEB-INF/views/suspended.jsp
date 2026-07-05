@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Account Suspended - CheatSheet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body {
@@ -19,7 +20,7 @@
             background: white;
             border-radius: 20px;
             padding: 48px;
-            max-width: 520px;
+            max-width: 540px;
             width: 100%;
             text-align: center;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
@@ -53,7 +54,7 @@
             font-weight: 700;
         }
         .suspended-card .subtitle {
-            font-size: 16px;
+            font-size: 15px;
             color: #64748b;
             margin-bottom: 24px;
             line-height: 1.6;
@@ -104,23 +105,46 @@
             flex-shrink: 0;
         }
         .contact-section {
-            margin-top: 28px;
-            padding-top: 24px;
+            margin-top: 24px;
+            padding-top: 20px;
             border-top: 1px solid #e2e8f0;
         }
-        .contact-section p {
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: #e2e8f0;
+            color: #1e293b;
+            text-decoration: none;
+            border-radius: 10px;
             font-size: 14px;
-            color: #64748b;
-            margin-bottom: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-back:hover {
+            background: #cbd5e1;
+            color: #0f172a;
+            transform: translateY(-1px);
         }
         .btn-contact {
-            display: inline-block;
-            padding: 12px 28px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
             background: #0284c7;
             color: white;
             text-decoration: none;
             border-radius: 10px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             transition: all 0.2s;
         }
@@ -129,8 +153,26 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
         }
+        .btn-logout-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: #fee2e2;
+            color: #991b1b;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-logout-link:hover {
+            background: #fecaca;
+            color: #7f1d1d;
+            transform: translateY(-1px);
+        }
         .footer-text {
-            margin-top: 32px;
+            margin-top: 28px;
             font-size: 12px;
             color: #94a3b8;
         }
@@ -142,29 +184,42 @@
         <div class="icon-wrapper">&#128683;</div>
         <h1>Account Suspended</h1>
         <p class="subtitle">
-            Your account has been suspended due to a violation of our community guidelines.
-            During this time, you will not be able to access your account or perform any actions.
+            Your account permissions have been restricted due to a moderation action.
         </p>
 
-        <div class="reason-box">
-            <h4>Possible Reasons</h4>
-            <p>
-                This action was taken by an administrator after reviewing reported content or behavior
-                that violated our terms of service. The suspension may be temporary or permanent
-                depending on the severity of the violation.
-            </p>
-        </div>
+        <% if (session.getAttribute("error") != null) { %>
+            <div class="reason-box" style="background:#fef2f2; border-left-color:#ef4444;">
+                <h4>Restriction Reason</h4>
+                <p style="font-weight:600; color:#991b1b;"><%= session.getAttribute("error") %></p>
+            </div>
+            <% session.removeAttribute("error"); %>
+        <% } else { %>
+            <div class="reason-box">
+                <h4>Possible Reasons</h4>
+                <p>
+                    This action was taken by an administrator after reviewing reported content or behavior that violated our community guidelines.
+                </p>
+            </div>
+        <% } %>
 
         <ul class="info-list">
-            <li><span class="bullet"></span> Your posts and comments may have been removed</li>
-            <li><span class="bullet"></span> Your account session has been terminated</li>
-            <li><span class="bullet"></span> Your profile is no longer visible to other users</li>
-            <li><span class="bullet"></span> This action has been logged for administrative review</li>
+            <li><span class="bullet"></span> Post creation or commenting features may be restricted</li>
+            <li><span class="bullet"></span> Your active restrictions will automatically expire when the ban period ends</li>
+            <li><span class="bullet"></span> This moderation event is logged in admin report records</li>
         </ul>
 
         <div class="contact-section">
-            <p>If you believe this is a mistake, please contact our support team.</p>
-            <a href="mailto:admin@cheatsheet.com" class="btn-contact">Contact Support</a>
+            <div class="button-group">
+                <a href="${pageContext.request.contextPath}/" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+                <a href="mailto:admin@cheatsheet.com" class="btn-contact">
+                    <i class="fas fa-envelope"></i> Contact Support
+                </a>
+                <a href="${pageContext.request.contextPath}/logout" class="btn-logout-link">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </a>
+            </div>
         </div>
 
         <div class="footer-text">

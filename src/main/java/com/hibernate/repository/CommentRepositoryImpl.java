@@ -63,4 +63,12 @@ public class CommentRepositoryImpl implements CommentRepository {
                 .setParameter("postId", postId)
                 .getResultList();
     }
+    
+ // CommentRepositoryImpl သို့မဟုတ် Repository interface တွင်
+    public int countActiveCommentsByPostId(Integer postId) {
+        return entityManager.createQuery(
+            "SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.deletedAt IS NULL", Long.class)
+            .setParameter("postId", postId)
+            .getSingleResult().intValue();
+    }
 }

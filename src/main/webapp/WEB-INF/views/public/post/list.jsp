@@ -52,14 +52,39 @@
                                 </c:choose>
                             </p>
 
-                            <div class="card-meta">
-                                <span class="author-initial"><c:out value="${fn:substring(post.author.username, 0, 1)}" /></span>
-                                <div>
-                                    <strong><c:out value="${post.author.username}" /></strong>
-                                    <c:if test="${not empty post.createdAt}">
-                                        <small><c:out value="${fn:substring(post.createdAt, 0, 10)}" /></small>
-                                    </c:if>
+                            <div class="card-meta" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="author-initial"><c:out value="${fn:substring(post.author.username, 0, 1)}" /></span>
+                                    <div>
+                                        <a href="${pageContext.request.contextPath}/profile?id=${post.author.id}" style="text-decoration: none; color: inherit;">
+                                            <strong>@<c:out value="${post.author.username}" /></strong>
+                                        </a>
+                                        <c:if test="${not empty post.createdAt}">
+                                            <br><small><c:out value="${fn:substring(post.createdAt, 0, 10)}" /></small>
+                                        </c:if>
+                                    </div>
                                 </div>
+
+                                <c:if test="${not empty currentUser && currentUser.id != post.author.id}">
+                                    <c:choose>
+                                        <c:when test="${post.followedByCurrentUser}">
+                                            <form action="${pageContext.request.contextPath}/user/unfollow" method="POST" style="margin: 0;">
+                                                <input type="hidden" name="targetId" value="${post.author.id}" />
+                                                <button type="submit" style="background: none; border: 1px solid #cbd5e1; color: #64748b; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                                                    ✓ Following
+                                                </button>
+                                            </form>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <form action="${pageContext.request.contextPath}/user/follow" method="POST" style="margin: 0;">
+                                                <input type="hidden" name="targetId" value="${post.author.id}" />
+                                                <button type="submit" style="background: #4038ff; border: none; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                                                    ➕ Follow
+                                                </button>
+                                            </form>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:if>
                             </div>
 
                             <a class="read-link" href="${detailsUrl}">Read More <span>→</span></a>
