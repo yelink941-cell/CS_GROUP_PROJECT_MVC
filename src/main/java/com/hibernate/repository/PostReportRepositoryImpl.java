@@ -47,4 +47,14 @@ public class PostReportRepositoryImpl implements PostReportRepository {
                     PostReport.class)
                 .getResultList();
     }
+
+    @Override
+    public List<PostReport> findAllHistory() {
+        return getSession()
+                .createQuery(
+                    "FROM PostReport r JOIN FETCH r.post p JOIN FETCH p.author JOIN FETCH r.reporter "
+                            + "WHERE r.status <> 'PENDING' ORDER BY r.createdAt DESC",
+                    PostReport.class)
+                .getResultList();
+    }
 }

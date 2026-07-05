@@ -190,9 +190,137 @@
     <article class="detail-card">
         <h1><c:out value="${post.title}" /></h1>
 
-        <div class="post-meta">
-            <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
-            <span><strong>Author:</strong> <c:out value="${post.author.username}" /></span>
+            <div class="post-meta" style="display: flex; gap: 20px; align-items: center;">
+    <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
+    <span>
+        <strong>Author:</strong> 
+        <a href="${pageContext.request.contextPath}/profile?id=${post.author.id}" style="color: #4038ff; text-decoration: none; font-weight: 600; margin-right: 8px;">
+            @<c:out value="${post.author.username}" />
+        </a>
+    </span>
+    <span><strong>Views:</strong> <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /></span>
+
+    <c:if test="${not empty userId && userId != post.author.id}">
+        <div style="margin-left: auto;">
+            <c:choose>
+                <%-- 🎯 FIX: Evaluate the direct model variable --%>
+                <c:when test="${isFollowing}">
+                    <form action="${pageContext.request.contextPath}/user/unfollow" method="POST" style="margin: 0;">
+                        <input type="hidden" name="targetId" value="${post.author.id}" />
+                        <button type="submit" style="color: #64748b; text-decoration: none; font-weight: 600; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 20px; background: #f8fafc; cursor: pointer;">
+                            ✓ Following
+                        </button>
+                    </form>
+                </c:when>
+                <c:otherwise>
+                    <form action="${pageContext.request.contextPath}/user/follow" method="POST" style="margin: 0;">
+                        <input type="hidden" name="targetId" value="${post.author.id}" />
+                        <button type="submit" class="button" style="background: #4038ff; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                            ➕ Follow Creator
+                        </button>
+                    </form>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </c:if>
+</div>
+
+            <div class="badge-row" style="margin-top: 18px;">
+                <span class="visibility-badge visibility-public">PUBLIC</span>
+                <span class="status-badge status-published">PUBLISHED</span>
+            </div>
+
+            <c:if test="${not empty post.tags}">
+                <ul class="tag-list" aria-label="Post tags">
+                    <c:forEach var="tag" items="${post.tags}">
+                        <li class="tag-pill"><c:out value="${tag.name}" /></li>
+                    </c:forEach>
+                </ul>
+            </c:if>
+
+            <div class="detail-excerpt">
+                <c:choose>
+                    <c:when test="${not empty post.excerpt}"><c:out value="${post.excerpt}" /></c:when>
+                    <c:otherwise>No excerpt provided.</c:otherwise>
+                </c:choose>
+            </div>
+
+       <%-- action လမ်းကြောင်းကို သေချာစစ်ပါ --%>
+<form action="${pageContext.request.contextPath}/user/collections/add-post" method="post">
+    <input type="hidden" name="postId" value="${post.id}">
+    <input type="hidden" name="slug" value="${post.slug}">
+    
+    <select id="collectionSelect" name="collectionId" required>
+        <option value="">-- Select --</option>
+        <c:forEach var="col" items="${collections}">
+            <option value="${col.id}">${col.name}</option>
+        </c:forEach>
+    </select>
+    
+    <button type="submit">➕ Add to Folder</button>
+</form>
+
+      <div class="rating-section">
+    <div class="star-rating">
+        <c:forEach begin="1" end="5" var="i">
+            <input type="radio" id="star${i}" name="rating" value="${i}" 
+                   class="star-input"
+                   data-post-id="${post.id}"
+                   <c:if test="${userRating == i}">checked</c:if>>
+            <label for="star${i}">★</label>
+        </c:forEach>
+    </div>
+    <div class="average-rating-box">
+        <strong>⭐ Average:</strong> <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>
+    </div>
+</div>
+
+    <div class="comments-section">
+      <div class="like-section">
+   <button type="button" 
+        onclick="toggleLikePost('${post.id}', this)" 
+        class="button ${hasUserLiked ? 'liked-btn' : 'unliked-btn'}">
+    <span id="likeIcon-${post.id}">
+        ${hasUserLiked ? '👍 Unlike' : '👍🏻 Like'}
+    </span>
+</button>
+    <span id="likeCount-${post.id}">${likeCount}</span>
+            
+    <button type="button" 
+            onclick="toggleBookmark('${post.id}', this)" 
+            id="bookmarkBtn-${post.id}"
+            class="btn ${hasUserBookmarked ? 'btn-warning' : 'btn-outline-warning'}">
+        <span id="bookmarkText-${post.id}">${hasUserBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
+    </button>
+
+    <c:if test="${sessionScope.userId != null && sessionScope.userId != post.author.id}">
+        <button type="button"
+                class="button btn-report"
+                onclick="openReportModal('post', ${post.id})">
+            ⚠ Report Post
+        </button>
+    </c:if>
+</div>
+
+        <div id="commentsToggleWrapper">
+            <c:forEach var="comment" items="${comments}">
+                <div id="comment-${comment.id}">
+                    <strong>${comment.user.username}</strong>
+                    <p>${comment.content}</p>
+                    <button type="button" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+                    <c:if test="${sessionScope.userId != null && sessionScope.userId != comment.user.id}">
+                        <button type="button" class="button-link" style="color:#dc2626; margin-left:8px;"
+                                onclick="openReportModal('comment', ${comment.id})">Report</button>
+                    </c:if>
+                    
+                    <div id="replyFormContainer-c-${comment.id}" style="display: none;">
+                        <form onsubmit="submitReply(event, 'c-${comment.id}', '${comment.id}', '${post.id}')">
+                            <textarea id="replyText-c-${comment.id}"></textarea>
+                            <button type="submit">Reply ပို့မည်</button>
+                        </form>
+                    </div>
+                </div>
+            </c:forEach>
         </div>
 
         <div class="badge-row" style="margin-top: 18px;">

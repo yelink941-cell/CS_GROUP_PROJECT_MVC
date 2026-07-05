@@ -25,13 +25,34 @@ public class AdminReportController {
     }
 
     @GetMapping
-    public String viewReports(Model model, HttpSession session) {
+    public String viewReports(@RequestParam(value = "type", defaultValue = "posts") String type,
+                              @RequestParam(value = "view", defaultValue = "queue") String view,
+                              Model model,
+                              HttpSession session) {
         if (!isAuthorizedAdmin(session)) {
             return "redirect:/login";
         }
 
-        model.addAttribute("postReports", reportService.getAllPendingPostReports());
-        model.addAttribute("commentReports", reportService.getAllPendingCommentReports());
+        if (!"comments".equals(type)) {
+            type = "posts";
+        }
+
+        if ("comments".equals(type)) {
+            if ("history".equals(view)) {
+                model.addAttribute("commentReports", reportService.getAllCommentReportHistory());
+            } else {
+                model.addAttribute("commentReports", reportService.getAllPendingCommentReports());
+            }
+        } else {
+            if ("history".equals(view)) {
+                model.addAttribute("postReports", reportService.getAllPostReportHistory());
+            } else {
+                model.addAttribute("postReports", reportService.getAllPendingPostReports());
+            }
+        }
+
+        model.addAttribute("reportType", type);
+        model.addAttribute("reportView", view);
         model.addAttribute("activeTab", "reports");
         return "admin/reports";
     }
@@ -44,7 +65,7 @@ public class AdminReportController {
 
         User admin = (User) session.getAttribute("currentUser");
         reportService.dismissPostReport(admin.getId(), id);
-        return "redirect:/admin/reports";
+        return "redirect:/admin/reports?type=posts&view=queue";
     }
 
     @PostMapping("/posts/{id}/resolve")
@@ -57,7 +78,7 @@ public class AdminReportController {
 
         User admin = (User) session.getAttribute("currentUser");
         reportService.resolvePostReport(admin.getId(), id, reason);
-        return "redirect:/admin/reports";
+        return "redirect:/admin/reports?type=posts&view=queue";
     }
 
     @PostMapping("/comments/{id}/dismiss")
@@ -68,7 +89,7 @@ public class AdminReportController {
 
         User admin = (User) session.getAttribute("currentUser");
         reportService.dismissCommentReport(admin.getId(), id);
-        return "redirect:/admin/reports";
+        return "redirect:/admin/reports?type=comments&view=queue";
     }
 
     @PostMapping("/comments/{id}/resolve")
@@ -81,6 +102,6 @@ public class AdminReportController {
 
         User admin = (User) session.getAttribute("currentUser");
         reportService.resolveCommentReport(admin.getId(), id, reason);
-        return "redirect:/admin/reports";
+        return "redirect:/admin/reports?type=comments&view=queue";
     }
 }

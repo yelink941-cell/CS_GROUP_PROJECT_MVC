@@ -1,7 +1,7 @@
 ﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.hibernate.entity.User" %>
-<%@ page import="org.springframework.security.core.context.SecurityContextHolder" %>
 <%@ page import="org.springframework.security.core.Authentication" %>
+<%@ page import="org.springframework.security.core.context.SecurityContextHolder" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -34,25 +34,23 @@
     </style>
 </head>
 <body>
-
 <%
     User currentUser = (User) session.getAttribute("currentUser");
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-    
     boolean isSpringAdmin = false;
     if (auth != null && auth.isAuthenticated()) {
         isSpringAdmin = auth.getAuthorities().stream()
-                            .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_ADMIN") || a.getAuthority().equalsIgnoreCase("ADMIN"));
+                .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_ADMIN") || a.getAuthority().equalsIgnoreCase("ADMIN"));
     }
 
-   
     if (currentUser == null && !isSpringAdmin) {
         response.sendRedirect(request.getContextPath() + "/login");
         return;
     }
-    String displayUsername = (currentUser != null) ? currentUser.getUsername() : auth.getName();
-    String displayRole = (currentUser != null) ? currentUser.getRole().name() : "ADMIN";
+
+    String displayUsername = currentUser != null ? currentUser.getUsername() : auth.getName();
+    String displayRole = currentUser != null ? currentUser.getRole().name() : "ADMIN";
 %>
 
     <aside class="sidebar">
@@ -101,6 +99,7 @@
         <header class="top-navbar">
             <div class="nav-title">System Overview Workspace</div>
             <div class="user-profile-badge">
+                <a class="btn-logout" href="${pageContext.request.contextPath}/">Home</a>
                 <span>Welcome, <strong><%= displayUsername %></strong></span>
                 <span class="badge"><%= displayRole %></span>
                 <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Sign Out</a>
@@ -110,7 +109,7 @@
         <main class="content-area">
             <div class="welcome-card">
                 <h2>Good Evening, System Administrator! Panel Loaded.</h2>
-                <p style="color: #64748b; margin-top: 5px;">Use the left sidebar navigation matrix to modify system collections, handle tags, or review reports.</p>
+                <p style="color: #64748b; margin-top: 5px;">Use the left sidebar navigation to manage categories, tags, posts, and users.</p>
             </div>
 
             <div class="stats-grid">
@@ -118,17 +117,20 @@
                     <h3>Categories Config Matrix</h3>
                     <p>Manage categories, set visibility flags, and organize platform sections.</p>
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/posts" class="stat-card">
-                    <h3>Active Post Items</h3>
-                    <p>Review system sheet documents, code samples, and compiled attachment downloads.</p>
+                <a href="${pageContext.request.contextPath}/admin/tags" class="stat-card">
+                    <h3>Tags Config Matrix</h3>
+                    <p>Manage tags and organize searchable post labels.</p>
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/posts/pending" class="stat-card">
+                    <h3>Pending Post Reviews</h3>
+                    <p>Approve or reject public posts submitted by users.</p>
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/users" class="stat-card">
                     <h3>User Registry Grid</h3>
-                    <p>Inspect active accounts, review comprehensive user profile cards, update platform roles, or ban handles.</p>
+                    <p>Inspect active accounts, update platform roles, or ban handles.</p>
                 </a>
             </div>
         </main>
     </div>
-
 </body>
 </html>

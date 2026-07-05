@@ -10,6 +10,8 @@ import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.PostViewService;
 import com.hibernate.service.TagService;
+import com.hibernate.service.UserService;
+
 import java.util.List;
  // 🎯 Added import for HttpSession
 import javax.servlet.http.HttpServletRequest;
@@ -34,12 +36,29 @@ public class PublicPostController {
     private final PostContentService postContentService;
     private final PostFileService postFileService;
     private final PostViewService postViewService;
+    private final UserService userService;
 
     @GetMapping("/public")
-    public String allPublicPosts(Model model) {
+    public String allPublicPosts(Model model, HttpSession session) {
+        // 1. Fetch the list of posts once
+        List<Post> posts = postService.getPublishedPublicPosts();
+        
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId != null) {
+            for (Post post : posts) {
+                // 🎯 FIX 1: Null-safe check and direct Long object parameter passing (no .intValue())
+                if (post.getAuthor() != null) {
+                    boolean followed = userService.isFollowing(userId, post.getAuthor().getId());
+                    post.setFollowedByCurrentUser(followed);
+                }
+            }
+            model.addAttribute("userId", userId);
+        }
+        
+        // 🎯 FIX 2: Pass the processed 'posts' list variable here so the follow flags actually render!
         return showPosts(
                 model,
-                postService.getPublishedPublicPosts(),
+                posts, 
                 "All Public Posts",
                 "Browse every public cheat sheet approved for publication.",
                 "No public posts are available yet.");

@@ -3,10 +3,13 @@ package com.hibernate.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Component;
 
 import com.hibernate.entity.User;
+import com.hibernate.entity.enums.UserStatus;
 import com.hibernate.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,19 +21,30 @@ import java.util.Set;
 
 @Component("customSuccessHandler")
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-	@Autowired
+    
+    @Autowired
     private UserService userService;
-	
+    
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, 
                                         HttpServletResponse response, 
                                         Authentication authentication) throws IOException {
-    	
-    	HttpSession session = request.getSession();
+        
+        HttpSession session = request.getSession();
         String email = authentication.getName();
         
-        
         User dbUser = userService.findUserByEmail(email);
+        
+        // 🔴 CRITICAL SECURITY INTERCEPTOR: Kick out INACTIVE users instantly
+        if (dbUser != null && dbUser.getStatus() == UserStatus.INACTIVE) {
+            // Forcefully clear Spring Security Context and wipe session
+            new SecurityContextLogoutHandler().logout(request, null, authentication);
+            SecurityContextHolder.clearContext();
+            
+            // Redirect back to login page with our special inactive error parameter
+            response.sendRedirect(request.getContextPath() + "/login?error=inactive");
+            return; 
+        }
         
         Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
         
@@ -44,6 +58,5 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             session.setAttribute("role", "USER");  
             response.sendRedirect(request.getContextPath() + "/");
         }
-
     }
 }
