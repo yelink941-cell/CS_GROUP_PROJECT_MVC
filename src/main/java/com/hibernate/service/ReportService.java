@@ -18,9 +18,11 @@ public interface ReportService {
 
     void dismissAllPostReportsByPostId(Long adminId, Integer postId);
     void resolveAllPostReportsByPostId(Long adminId, Integer postId, String reason);
+    void resolveAllPostReportsByPostId(Long adminId, Integer postId, String reason, String duration, String banType);
 
     void dismissAllCommentReportsByCommentId(Long adminId, Integer commentId);
     void resolveAllCommentReportsByCommentId(Long adminId, Integer commentId, String reason);
+    void resolveAllCommentReportsByCommentId(Long adminId, Integer commentId, String reason, String duration, String banType);
 
     List<PostReport> getAllPendingPostReports();
     List<CommentReport> getAllPendingCommentReports();

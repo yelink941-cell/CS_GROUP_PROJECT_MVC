@@ -101,11 +101,11 @@
     background: #312bc4;
 }
 
-/* 🎯 🌟 🔒 Item ရှိပြီးသား ဖိုဒါဆိုလျှင် ပြသမည့် ခလုတ်စတိုင်လ် (Disabled Style) */
+/* If post is already in folder - disabled button style */
 .btn-add-collection:disabled {
-    background-color: #94a3b8 !important; /* မီးခိုးရောင်မှိန်မှိန် */
+    background-color: #94a3b8 !important; 
     color: #f1f5f9 !important;
-    cursor: not-allowed; /* နှိပ်လို့မရကြောင်း ပြောင်းလဲရန် */
+    cursor: not-allowed; 
     transform: none !important;
 }
 
@@ -119,7 +119,7 @@
     font-size: 13px;
 }
 
-/* Like ခလုတ် အရောင်ပြောင်း Class များ */
+/* Like button style classes */
 .liked-btn {
     background-color: #007bff !important;
     color: white !important;
@@ -159,7 +159,7 @@
 .star-rating label:hover,
 .star-rating label:hover ~ label,
 .star-rating input:checked ~ label {
-    color: #ffc107; /* ရွှေရောင် */
+    color: #ffc107; /* gold color */
 }
 .average-rating-box {
     font-size: 15px;
@@ -168,7 +168,7 @@
     border-radius: 6px;
     border: 1px solid #ffeeba;
 }
-/* Bookmark ခလုတ် အရောင်ပြောင်း Class များ */
+/* Bookmark button style classes */
 .bookmarked-btn {
     background-color: #ffc107 !important;
     color: #333333 !important;
@@ -253,7 +253,7 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                    <div class="star-rating" onclick="alert('Rating ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။'); window.location.href='${pageContext.request.contextPath}/login';" style="cursor: pointer;" title="Rating ပြုလုပ်ရန် နှိပ်ပါ။">
+                    <div class="star-rating" onclick="alert('Please login to rate this post.'); window.location.href='${pageContext.request.contextPath}/login';" style="cursor: pointer;" title="Click to rate">
                         <label style="color: ${averageRating >= 1 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
                         <label style="color: ${averageRating >= 2 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
                         <label style="color: ${averageRating >= 3 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
@@ -283,7 +283,7 @@
                     <span style="font-size: 16px;"><strong>Likes:</strong> <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span></span>
                 </c:when>
                 <c:otherwise>
-                    <button type="button" onclick="alert('Like ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။'); window.location.href='${pageContext.request.contextPath}/login';" class="button unliked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <button type="button" onclick="alert('Please login to like this post.'); window.location.href='${pageContext.request.contextPath}/login';" class="button unliked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
                         👍🏻 Like
                     </button>
                 </c:otherwise>
@@ -301,7 +301,7 @@
                     </button>
                 </c:when>
                 <c:otherwise>
-                    <button type="button" onclick="alert('Bookmark ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။'); window.location.href='${pageContext.request.contextPath}/login';" class="button unbookmarked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <button type="button" onclick="alert('Please login to bookmark this post.'); window.location.href='${pageContext.request.contextPath}/login';" class="button unbookmarked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
                         ⭐ Bookmark
                     </button>
                 </c:otherwise>
@@ -326,16 +326,16 @@
                     <div class="form-group">
                         <textarea id="commentText" name="commentText" rows="3" required placeholder="Write a comment..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
                     </div>
-                    <button type="submit" class="button button-primary" style="margin-top: 10px;">Comment ပို့မည်</button>
+                    <button type="submit" class="button button-primary" style="margin-top: 10px;">Post Comment</button>
                 </form>
             </c:if>
             
             <c:if test="${empty userLoggedIn}">
-                <p style="color: #666;">Comment ရေးသားရန် <a href="${pageContext.request.contextPath}/login">Login</a> ဝင်ပါ။</p>
+                <p style="color: #666;">Please <a href="${pageContext.request.contextPath}/login">Login</a> to write a comment.</p>
             </c:if>
  
             <c:if test="${empty comments}">
-                <p style="color: #888;" id="noCommentsMessage">ကွန်မန့် မရှိသေးပါ။</p>
+                <p style="color: #888;" id="noCommentsMessage">No comments yet.</p>
             </c:if>
             
             <c:if test="${not empty comments}">
@@ -359,19 +359,19 @@
                             <%-- Main Comment Reply Form --%>
                             <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
                                 <form onsubmit="submitReply(event, 'c-${comment.id}', ${comment.id}, ${post.id})">
-                                    <textarea id="replyText-c-${comment.id}" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+                                    <textarea id="replyText-c-${comment.id}" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
                                     <br>
-                                    <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Reply ပို့မည်</button>
+                                    <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Post Reply</button>
                                 </form>
                             </div>
 
                             <div id="replyListContainer-${comment.id}">
-                                <c:if test="${not empty comment.replies}">
-                                    <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
+                                <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
+                                    <c:if test="${not empty comment.replies}">
                                         <c:set var="replyList" value="${comment.replies}" scope="request"/>
                                         <jsp:include page="reply-recurse.jsp" />
-                                    </ul>
-                                </c:if>
+                                    </c:if>
+                                </ul>
                             </div>
                         </div>
                     </c:forEach>
@@ -493,6 +493,7 @@ function getCsrfHeaders(contentType = 'application/json') {
 
     const headers = {
         'Content-Type': contentType,
+        'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
     };
 
@@ -517,8 +518,7 @@ function getCleanUrl(path) {
 
 /* =========================
    🔗 URL HASH HELPER (No-reload)
-   action လုပ်တိုင်း URL hash (#like, #comment, #rating, #bookmark) ပြောင်းပေးမည်။
-   history.replaceState သုံးထားသဖြ့င့် page reload / scroll jump မဖြစ်ပါ။
+   Updates URL hash for action tracking without reload or jump
 ========================= */
 function updateUrlHash(hash) {
     try {
@@ -537,7 +537,7 @@ function showCommentsSection() {
 
 /* =========================
    🔡 HTML ESCAPE HELPER
-   Backend မှ user input (username/content) ကို DOM ထဲထည့်ခါက XSS ကာကွယ်ရန်
+   Prevents XSS when rendering user inputs
 ========================= */
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -609,19 +609,32 @@ commentForm.addEventListener('submit', function(e) {
         body: 'postId=' + postId + '&commentText=' + encodeURIComponent(commentText)
     })
     .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
+        return r.text().then(text => {
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                data = { status: 'error', message: text };
+            }
+            return { ok: r.ok, status: r.status, data: data };
+        });
     })
-    .then(data => {
+    .then(res => {
+        if (!res.ok) {
+            if (res.status === 401) {
+                window.location.href = '${pageContext.request.contextPath}/login';
+                return;
+            }
+            alert(res.data.message || 'Comment error (' + res.status + ')');
+            return;
+        }
+        const data = res.data;
         if (data.status === 'success') {
-            // 🟢 No-reload: backend မှ ပြန်လာတဲ့ data နဲ့ comment DOM အသစ်တည်ဆောက်ပြီး
-            //    comment list အောက်ဆုံးမှာ တိုက်ရိုက်ထည့်မည်။
             const commentText = document.getElementById('commentText');
             commentText.value = '';
 
             let container = document.getElementById('commentListContainer');
             if (!container) {
-                // ပထမဆုံး comment ဖြစ်နေလျှင် container အသစ်တည်ဆောက်
                 container = document.createElement('div');
                 container.id = 'commentListContainer';
                 container.className = 'comment-list';
@@ -629,7 +642,6 @@ commentForm.addEventListener('submit', function(e) {
                 document.getElementById('commentsToggleWrapper').appendChild(container);
             }
 
-            // ကွန်မန့်မရှိသေးပါ message ကို ဖယ်ရှားမည်
             const noCommentsMsg = document.getElementById('noCommentsMessage');
             if (noCommentsMsg) {
                 noCommentsMsg.remove();
@@ -657,16 +669,15 @@ commentForm.addEventListener('submit', function(e) {
                 '</div>' +
                 '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
                     '<form onsubmit="submitReply(event, \'c-' + data.commentId + '\', ' + data.commentId + ', ' + postId + ')">' +
-                        '<textarea id="replyText-c-' + data.commentId + '" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
+                        '<textarea id="replyText-c-' + data.commentId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
                         '<br>' +
-                        '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Reply ပို့မည်</button>' +
+                        '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Post Reply</button>' +
                     '</form>' +
                 '</div>' +
                 '<div id="replyListContainer-' + data.commentId + '"></div>';
 
             container.appendChild(newComment);
 
-            // 🟢 Comment count တိုး
             const header = document.getElementById('commentCountHeader');
             if (header) {
                 const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
@@ -685,7 +696,7 @@ commentForm.addEventListener('submit', function(e) {
         if (err.message && err.message.includes('401')) {
             window.location.href = '${pageContext.request.contextPath}/login';
         } else {
-            alert('Comment error: ' + (err.message || 'Comment ပို့၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။'));
+            alert('Comment error: ' + (err.message || 'Failed to post comment. Please try again.'));
         }
     });
 });
@@ -713,7 +724,16 @@ function toggleReplyForm(commentId) {
 function submitReply(e, commentId, parentId, postId) {
     e.preventDefault();
 
-    const replyText = document.getElementById('replyText-' + commentId).value;
+    const replyInput = document.getElementById('replyText-' + commentId);
+    if (!replyInput) {
+        console.error('Reply textarea element not found for ID: replyText-' + commentId);
+        return;
+    }
+    const replyText = replyInput.value.trim();
+    if (!replyText) {
+        alert('Reply content cannot be empty.');
+        return;
+    }
 
     fetch(getCleanUrl('/comments/reply'), {
         method: 'POST',
@@ -724,20 +744,34 @@ function submitReply(e, commentId, parentId, postId) {
             '&content=' + encodeURIComponent(replyText)
     })
     .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
+        return r.text().then(text => {
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                data = { status: 'error', message: text };
+            }
+            return { ok: r.ok, status: r.status, data: data };
+        });
     })
-    .then(data => {
+    .then(res => {
+        if (!res.ok) {
+            if (res.status === 401) {
+                window.location.href = '${pageContext.request.contextPath}/login';
+                return;
+            }
+            alert(res.data.message || 'Reply error (' + res.status + ')');
+            return;
+        }
+        const data = res.data;
         if (data.status !== 'success') {
             alert('Reply error: ' + (data.message || ''));
             return;
         }
 
-        // 🟢 No-reload: textarea ရှင်း
-        const replyInput = document.getElementById('replyText-' + commentId);
-        if (replyInput) replyInput.value = '';
+	        const replyInput = document.getElementById('replyText-' + commentId);
+	        if (replyInput) replyInput.value = '';
 
-        // reply ထည့်ရမည့် list container (<ul>) ကို ရှာရန်/ဖန်တီးရန်
         const realParentId = data.parentId || parentId;
         let subList = document.getElementById('replySubListContainer-' + realParentId);
 
@@ -746,7 +780,6 @@ function submitReply(e, commentId, parentId, postId) {
             subList.id = 'replySubListContainer-' + realParentId;
             subList.style.cssText = 'margin-left: 20px; padding-left: 0; list-style-type: none;';
 
-            // Find parent to append this new <ul>
             const mainCommentListWrap = document.getElementById('replyListContainer-' + realParentId);
             if (mainCommentListWrap) {
                 mainCommentListWrap.appendChild(subList);
@@ -790,7 +823,7 @@ function submitReply(e, commentId, parentId, postId) {
             '<!-- Reply Form -->' +
             '<div id="replyFormContainer-r-' + data.replyId + '" style="display: none; margin-top: 8px; margin-left: 20px;">' +
                 '<form onsubmit="submitReply(event, \'r-' + data.replyId + '\', ' + data.replyId + ', ' + postId + ')">' +
-                    '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Reply ပြန်ရန်..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
+                    '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
                     '<button type="submit" class="button button-secondary" style="font-size: 12px; padding: 4px 10px; margin-top: 4px;">Submit Reply</button>' +
                 '</form>' +
             '</div>' +
@@ -815,11 +848,7 @@ function submitReply(e, commentId, parentId, postId) {
     })
     .catch(err => {
         console.error('Reply request failed:', err);
-        if (err.message && err.message.includes('401')) {
-            window.location.href = '${pageContext.request.contextPath}/login';
-        } else {
-            alert('Reply failed');
-        }
+        alert('Reply error: ' + (err.message || 'Failed to submit reply'));
     });
 }
 

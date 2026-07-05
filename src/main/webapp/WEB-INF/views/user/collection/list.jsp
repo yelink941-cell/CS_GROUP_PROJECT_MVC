@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
     
     <style>
-        /* 📁 Card Relative Layout & Hover Style */
+        /* Card Relative Layout & Hover Style */
         .folder-card-wrapper {
             position: relative;
         }
@@ -27,14 +27,14 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
         }
 
-        /* ✏️ 🗑️ Action Buttons Style on Top Right Corner */
+        /* Action Buttons Style on Top Right Corner */
         .card-actions {
             position: absolute;
             top: 1.25rem;
             right: 1.25rem;
             display: flex;
             gap: 10px;
-            z-index: 15; /* Card Link ရဲ့ အပေါ်မှာ ရှိနေစေရန် */
+            z-index: 15;
         }
         .action-icon-btn {
             background: none;
@@ -48,7 +48,7 @@
             transform: scale(1.2);
         }
 
-        /* ✨ Layout Adjustments */
+        /* Layout Adjustments */
         .library-header-container {
             display: flex;
             justify-content: space-between;
@@ -76,7 +76,7 @@
             background-color: #059669;
         }
 
-        /* 📄 Pop-up Modal CSS (Simple & Clean) */
+        /* Pop-up Modal CSS (Simple & Clean) */
         .modal {
             display: none; 
             position: fixed;
@@ -149,7 +149,7 @@
             </button>
         </div>
 
-        <!-- 📁 Folders Grid Section -->
+        <!-- Folders Grid Section -->
         <section style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
             <c:choose>
                 <c:when test="${empty collections}">
@@ -161,21 +161,21 @@
                     <c:forEach var="folder" items="${collections}">
                         <div class="folder-card-wrapper">
                             
-                            <!-- 🛠️ ✏️ 🗑️ Edit & Delete ခလုတ်လေးများ -->
+                            <!-- Edit & Delete Buttons -->
                             <div class="card-actions">
-                                <!-- ✏️ Edit Button -->
+                                <!-- Edit Button -->
                                 <button class="action-icon-btn" 
                                         onclick="openEditModal('${folder.id}', '${folder.name}', '${folder.description}', ${folder.isPublic})" 
                                         title="Edit Folder">✏️</button>
                                 
-                                <!-- 🗑️ Delete Button -->
+                                <!-- Delete Button -->
                                 <a href="${pageContext.request.contextPath}/user/collections/delete/${folder.id}" 
                                    class="action-icon-btn" 
                                    onclick="return confirm('Are you sure you want to delete this folder entirely? This cannot be undone.');"
                                    title="Delete Folder">🗑️</a>
                             </div>
 
-                            <!-- 📁 Folder Item ကို သွားမည့် ကတ်ပြားလင့်ခ် -->
+                            <!-- Folder Item Link -->
                             <a href="${pageContext.request.contextPath}/user/collections/${folder.id}" class="folder-card-link">
                                 <article class="library-card" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; min-height: 140px; padding-right: 4.5rem;">
                                     <h3 style="color: #2b5cb8; margin-top: 0; font-size: 1.35rem; padding-right: 1rem;">📁 <c:out value="${folder.name}"/></h3>
@@ -193,7 +193,7 @@
     </main>
 
     <!-- ========================================== -->
-    <!-- 📄 ➕ (၁) Create Folder Modal Form -->
+    <!-- Create Folder Modal Form -->
     <!-- ========================================== -->
     <div id="createModal" class="modal">
         <div class="modal-content">
@@ -220,7 +220,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- 📄 ✏️ (၂) Edit Folder Modal Form -->
+    <!-- Edit Folder Modal Form -->
     <!-- ========================================== -->
     <div id="editModal" class="modal">
         <div class="modal-content">

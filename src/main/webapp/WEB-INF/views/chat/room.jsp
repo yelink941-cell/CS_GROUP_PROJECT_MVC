@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,8 +17,8 @@
             --accent-gray: #f5f6f6;
             --text-main: #111111;
             --text-muted: #707579; /* Telegram Style Secondary Muted */
-          --bubble-me: #ffffff; /* အဖြူရောင် ပြောင်းလိုက်သည် */
---bubble-me-text: #111111; /* စာလုံးကို အနက်ရောင် ပြောင်းလိုက်သည် */
+          --bubble-me: #ffffff;
+--bubble-me-text: #111111;
             --bubble-other: #f5f6f6;
             --bubble-other-text: #111111;
             --success-color: #00c853;
@@ -546,7 +546,7 @@
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* ၁။ Chat ထဲက ပုံတွေကို Pointer ပြောင်းရန် */
+        /* Chat image pointer styling */
 .bubble-media-container img {
     cursor: pointer;
     transition: opacity 0.2s ease;
@@ -555,7 +555,7 @@
     opacity: 0.9;
 }
 
-/* ၂။ ပုံကြီးပြပေးမည့် မျက်နှာပြင် (Lightbox) စတိုင် */
+/* Lightbox modal for enlarged image view */
 .image-lightbox-modal {
     display: none;
     position: fixed;
@@ -583,9 +583,9 @@
 }
 /* Floating Scroll to Bottom Button */
 .scroll-bottom-btn {
-    display: none; /* စစချင်းမှာ ဝှက်ထားမည် */
+    display: none; /* hidden initially */
     position: absolute;
-    bottom: 85px; /* စာရိုက်တဲ့ Input Area ရဲ့ အပေါ်နားတင် ပေါ်ရန် */
+    bottom: 85px; /* position above the message input area */
     right: 20px;
     width: 38px;
     height: 38px;
@@ -739,7 +739,7 @@
                 <div class="input-row">
                     <input type="file" id="mediaFile" accept="image/*,video/*" multiple>
                     <button type="button" class="icon-btn attach" id="btnAttach" title="Attach Files">📎</button>
-                    <input type="text" id="messageText" placeholder="စာတို ရေးရန်..." autocomplete="off">
+                    <input type="text" id="messageText" placeholder="Type a message..." autocomplete="off">
                     <button type="button" class="icon-btn" id="btnSend" title="Send">➤</button>
                 </div>
             </c:otherwise>
@@ -773,10 +773,10 @@
     let contextMenuMessage = null;
 
     $(document).ready(function() {
-        // DEBUG: စစ်ဆေးရန် - chatId နဲ့ myUserId ကို console တွင် ကြည့်ပါ
+        // DEBUG: Check chatId and myUserId in console
         console.log('[DEBUG] chatId:', chatId, '| myUserId:', myUserId, '| ctx:', ctx);
         if (!chatId || chatId === '' || chatId === 'null') {
-            $('#chatBox').html('<div style="padding:20px;color:red;">❌ ERROR: conversationId မရှိပါ (chatId=' + chatId + ')</div>');
+            $('#chatBox').html('<div style="padding:20px;color:red;">❌ ERROR: conversationId not found (chatId=' + chatId + ')</div>');
             return;
         }
         loadChatHistory();
@@ -790,13 +790,11 @@
         $('#messageText').keypress(function(e) {
             if (e.which === 13) handleSend();
         });
-     // စာရိုက်ရပ်နားမှု အချိန်တွက်ရန် variable
+     // typing logic
         let typingTimeout;
 
         $('#messageText').on('input', function() {
-            // WebSocket အလုပ်လုပ်နေမှသာ ပို့မည်
             if (socket && socket.readyState === WebSocket.OPEN) {
-                // စာရိုက်နေကြောင်း Server ထံ ပို့ခြင်း
                 socket.send(JSON.stringify({
                     type: 'user_typing',
                     conversationId: chatId,
@@ -804,10 +802,8 @@
                 }));
             }
 
-            // အရင်ရှိနေတဲ့ Timer ကို ဖျက်ထုတ်ပါ
             clearTimeout(typingTimeout);
 
-            // ၁.၅ စက္ကန့်အတွင်း ဘာစာမှ ထပ်မရိုက်တော့လျှင် စာရိုက်ရပ်သွားပြီဟု သတ်မှတ်မည်
             typingTimeout = setTimeout(function() {
                 if (socket && socket.readyState === WebSocket.OPEN) {
                     socket.send(JSON.stringify({
@@ -819,7 +815,6 @@
             }, 1500);
         });
 
-        // စာရိုက်တဲ့ Textbox ထဲကနေ မောက်စ် (Mouse pointer) အပြင်ထုတ်လိုက်ရင် ချက်ချင်း ပျောက်စေရန်
         $('#messageText').blur(function() {
             clearTimeout(typingTimeout);
             if (socket && socket.readyState === WebSocket.OPEN) {
@@ -831,7 +826,7 @@
             }
         });
         $('#btnCancelReply').click(cancelReply);
-     // User က အပေါ်ကို Scroll ဆွဲလိုက်ရင် Floating Button ပြပေးရန်
+     // Scroll to bottom button
         $('#chatBox').scroll(function() {
             if ($(this).scrollTop() + $(this).innerHeight() < $(this)[0].scrollHeight - 100) {
                 $('#btnScrollBottom').css('display', 'flex');
@@ -840,19 +835,16 @@
             }
         });
 
-        // မြှားခလုတ်ကို နှိပ်လိုက်ရင် အောက်ဆုံးကို Smooth အနေနဲ့ ဆင်းသွားရန်
         $('#btnScrollBottom').click(function() {
             scrollToBottom();
         });
 
-        // ပုံကို နှိပ်လိုက်လျှင် Lightbox Modal ပွင့်လာစေရန်
         $(document).on('click', '.bubble-media-container img', function() {
             const imgSrc = $(this).attr('src');
             $('#lightboxTargetImg').attr('src', imgSrc);
             $('#imageLightbox').css('display', 'flex');
         });
 
-        // မည်သည့်နေရာကိုမဆို ပြန်နှိပ်လိုက်လျှင် Lightbox ပိတ်သွားစေရန်
         $('#imageLightbox, .lightbox-close').click(function() {
             $('#imageLightbox').hide();
             $('#lightboxTargetImg').attr('src', ''); 
@@ -912,11 +904,11 @@
         });
 
     });
- // မူရင်း function ကို Smooth Scroll လေးနဲ့ အစားထိုးပါ
+ 
     function scrollToBottom() {
         var box = $('#chatBox');
         if (box.length) {
-            box.animate({ scrollTop: box[0].scrollHeight }, 300); // 300ms Smooth Scroll Effect
+            box.animate({ scrollTop: box[0].scrollHeight }, 300);
         }
     }
 
@@ -968,7 +960,6 @@
                 const data = JSON.parse(event.data);
                 if (data.type === 'error') return;
 
-                // === User Status Event (Online / Offline & Last Seen) ===
                 if (data.type === 'user_status_changed' && data.payload) {
                     const partnerId = '${partnerUserId}';
                     if (partnerId && String(data.payload.userId) === String(partnerId)) {
@@ -986,7 +977,6 @@
                     return;
                 }
 
-                // === စာရိုက်ခြင်းဆိုင်ရာ Event များ ဖမ်းရန် ===
                 if (data.type === 'user_typing') {
                     if (data.payload && String(data.payload.conversationId) === String(chatId) && String(data.payload.senderId) !== String(myUserId)) {
                         const senderName = data.payload.senderName || 'User';
@@ -1001,7 +991,6 @@
                     }
                     return;
                 }
-                // ===========================================
 
                 if (data.type === 'message_edited' && data.payload) {
                     updateMessageDom(data.payload);
@@ -1096,11 +1085,9 @@
                 console.log('[DEBUG] history loaded:', messages.length, 'messages', messages);
                 $('#chatBox').empty();
                 if (messages.length === 0) {
-/*                     $('#chatBox').html('<div style="text-align:center;padding:40px;color:var(--text-muted);">စာမပေးပို့ရသေးပါ။ ပထမဆုံး message ပေးပို့ပါ 👋</div>');
- */
                 	$('#chatBox').html(
-                		    '<div id="emptyChat" style="text-align:center;padding:40px;color:var(--text-muted);">စာမပေးပို့ရသေးပါ။ ပထမဆုံး message ပေးပို့ပါ 👋</div>'
-                		);
+                            '<div id="emptyChat" style="text-align:center;padding:40px;color:var(--text-muted);">No messages yet. Send the first message 👋</div>'
+                        );
                 
                 } else {
                     messages.reverse().forEach(appendMessage);
@@ -1110,7 +1097,7 @@
             },
             error: function(xhr) {
                 console.error('[DEBUG] history error:', xhr.status, xhr.responseText);
-                $('#chatBox').html('<div style="padding:20px;color:red;">❌ Messages load မအောင်မြင်ပါ (' + xhr.status + '): ' + xhr.responseText + '</div>');
+                $('#chatBox').html('<div style="padding:20px;color:red;">❌ Failed to load messages (' + xhr.status + '): ' + xhr.responseText + '</div>');
             }
         });
     }
@@ -1127,7 +1114,6 @@
         }
         if (!text) return;
 
-        // Always use REST fallback for reliable message delivery and display
         sendTextFallback(text);
     } 
     
@@ -1317,7 +1303,7 @@
     }
 
     function deleteMessage(msg) {
-        if (!confirm('ဒီမက်ဆေ့ချ်ကို ဖျက်မှာသေချာလား?')) return;
+        if (!confirm('Are you sure you want to delete this message?')) return;
         $.ajax({
             url: ctx + '/api/chat/messages/' + msg.id,
             type: 'DELETE',
@@ -1332,7 +1318,7 @@
 
     function clearChatBox() {
         $('#chatBox').empty().html(
-            '<div style="text-align:center;padding:40px;color:var(--text-muted);">စကားမရှိသေးပါ။ ပထမဆုံး message ပေးပို့ပါ 👋</div>'
+            '<div style="text-align:center;padding:40px;color:var(--text-muted);">No messages yet. Send the first message 👋</div>'
         );
     }
 
@@ -1355,7 +1341,7 @@
     }
 
     function deleteChat() {
-        if (!confirm('ဒီ chat ကို inbox မှ ဖျက်မှာသေချာလား?')) return;
+        if (!confirm('Are you sure you want to delete this chat from your inbox?')) return;
         $.ajax({
             url: ctx + '/api/chat/conversations/' + chatId,
             type: 'DELETE',
@@ -1370,7 +1356,7 @@
 
     function blockPartnerUser() {
         if (!partnerUserId) return;
-        if (!confirm('ဒီ user ကို block လုပ်မှာသေချာလား?')) return;
+        if (!confirm('Are you sure you want to block this user?')) return;
         $.ajax({
             url: ctx + '/api/chat/users/' + partnerUserId + '/block',
             type: 'POST',
@@ -1385,7 +1371,7 @@
 
     function unblockPartnerUser() {
         if (!partnerUserId) return;
-        if (!confirm('ဒီ user ကို unblock လုပ်မှာသေချာလား?')) return;
+        if (!confirm('Are you sure you want to unblock this user?')) return;
         $.ajax({
             url: ctx + '/api/chat/users/' + partnerUserId + '/unblock',
             type: 'POST',
@@ -1421,7 +1407,7 @@
             },
             error: function(xhr) {
                 console.error('[DEBUG] send error:', xhr.status, xhr.responseText);
-                alert('❌ Message ပို့မအောင်မြင်ပါ (' + xhr.status + '): ' + xhr.responseText);
+                alert('❌ Failed to send message (' + xhr.status + '): ' + xhr.responseText);
             },
             complete: function() { $('#btnSend').prop('disabled', false); }
         });

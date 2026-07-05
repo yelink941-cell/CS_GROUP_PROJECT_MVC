@@ -29,7 +29,7 @@ public class ModerationServiceImpl implements ModerationService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void banUser(Long requesterAdminId, Long targetUserId, String reason, String duration) {
+    public void banUser(Long requesterAdminId, Long targetUserId, String reason, String duration, String banType) {
         User requester = getUser(requesterAdminId);
         if (requester == null || !requester.isAdmin()) {
             throw new SecurityException("Unauthorized: Requester must be an Admin.");
@@ -45,21 +45,25 @@ public class ModerationServiceImpl implements ModerationService {
         }
 
         LocalDateTime expiresAt = null;
-        String durationText = "Permanent (ထာဝရ)";
+        String durationText = "Permanent";
         if ("1_WEEK".equalsIgnoreCase(duration)) {
             expiresAt = LocalDateTime.now().plusWeeks(1);
-            durationText = "1 Week (၁ ပတ်)";
+            durationText = "1 Week";
         } else if ("1_MONTH".equalsIgnoreCase(duration)) {
             expiresAt = LocalDateTime.now().plusMonths(1);
-            durationText = "1 Month (၁ လ)";
+            durationText = "1 Month";
         } else if ("1_YEAR".equalsIgnoreCase(duration)) {
             expiresAt = LocalDateTime.now().plusYears(1);
-            durationText = "1 Year (၁ နှစ်)";
+            durationText = "1 Year";
         }
+
+        String scopeText = "FULL".equalsIgnoreCase(banType) ? "Full Account Ban" : ("POST_ONLY".equalsIgnoreCase(banType) ? "Post Creation Restricted" : "Comments Restricted");
 
         target.setStatus(UserStatus.BANNED);
         target.setBanExpiresAt(expiresAt);
         target.setBanReason(reason);
+        target.setBanType(banType != null ? banType : "FULL");
+        target.setBanDuration(duration != null ? duration : "PERMANENT");
         sessionFactory.getCurrentSession().merge(target);
 
         // Audit Logging
@@ -67,14 +71,14 @@ public class ModerationServiceImpl implements ModerationService {
         log.setAdminId(requesterAdminId.intValue());
         log.setTargetUserId(targetUserId.intValue());
         log.setAction(ModerationAction.BAN);
-        log.setReason("Duration: " + durationText + " | Reason: " + reason);
+        log.setReason("Scope: " + scopeText + " | Duration: " + durationText + " | Reason: " + reason);
         moderationLogRepository.save(log);
 
         notificationService.createNotification(
                 targetUserId,
                 "BAN",
-                "Account Suspended (" + durationText + ")",
-                "Your account has been suspended for " + durationText + ". Reason: " + reason,
+                "Account Restriction Updated (" + scopeText + ")",
+                "Your account has been restricted (" + scopeText + ") for " + durationText + ". Reason: " + reason,
                 "USER",
                 targetUserId.intValue()
         );
@@ -96,6 +100,8 @@ public class ModerationServiceImpl implements ModerationService {
         target.setStatus(UserStatus.ACTIVE);
         target.setBanExpiresAt(null);
         target.setBanReason(null);
+        target.setBanType("FULL");
+        target.setBanDuration("PERMANENT");
         sessionFactory.getCurrentSession().merge(target);
 
         // Audit Logging
@@ -103,14 +109,14 @@ public class ModerationServiceImpl implements ModerationService {
         log.setAdminId(requesterAdminId.intValue());
         log.setTargetUserId(targetUserId.intValue());
         log.setAction(ModerationAction.UNBAN);
-        log.setReason("Admin restored user account (Pardon / ကင်းလွှတ်ခွင့်)");
+        log.setReason("Admin restored user account (Pardon)");
         moderationLogRepository.save(log);
 
         notificationService.createNotification(
                 targetUserId,
                 "UNBAN",
-                "Account Restored 🎉",
-                "Your account has been unbanned. You may now post and comment again.",
+                "Account Restrictions Lifted 🎉",
+                "Your account restrictions have been cleared by an administrator. You may now post and comment again.",
                 "USER",
                 targetUserId.intValue()
         );
@@ -142,8 +148,8 @@ public class ModerationServiceImpl implements ModerationService {
                 notificationService.createNotification(
                         post.getAuthor().getId(),
                         "POST_BANNED",
-                        "Post Banned",
-                        "Your post has been banned and removed. Reason: " + reason,
+                        "Post Removed",
+                        "Your post has been removed by a moderator. Reason: " + reason,
                         "POST",
                         postId
                 );
@@ -189,9 +195,6 @@ public class ModerationServiceImpl implements ModerationService {
     @Override
     public boolean canBanUser(User requester, User target) {
         if (requester == null || target == null) {
-            return false;
-        }
-        if (target.isCurrentlyBanned()) {
             return false;
         }
         return !target.isAdmin() || requester.getRole() == Role.SUPER_ADMIN;

@@ -138,7 +138,7 @@
     <div class="page-header">
         <div>
             <h1><i class="fa-solid fa-bell" style="color: #2563eb;"></i> Notifications</h1>
-            <p>သင့်အတွက် အရေးကြီးသော Event ကြေငြာချက်များနှင့် အကြောင်းကြားချက်များ</p>
+            <p>Important event announcements and notifications for you</p>
         </div>
         <c:if test="${unreadCount > 0}">
             <form action="${pageContext.request.contextPath}/notifications/read-all" method="POST" style="margin:0;">
@@ -159,7 +159,7 @@
             <c:when test="${empty notifications}">
                 <div class="empty-state">
                     <p style="font-size:18px; margin-bottom:8px;">📬 No notifications yet</p>
-                    <p>Admin broadcast မား သို့မဟုတ် moderation updates ရောက်လာရင် ဒီမှာ ပြပါမယ်။</p>
+                    <p>When admin broadcasts or moderation updates arrive, they will appear here.</p>
                 </div>
             </c:when>
             <c:otherwise>

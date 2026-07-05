@@ -1,11 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>👥 Group Chat ဖန်တီးရန်</title>
+    <title>👥 Create Group Chat</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
@@ -325,15 +325,15 @@
 <div class="topbar">
     <a href="${ctx}/chat" class="back-btn" title="Back to Inbox">←</a>
     <div class="topbar-title">
-        👥 Group Chat ဖန်တီးရန်
+        👥 Create Group Chat
     </div>
 </div>
 
 <div class="main-container">
     <div class="card">
         <div class="card-header">
-            <h2>👥 Group Chat အသစ်</h2>
-            <p>Group အမည် ပေးပြီး ထည့်သွင်းလိုသော Member များကို ရှာဖွေရွေးချယ်ပါ</p>
+            <h2>👥 New Group Chat</h2>
+            <p>Enter a group name and search for members to add</p>
         </div>
 
         <c:if test="${not empty error}">
@@ -345,28 +345,28 @@
 
         <form action="${ctx}/chat/create-group" method="POST" id="createGroupForm">
             <div class="form-group">
-                <label for="title">Group အမည်</label>
-                <input type="text" id="title" name="title" class="input-field" placeholder="ဥပမာ - Study Group, CS Team" required autocomplete="off">
+                <label for="title">Group Name</label>
+                <input type="text" id="title" name="title" class="input-field" placeholder="e.g. Study Group, CS Team" required autocomplete="off">
             </div>
 
             <div class="form-group search-container">
-                <label for="memberSearch">Member များ ရှာဖွေရွေးချယ်ရန်</label>
-                <input type="text" id="memberSearch" class="input-field" placeholder="🔍 Member အမည် သို့မဟုတ် Username ရိုက်ရှာပါ..." autocomplete="off">
+                <label for="memberSearch">Search and Select Members</label>
+                <input type="text" id="memberSearch" class="input-field" placeholder="🔍 Type member name or username..." autocomplete="off">
                 <div id="searchResults" class="search-results"></div>
             </div>
 
             <div class="form-group">
-                <label>ရွေးချယ်ထားသော Member များ (<span id="memberCount">0</span>)</label>
+                <label>Selected Members (<span id="memberCount">0</span>)</label>
                 <div id="chipsContainer" class="chips-container">
-                    <span id="emptyHint" class="chips-empty-hint">Member မရွေးရသေးပါ။ အပေါ်ရှိ ရှာဖွေကွက်တွင် ရိုက်ရှာပြီး ရွေးချယ်ပါ...</span>
+                    <span id="emptyHint" class="chips-empty-hint">No members selected yet. Type in the search box above to find and select members...</span>
                 </div>
             </div>
 
-            <!-- Form Submit အတွက် Hidden Input -->
+            <!-- Hidden Input for Form Submit -->
             <input type="hidden" id="usernames" name="usernames" value="" required>
 
             <button type="submit" class="btn-submit">
-                <span>➕ Group ဖန်တီးမည်</span>
+                <span>➕ Create Group</span>
             </button>
         </form>
     </div>
@@ -399,7 +399,7 @@
         $('#createGroupForm').submit(function(e) {
             updateHiddenUsernamesInput();
             if (selectedMembers.length < 1) {
-                alert('အနည်းဆုံး Member ၁ ယောက် ရွေးချယ်ပေးပါခင်ဗျာ။');
+                alert('Please select at least 1 member.');
                 e.preventDefault();
                 return false;
             }
@@ -410,7 +410,7 @@
         $.get(ctx + '/api/chat/users/search', { q: keyword }, function(users) {
             const box = $('#searchResults').empty();
             if (!users || !users.length) {
-                box.append('<div class="search-item" style="cursor:default;color:var(--text-muted);font-size:13px;justify-content:center;">ရှာမတွေ့ပါ</div>').show();
+                box.append('<div class="search-item" style="cursor:default;color:var(--text-muted);font-size:13px;justify-content:center;">No results found</div>').show();
                 return;
             }
 
@@ -442,7 +442,7 @@
             });
 
             if (box.children().length === 0) {
-                box.append('<div class="search-item" style="cursor:default;color:var(--text-muted);font-size:13px;justify-content:center;">ရွေးချယ်ပြီးဖြစ်သည်</div>');
+                box.append('<div class="search-item" style="cursor:default;color:var(--text-muted);font-size:13px;justify-content:center;">Already selected</div>');
             }
 
             box.show();
@@ -474,7 +474,7 @@
         $('#memberCount').text(selectedMembers.length);
 
         if (selectedMembers.length === 0) {
-            container.append('<span id="emptyHint" class="chips-empty-hint">Member မရွေးရသေးပါ။ အပေါ်ရှိ ရှာဖွေကွက်တွင် ရိုက်ရှာပြီး ရွေးချယ်ပါ...</span>');
+            container.append('<span id="emptyHint" class="chips-empty-hint">No members selected yet. Type in the search box above to find and select members...</span>');
             updateHiddenUsernamesInput();
             return;
         }
