@@ -51,6 +51,8 @@
                         <c:when test="${post.status == 'PUBLISHED'}"><c:set var="statusClass" value="is-published" /></c:when>
                         <c:when test="${post.status == 'PENDING'}"><c:set var="statusClass" value="is-pending" /></c:when>
                         <c:when test="${post.status == 'REJECTED'}"><c:set var="statusClass" value="is-rejected" /></c:when>
+                        <c:when test="${post.status == 'ARCHIVED'}"><c:set var="statusClass" value="is-draft" /></c:when>
+                        <c:when test="${post.status == 'REMOVED'}"><c:set var="statusClass" value="is-rejected" /></c:when>
                         <c:otherwise><c:set var="statusClass" value="is-draft" /></c:otherwise>
                     </c:choose>
 
@@ -77,11 +79,13 @@
                             <p class="rejection-reason"><strong>Reason:</strong> <c:out value="${post.rejectionReason}" /></p>
                         </c:if>
 
+                        <c:if test="${post.status == 'REMOVED' && not empty post.removalReason}">
+                            <p class="rejection-reason"><strong>Removal Reason:</strong> <c:out value="${post.removalReason}" /></p>
+                        </c:if>
+
                         <div class="my-post-actions">
                             <a class="my-action-link primary" href="${pageContext.request.contextPath}/user/posts/${post.id}/contents">Sections</a>
-                            <a class="my-action-link" href="${pageContext.request.contextPath}/user/posts/${post.id}/files">Files</a>
                             <a class="my-action-link" href="${pageContext.request.contextPath}/posts/${post.slug}/download-pdf">PDF</a>
-                            <a class="my-action-link" href="${pageContext.request.contextPath}/user/posts/${post.id}/views">View Users</a>
                             <a class="my-action-link" href="${pageContext.request.contextPath}/user/posts/edit/${post.id}">Edit</a>
                             <a class="my-action-link danger" href="${pageContext.request.contextPath}/user/posts/delete/${post.id}"
                                onclick="return confirm('Delete this post?');">Delete</a>

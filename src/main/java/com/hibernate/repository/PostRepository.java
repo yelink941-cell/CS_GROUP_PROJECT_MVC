@@ -12,6 +12,8 @@ public interface PostRepository {
 
     void delete(Integer id);
 
+    void deletePermanently(Integer id);
+
     Optional<Post> findById(Integer id);
 
     List<Post> findAll();
@@ -29,6 +31,12 @@ public interface PostRepository {
     List<Post> findPublishedPublicByTagId(Integer tagId);
 
     List<Post> findPopularPublishedPublicPosts();
+
+    List<Post> findPopularPublishedPublicPosts(int limit);
+
+    List<Post> findTrendingPublishedPublicPosts(int limit, java.time.LocalDateTime since);
+
+    List<Post> findNewestPublishedPublicPosts(int limit);
 
     List<Object[]> countPublishedPublicPostsByCategory();
 

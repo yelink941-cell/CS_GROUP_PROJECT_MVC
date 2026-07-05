@@ -69,6 +69,11 @@
                 </a>
             </li>
             <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
+                    <span>&#128451; Tags Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
                     <span>&#128221; Post Management</span>
                 </a>

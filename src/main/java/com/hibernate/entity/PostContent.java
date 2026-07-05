@@ -43,6 +43,4 @@ public class PostContent {
     @Column(name = "content_data", nullable = false, columnDefinition = "LONGTEXT")
     private String contentData;
 
-    @Column(name = "sort_order")
-    private Integer sortOrder = 0;
 }

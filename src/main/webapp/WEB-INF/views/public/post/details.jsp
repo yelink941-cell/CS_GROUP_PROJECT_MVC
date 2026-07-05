@@ -387,7 +387,14 @@
                                         <pre class="public-code-content"><code><c:out value="${content.contentData}" /></code></pre>
                                     </c:when>
                                     <c:when test="${content.contentType == 'IMAGE'}">
-                                        <img class="public-section-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(content.contentData, '/')}">
+                                                <img class="public-section-image" src="${pageContext.request.contextPath}${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img class="public-section-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                            </c:otherwise>
+                                        </c:choose>
                                     </c:when>
                                     <c:when test="${content.contentType == 'VIDEO'}">
                                         <video class="public-section-video" controls src="${fn:escapeXml(content.contentData)}"></video>
@@ -396,9 +403,6 @@
                                         <a class="public-section-link" href="${fn:escapeXml(content.contentData)}" target="_blank" rel="noopener noreferrer">
                                             <c:out value="${content.contentData}" />
                                         </a>
-                                    </c:when>
-                                    <c:when test="${content.contentType == 'TABLE'}">
-                                        <pre class="public-table-content"><c:out value="${content.contentData}" /></pre>
                                     </c:when>
                                     <c:otherwise>
                                         <p class="public-text-content"><c:out value="${content.contentData}" /></p>
@@ -410,22 +414,6 @@
                 </div>
             </c:if>
         </section>
-
-        <c:if test="${not empty postFiles}">
-            <section class="attachment-panel">
-                <h2>Attachments</h2>
-                <ul class="attachment-list">
-                    <c:forEach var="postFile" items="${postFiles}">
-                        <li>
-                            <a class="button button-secondary"
-                               href="${pageContext.request.contextPath}/posts/files/${postFile.id}/download">
-                                Download <c:out value="${postFile.fileName}" />
-                            </a>
-                        </li>
-                    </c:forEach>
-                </ul>
-            </section>
-        </c:if>
 
         <div class="public-back-actions">
             <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>

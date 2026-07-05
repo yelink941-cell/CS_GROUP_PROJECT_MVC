@@ -8,12 +8,13 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-list.css?v=8">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/home.css?v=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* FIXED: Kept layout styling clean without overriding system global body rules */
         .home-main-content { 
-            padding: 40px 20px; 
-            max-width: 960px; 
+            padding: 42px 20px 70px; 
+            max-width: 1180px; 
             margin: 0 auto; 
             width: 100%;
         }
@@ -265,24 +266,176 @@
 
             <%-- CONDITION B: UNIFIED HOME SCREEN LAYOUT --%>
             <c:otherwise>
-                <div class="hero-card">
+                <section class="home-hero">
                     <c:choose>
                         <c:when test="${not empty sessionScope.currentUser}">
                             <div class="accent-label">Dashboard Active</div>
                             <h2>Welcome back, <c:out value="${sessionScope.currentUser.username}"/> &#128075;</h2>
-                            <p>You can now use the top navigation bar from your dashboard to look up references and search everything.</p>
+                            <p>Explore categories, discover popular cheat sheets, and continue learning from community-approved guides.</p>
                         </c:when>
                         
                         <c:otherwise>
                             <div class="accent-label">Public Library</div>
                             <h2>Explore Cheat Sheets</h2>
-                            <p>Simple, practical guides created by the community and approved for everyone. Use the top navigation bar to look up specific programming references.</p>
+                            <p>Simple, practical guides created by the community and approved for everyone.</p>
                         </c:otherwise>
                     </c:choose>
-                </div>
+                </section>
+
+                <section class="home-section">
+                    <div class="home-section-header">
+                        <div>
+                            <span class="section-kicker">Browse Topics</span>
+                            <h2>Categories</h2>
+                        </div>
+                        <a href="${pageContext.request.contextPath}/posts/categories">View all categories</a>
+                    </div>
+
+                    <c:choose>
+                        <c:when test="${not empty categorySummaries}">
+                            <div class="category-grid">
+                                <c:forEach var="summary" items="${categorySummaries}">
+                                    <c:set var="category" value="${summary[0]}" />
+                                    <c:set var="postCount" value="${summary[1]}" />
+                                    <a class="category-card" href="${pageContext.request.contextPath}/categories/${category.id}">
+                                        <span class="category-count"><c:out value="${postCount}" /> posts</span>
+                                        <h3><c:out value="${category.name}" /></h3>
+                                        <p>
+                                            <c:choose>
+                                                <c:when test="${not empty category.description}">
+                                                    <c:out value="${category.description}" />
+                                                </c:when>
+                                                <c:otherwise>Explore public cheat sheets from this category.</c:otherwise>
+                                            </c:choose>
+                                        </p>
+                                    </a>
+                                </c:forEach>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="home-empty">No categories are available yet.</div>
+                        </c:otherwise>
+                    </c:choose>
+                </section>
+
+                <section class="home-section">
+                    <div class="home-section-header">
+                        <div>
+                            <span class="section-kicker">Most Viewed</span>
+                            <h2>Popular Posts</h2>
+                        </div>
+                        <a href="${pageContext.request.contextPath}/posts/popular">See more</a>
+                    </div>
+                    <div class="post-card-grid">
+                        <c:choose>
+                            <c:when test="${not empty popularPosts}">
+                                <c:forEach var="post" items="${popularPosts}">
+                                    <article class="home-post-card">
+                                        <span class="post-category"><c:out value="${post.category.name}" /></span>
+                                        <h3><c:out value="${post.title}" /></h3>
+                                        <p><c:out value="${empty post.excerpt ? 'No excerpt available.' : post.excerpt}" /></p>
+                                        <div class="post-meta">
+                                            <span>By <c:out value="${empty post.author ? '-' : post.author.username}" /></span>
+                                            <span><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
+                                        </div>
+                                        <div class="post-footer">
+                                            <small><c:out value="${post.createdAt}" /></small>
+                                            <a href="${pageContext.request.contextPath}/posts/${post.slug}">Read More</a>
+                                        </div>
+                                    </article>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="home-empty">No popular posts are available yet.</div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </section>
+
+                <section class="home-section">
+                    <div class="home-section-header">
+                        <div>
+                            <span class="section-kicker">Last 30 Days</span>
+                            <h2>Trending Posts</h2>
+                        </div>
+                        <a href="${pageContext.request.contextPath}/posts/trending">See more</a>
+                    </div>
+                    <div class="post-card-grid">
+                        <c:choose>
+                            <c:when test="${not empty trendingPosts}">
+                                <c:forEach var="post" items="${trendingPosts}">
+                                    <article class="home-post-card">
+                                        <span class="post-category"><c:out value="${post.category.name}" /></span>
+                                        <h3><c:out value="${post.title}" /></h3>
+                                        <p><c:out value="${empty post.excerpt ? 'No excerpt available.' : post.excerpt}" /></p>
+                                        <div class="post-meta">
+                                            <span>By <c:out value="${empty post.author ? '-' : post.author.username}" /></span>
+                                            <span><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
+                                        </div>
+                                        <div class="post-footer">
+                                            <small><c:out value="${post.createdAt}" /></small>
+                                            <a href="${pageContext.request.contextPath}/posts/${post.slug}">Read More</a>
+                                        </div>
+                                    </article>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="home-empty">No trending posts are available yet.</div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </section>
+
+                <section class="home-section">
+                    <div class="home-section-header">
+                        <div>
+                            <span class="section-kicker">Fresh Guides</span>
+                            <h2>New Posts</h2>
+                        </div>
+                        <a href="${pageContext.request.contextPath}/posts/new">See more</a>
+                    </div>
+                    <div class="post-card-grid">
+                        <c:choose>
+                            <c:when test="${not empty newPosts}">
+                                <c:forEach var="post" items="${newPosts}">
+                                    <article class="home-post-card">
+                                        <span class="post-category"><c:out value="${post.category.name}" /></span>
+                                        <h3><c:out value="${post.title}" /></h3>
+                                        <p><c:out value="${empty post.excerpt ? 'No excerpt available.' : post.excerpt}" /></p>
+                                        <div class="post-meta">
+                                            <span>By <c:out value="${empty post.author ? '-' : post.author.username}" /></span>
+                                            <span><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
+                                        </div>
+                                        <div class="post-footer">
+                                            <small><c:out value="${post.createdAt}" /></small>
+                                            <a href="${pageContext.request.contextPath}/posts/${post.slug}">Read More</a>
+                                        </div>
+                                    </article>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="home-empty">No new posts are available yet.</div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </section>
             </c:otherwise>
         </c:choose>
     </main>
+
+    <footer class="site-footer">
+        <div>
+            <h2>CheatSheet Hub</h2>
+            <p>Community-built cheat sheets for quick learning, practical references, and clean knowledge sharing.</p>
+        </div>
+        <nav>
+            <a href="${pageContext.request.contextPath}/">Home</a>
+            <a href="${pageContext.request.contextPath}/posts/public">View Posts</a>
+            <a href="${pageContext.request.contextPath}/posts/categories">Categories</a>
+            <a href="${pageContext.request.contextPath}/posts/popular">Popular</a>
+        </nav>
+        <small>&copy; 2026 CheatSheet Hub. All rights reserved.</small>
+    </footer>
 
     <c:if test="${not empty sessionScope.currentUser}">
         <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages">&#128172;</a>

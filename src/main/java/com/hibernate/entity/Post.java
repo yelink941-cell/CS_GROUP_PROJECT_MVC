@@ -65,6 +65,13 @@ public class Post {
     @Column(name = "rejection_reason", columnDefinition = "TEXT")
     private String rejectionReason;
 
+    @Column(name = "removal_reason", columnDefinition = "TEXT")
+    private String removalReason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_before_archive", length = 20)
+    private PostStatus statusBeforeArchive;
+
     @Column(name = "compiled_file_url", length = 500)
     private String compiledFileUrl;
 
@@ -79,6 +86,12 @@ public class Post {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "archived_at")
+    private LocalDateTime archivedAt;
+
+    @Column(name = "removed_at")
+    private LocalDateTime removedAt;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
