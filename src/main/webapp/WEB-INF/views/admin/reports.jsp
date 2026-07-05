@@ -12,19 +12,29 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Report Logs Queue</title>
+    <title>Admin - Report Logs & Moderation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- ✅ Admin CSS for sidebar -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin.css">
-    
     <style>
-        /* ============================================
-           REPORT LOGS PAGE STYLES (Keep as is)
-           ============================================ */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; min-height: 100vh; background-color: #f8fafc; color: #1e293b; }
+        .sidebar { width: 260px; background-color: #1e293b; color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+        .sidebar-brand { padding: 24px; font-size: 20px; font-weight: bold; background-color: #0f172a; text-align: center; color: #38bdf8; }
+        .sidebar-menu { list-style: none; flex-grow: 1; padding: 20px 0; }
+        .sidebar-item { margin: 4px 15px; }
+        .sidebar-link { display: flex; align-items: center; padding: 12px 16px; color: #cbd5e1; text-decoration: none; border-radius: 6px; font-size: 15px; transition: all 0.2s; }
+        .sidebar-link:hover { background-color: #334155; color: #fff; }
+        .sidebar-link.active { background-color: #0284c7; color: #fff; font-weight: 600; }
+        .main-workspace { margin-left: 260px; flex-grow: 1; display: flex; flex-direction: column; }
+        .top-navbar { height: 70px; background-color: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .nav-title { font-size: 18px; font-weight: 600; color: #475569; }
+        .user-profile-badge { display: flex; align-items: center; gap: 10px; }
+        .badge { background-color: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .content-area { padding: 40px; max-width: 1350px; width: 100%; margin: 0 auto; }
         
-        .content-area { padding: 40px; max-width: 1300px; width: 100%; margin: 0 auto; }
-        
+        .flash-msg { padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .flash-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .flash-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
         .section-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 40px; overflow: hidden; }
         .section-header { background: #0f172a; color: white; padding: 18px 24px; font-size: 18px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
         .section-body { padding: 0; }
@@ -38,9 +48,7 @@
         .status-badge { background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: inline-block; }
         
         .action-cell { display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; }
-        .btn-dismiss { background-color: #cbd5e1; color: #334155; }
-        .btn-dismiss:hover { background-color: #94a3b8; color: white; }
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
         .btn-resolve { background-color: #ef4444; color: white; }
         .btn-resolve:hover { background-color: #dc2626; }
         
@@ -48,8 +56,11 @@
         .btn-unban:hover { background-color: #d1fae5; }
         .btn-ban { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
         .btn-ban:hover { background-color: #fee2e2; }
+        .btn-edit { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .btn-edit:hover { background-color: #dbeafe; }
         
-        .input-reason { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 140px; margin-right: 5px; }
+        .input-reason { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; width: 130px; }
+        .select-duration { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #fff; font-weight: 600; color: #1e293b; }
         
         .no-data { padding: 30px; text-align: center; color: #64748b; font-style: italic; }
         .btn-logout { background-color: #64748b; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-size: 14px; }
@@ -81,6 +92,8 @@
         .details-table th { background: #f1f5f9; font-size: 12px; padding: 10px; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; color: #475569; }
         .details-table td { padding: 10px; font-size: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
 
+        .type-tag-badge { background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; margin-top: 4px; border: 1px solid #fecaca; }
+
         /* ===== MODAL SYSTEM ===== */
         .modal-mask { 
             position: fixed; top:0; left:0; width:100vw; height:100vh; 
@@ -90,7 +103,7 @@
         }
         .modal-mask.open { opacity: 1; pointer-events: auto; }
         .modal-body { 
-            background: #ffffff; width: 100%; max-width: 500px; padding: 32px; border-radius: 16px; 
+            background: #ffffff; width: 100%; max-width: 520px; padding: 32px; border-radius: 16px; 
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; 
         }
         .modal-close-x { 
@@ -125,60 +138,55 @@
     boolean isPostType = "posts".equals(reportType);
     boolean isHistoryView = "history".equals(reportView);
     String ctx = request.getContextPath();
+    String currentRedirectUrl = "/admin/reports?type=" + reportType + "&view=" + reportView;
 %>
 
-    <!-- Sidebar (Same as admin-dashboard) -->
     <aside class="sidebar">
-        <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
+        <div class="sidebar-brand">CheatSheet Admin Panel &#128081;</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link">
-                    <span>📊 Core Dashboard</span>
+                    <span>&#128202; Core Dashboard</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/categories" class="sidebar-link">
-                    <span>📁 Category Management</span>
-                </a>
-            </li>
-            <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
-                    <span>🏷️ Tags Management</span>
+                    <span>&#128451; Category Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
-                    <span>📄 Post Management</span>
+                    <span>&#128221; Post Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
-                    <span>⏳ Pending Posts</span>
+                    <span>&#9203; Pending Posts</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/comments" class="sidebar-link">
-                    <span>💬 Comment Management</span>
+                    <span>&#128172; Comment Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
-                    <span>👥 User Management</span>
+                    <span>&#128101; User Directory</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/announcements" class="sidebar-link">
-                    <span>📢 Event Announcements</span>
+                    <span>&#128364; Event Announcements</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports/cheatsheet" class="sidebar-link">
-                    <span>📊 CheatSheet Report</span>
+                    <span>&#128196; CheatSheet Report</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link active">
-                    <span>📊 Report Logs</span>
+                    <span>&#128680; Report Logs & Moderation</span>
                 </a>
             </li>
         </ul>
@@ -186,7 +194,7 @@
 
     <div class="main-workspace">
         <header class="top-navbar">
-            <div class="nav-title"><%= isPostType ? "Post Report Logs" : "Comment Report Logs" %></div>
+            <div class="nav-title"><%= isPostType ? "Post Report Logs & Moderation" : "Comment Report Logs & Moderation" %></div>
             <div class="user-profile-badge">
                 <span>Welcome, <strong><%= displayUsername %></strong></span>
                 <span class="badge"><%= displayRole %></span>
@@ -196,25 +204,38 @@
 
         <main class="content-area">
 
+            <% if (session.getAttribute("success") != null || request.getAttribute("success") != null) { %>
+                <div class="flash-msg flash-success">
+                    <i class="fas fa-check-circle"></i> <%= request.getAttribute("success") != null ? request.getAttribute("success") : session.getAttribute("success") %>
+                </div>
+                <% session.removeAttribute("success"); %>
+            <% } %>
+            <% if (session.getAttribute("error") != null || request.getAttribute("error") != null) { %>
+                <div class="flash-msg flash-error">
+                    <i class="fas fa-exclamation-circle"></i> <%= request.getAttribute("error") != null ? request.getAttribute("error") : session.getAttribute("error") %>
+                </div>
+                <% session.removeAttribute("error"); %>
+            <% } %>
+
             <div class="type-tabs">
                 <a href="<%= ctx %>/admin/reports?type=posts&view=<%= reportView %>"
-                   class="type-tab <%= isPostType ? "active" : "" %>">📄 Post Reports</a>
+                   class="type-tab <%= isPostType ? "active" : "" %>">&#128196; Post Reports</a>
                 <a href="<%= ctx %>/admin/reports?type=comments&view=<%= reportView %>"
-                   class="type-tab <%= !isPostType ? "active" : "" %>">💬 Comment Reports</a>
+                   class="type-tab <%= !isPostType ? "active" : "" %>">&#128172; Comment Reports</a>
             </div>
 
             <div class="view-tabs">
                 <a href="<%= ctx %>/admin/reports?type=<%= reportType %>&view=queue"
-                   class="view-tab <%= !isHistoryView ? "active" : "" %>">📥 Pending Queue</a>
+                   class="view-tab <%= !isHistoryView ? "active" : "" %>">&#128203; Pending Queue</a>
                 <a href="<%= ctx %>/admin/reports?type=<%= reportType %>&view=history"
-                   class="view-tab <%= isHistoryView ? "active" : "" %>">📜 History</a>
+                   class="view-tab <%= isHistoryView ? "active" : "" %>">&#128337; History</a>
             </div>
             
             <% if (isPostType) { %>
             <!-- POST REPORTS -->
             <div class="section-card">
                 <div class="section-header">
-                    <span><%= isHistoryView ? "📜 Post Report History" : "📥 Pending Grouped Post Reports" %></span>
+                    <span><%= isHistoryView ? "📜 Post Report History" : "📋 Pending Grouped Post Reports" %></span>
                     <span style="font-size: 13px; font-weight: normal; background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 9999px;">
                         <%= isHistoryView ? (postReports != null ? postReports.size() : 0) : (groupedPostReports != null ? groupedPostReports.size() : 0) %> <%= isHistoryView ? "records" : "reported posts" %>
                     </span>
@@ -231,7 +252,7 @@
                                         <th>Post Info</th>
                                         <th>Parties Involved</th>
                                         <th>Outcome</th>
-                                        <th style="text-align: right;">Admin Control</th>
+                                        <th style="text-align: right;">Admin Control (Unban / Ban / Edit)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -264,15 +285,26 @@
                                                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                                                     <% if (author != null) { %>
                                                         <% if (isAuthorBanned) { %>
-                                                            <form action="<%= ctx %>/admin/users/<%= author.getId() %>/unban" method="POST" style="margin:0;">
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Author အား ကင်းလွှတ်ခွင့် ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
-                                                                    <i class="fas fa-key"></i> 🎉 Unban (ကင်းလွှတ်ခွင့်)
+                                                            <div style="display:flex; gap:4px;">
+                                                                <!-- UNBAN BUTTON -->
+                                                                <form action="<%= ctx %>/admin/users/<%= author.getId() %>/unban" method="POST" style="margin:0;">
+                                                                    <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
+                                                                    <button type="submit" class="btn btn-unban" onclick="return confirm('Pardon and unban @<%= author.getUsername() %>?');">
+                                                                        <i class="fas fa-key"></i> 🎉 Unban
+                                                                    </button>
+                                                                </form>
+
+                                                                <!-- EDIT BAN BUTTON -->
+                                                                <button type="button" class="btn btn-edit" onclick="openBanModal('<%= author.getId() %>', '<%= author.getUsername().replace("'", "\\'") %>', '<%= author.getBanType() != null ? author.getBanType() : "POST_ONLY" %>', '<%= author.getBanReason() != null ? author.getBanReason().replace("'", "\\'") : "" %>', '<%= author.getBanDuration() != null ? author.getBanDuration() : "1_WEEK" %>')">
+                                                                    <i class="fas fa-pen"></i> Edit Ban
                                                                 </button>
-                                                            </form>
+                                                            </div>
+                                                            <span class="type-tag-badge">Type: <%= author.getBanDurationLabel() %> (<%= "POST_ONLY".equalsIgnoreCase(author.getBanType()) ? "Post Ban" : ("COMMENT_ONLY".equalsIgnoreCase(author.getBanType()) ? "Comment Ban" : "Full Ban") %>)</span>
                                                             <span style="font-size:10px; color:#dc2626; font-weight:600;"><%= author.getBanRemainingText() %></span>
                                                         <% } else { %>
-                                                            <button type="button" class="btn btn-ban" onclick="openBanModal('<%= author.getId() %>', '<%= author.getUsername().replace("'", "\\'") %>')">
-                                                                <i class="fas fa-ban"></i> Ban Author
+                                                            <!-- BAN BUTTON -->
+                                                            <button type="button" class="btn btn-ban" onclick="openBanModal('<%= author.getId() %>', '<%= author.getUsername().replace("'", "\\'") %>', 'POST_ONLY', '', '1_WEEK')">
+                                                                <i class="fas fa-ban"></i> Ban Post Creation
                                                             </button>
                                                         <% } %>
                                                     <% } %>
@@ -293,7 +325,7 @@
                                     <tr>
                                         <th>Post Details & Author</th>
                                         <th>Report Summary</th>
-                                        <th style="width: 340px; text-align: right;">Group Actions & Admin Control</th>
+                                        <th style="width: 480px; text-align: right;">Group Actions & Ban Time Selection</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -309,11 +341,11 @@
                                                 <span style="font-size: 12px; color: #475569;">Author: <strong>@<%= author != null ? author.getUsername() : "N/A" %></strong></span>
                                                 <br/>
                                                 <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
-                                                    👁️ View Reporter Details (<%= g.getReportCount() %>)
+                                                    &#128065; View Reporter Details (<%= g.getReportCount() %>)
                                                 </button>
                                             </td>
                                             <td>
-                                                <span class="count-badge">🔥 <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
+                                                <span class="count-badge">&#128293; <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
                                                 <div style="margin-top: 8px;">
                                                     <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
                                                         <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
@@ -322,27 +354,39 @@
                                                 <div class="date-meta">Latest: <%= g.getLatestReportedAt() %></div>
                                             </td>
                                             <td style="text-align: right;">
-                                                <div class="action-cell" style="justify-content: flex-end;">
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/group/<%= g.getPost().getId() %>/dismiss" method="POST" style="display:inline;">
-                                                        <button type="submit" class="btn btn-dismiss" onclick="return confirm('Dismiss ALL <%= g.getReportCount() %> reports for this post as false alarm?')">Dismiss Group</button>
-                                                    </form>
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/group/<%= g.getPost().getId() %>/resolve" method="POST" style="display:inline; margin-top:4px;">
-                                                        <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
-                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve group: remove post and clear all <%= g.getReportCount() %> pending reports?')">Resolve & Remove</button>
+                                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+
+                                                    <!-- RESOLVE & BAN FORM WITH DURATION & SCOPE SELECTORS -->
+                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/group/<%= g.getPost().getId() %>/resolve" method="POST" style="display:flex; flex-wrap:wrap; gap:4px; justify-content:flex-end; align-items:center;">
+                                                        <select name="duration" class="select-duration" title="Select Ban Time Limit">
+                                                            <option value="1_WEEK">⏱️ 1 Week</option>
+                                                            <option value="1_MONTH">🗓️ 1 Month</option>
+                                                            <option value="1_YEAR">📆 1 Year</option>
+                                                            <option value="PERMANENT">⛔ Permanent</option>
+                                                        </select>
+                                                        
+                                                        <select name="banType" class="select-duration" title="Select Restriction Scope">
+                                                            <option value="POST_ONLY">🚫 Post Ban</option>
+                                                            <option value="COMMENT_ONLY">💬 Comment Ban</option>
+                                                            <option value="FULL">🔒 Full Ban</option>
+                                                        </select>
+
+                                                        <input type="text" name="reason" class="input-reason" placeholder="Ban reason..." required />
+                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve report, delete post, and ban author for selected duration?')">
+                                                            <i class="fas fa-gavel"></i> Resolve & Ban
+                                                        </button>
                                                     </form>
                                                     
-                                                    <% if (author != null) { %>
-                                                        <% if (isAuthorBanned) { %>
-                                                            <form action="<%= ctx %>/admin/users/<%= author.getId() %>/unban" method="POST" style="display:inline; margin-top:4px;">
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Author အား ကင်းလွှတ်ခွင့် ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
-                                                                    <i class="fas fa-key"></i> 🎉 Unban Author
+                                                    <% if (author != null && isAuthorBanned) { %>
+                                                        <div style="display:inline-flex; gap:4px; margin-top:2px;">
+                                                            <form action="<%= ctx %>/admin/users/<%= author.getId() %>/unban" method="POST" style="margin:0;">
+                                                                <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
+                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Pardon and unban @<%= author.getUsername() %>?');">
+                                                                    <i class="fas fa-key"></i> 🎉 Unban
                                                                 </button>
                                                             </form>
-                                                        <% } else { %>
-                                                            <button type="button" class="btn btn-ban" style="margin-top:4px;" onclick="openBanModal('<%= author.getId() %>', '<%= author.getUsername().replace("'", "\\'") %>')">
-                                                                <i class="fas fa-ban"></i> Ban Author
-                                                            </button>
-                                                        <% } %>
+                                                            <span class="type-tag-badge">Currently Banned (<%= author.getBanDurationLabel() %>)</span>
+                                                        </div>
                                                     <% } %>
                                                 </div>
                                             </td>
@@ -350,7 +394,7 @@
                                         <tr id="<%= detailsId %>" class="details-row">
                                             <td colspan="3">
                                                 <div class="details-container">
-                                                    <strong style="font-size: 13px; color: #0284c7;">📄 Individual Reports (<%= g.getReportCount() %>):</strong>
+                                                    <strong style="font-size: 13px; color: #0284c7;">&#128203; Individual Reports (<%= g.getReportCount() %>):</strong>
                                                     <table class="details-table">
                                                         <thead>
                                                             <tr>
@@ -358,7 +402,6 @@
                                                                 <th>Reason</th>
                                                                 <th>Description</th>
                                                                 <th>Date</th>
-                                                                <th>Individual Action</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -368,11 +411,6 @@
                                                                     <td><span class="reason-badge"><%= r.getReason() %></span></td>
                                                                     <td><%= r.getDescription() != null && !r.getDescription().isEmpty() ? r.getDescription() : "<em>No description</em>" %></td>
                                                                     <td><%= r.getCreatedAt() %></td>
-                                                                    <td>
-                                                                        <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
-                                                                            <button type="submit" class="btn btn-dismiss" style="padding: 4px 8px; font-size:11px;" onclick="return confirm('Dismiss only this single report?')">Dismiss</button>
-                                                                        </form>
-                                                                    </td>
                                                                 </tr>
                                                             <% } %>
                                                         </tbody>
@@ -391,7 +429,7 @@
             <!-- COMMENT REPORTS -->
             <div class="section-card">
                 <div class="section-header">
-                    <span><%= isHistoryView ? "📜 Comment Report History" : "📥 Pending Grouped Comment Reports" %></span>
+                    <span><%= isHistoryView ? "📜 Comment Report History" : "📋 Pending Grouped Comment Reports" %></span>
                     <span style="font-size: 13px; font-weight: normal; background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 9999px;">
                         <%= isHistoryView ? (commentReports != null ? commentReports.size() : 0) : (groupedCommentReports != null ? groupedCommentReports.size() : 0) %> <%= isHistoryView ? "records" : "reported comments" %>
                     </span>
@@ -408,7 +446,7 @@
                                         <th>Comment Info</th>
                                         <th>Parties Involved</th>
                                         <th>Outcome</th>
-                                        <th style="text-align: right;">Admin Control</th>
+                                        <th style="text-align: right;">Admin Control (Unban / Ban / Edit)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -443,14 +481,24 @@
                                                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                                                     <% if (commenter != null) { %>
                                                         <% if (isCommenterBanned) { %>
-                                                            <form action="<%= ctx %>/admin/users/<%= commenter.getId() %>/unban" method="POST" style="margin:0;">
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Commenter အား ကင်းလွှတ်ခွင့် ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
-                                                                    <i class="fas fa-key"></i> 🎉 Unban (ကင်းလွှတ်ခွင့်)
+                                                            <div style="display:flex; gap:4px;">
+                                                                <!-- UNBAN BUTTON -->
+                                                                <form action="<%= ctx %>/admin/users/<%= commenter.getId() %>/unban" method="POST" style="margin:0;">
+                                                                    <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
+                                                                    <button type="submit" class="btn btn-unban" onclick="return confirm('Pardon and unban @<%= commenter.getUsername() %>?');">
+                                                                        <i class="fas fa-key"></i> 🎉 Unban
+                                                                    </button>
+                                                                </form>
+                                                                <!-- EDIT BAN BUTTON -->
+                                                                <button type="button" class="btn btn-edit" onclick="openBanModal('<%= commenter.getId() %>', '<%= commenter.getUsername().replace("'", "\\'") %>', '<%= commenter.getBanType() != null ? commenter.getBanType() : "COMMENT_ONLY" %>', '<%= commenter.getBanReason() != null ? commenter.getBanReason().replace("'", "\\'") : "" %>', '<%= commenter.getBanDuration() != null ? commenter.getBanDuration() : "1_WEEK" %>')">
+                                                                    <i class="fas fa-pen"></i> Edit Ban
                                                                 </button>
-                                                            </form>
+                                                            </div>
+                                                            <span class="type-tag-badge">Type: <%= commenter.getBanDurationLabel() %> (<%= "POST_ONLY".equalsIgnoreCase(commenter.getBanType()) ? "Post Ban" : ("COMMENT_ONLY".equalsIgnoreCase(commenter.getBanType()) ? "Comment Ban" : "Full Ban") %>)</span>
                                                             <span style="font-size:10px; color:#dc2626; font-weight:600;"><%= commenter.getBanRemainingText() %></span>
                                                         <% } else { %>
-                                                            <button type="button" class="btn btn-ban" onclick="openBanModal('<%= commenter.getId() %>', '<%= commenter.getUsername().replace("'", "\\'") %>')">
+                                                            <!-- BAN BUTTON -->
+                                                            <button type="button" class="btn btn-ban" onclick="openBanModal('<%= commenter.getId() %>', '<%= commenter.getUsername().replace("'", "\\'") %>', 'COMMENT_ONLY', '', '1_WEEK')">
                                                                 <i class="fas fa-ban"></i> Ban Commenter
                                                             </button>
                                                         <% } %>
@@ -472,7 +520,7 @@
                                     <tr>
                                         <th>Comment Content & Author</th>
                                         <th>Report Summary</th>
-                                        <th style="width: 340px; text-align: right;">Group Actions & Admin Control</th>
+                                        <th style="width: 480px; text-align: right;">Group Actions & Ban Time Selection</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -490,11 +538,11 @@
                                                 <span style="font-size:12px; color:#475569;">Commenter: <strong>@<%= commenter != null ? commenter.getUsername() : "N/A" %></strong></span>
                                                 <br/>
                                                 <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
-                                                    👁️ View Reporter Details (<%= g.getReportCount() %>)
+                                                    &#128065; View Reporter Details (<%= g.getReportCount() %>)
                                                 </button>
                                             </td>
                                             <td>
-                                                <span class="count-badge">🔥 <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
+                                                <span class="count-badge">&#128293; <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
                                                 <div style="margin-top: 8px;">
                                                     <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
                                                         <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
@@ -503,27 +551,39 @@
                                                 <div class="date-meta">Latest: <%= g.getLatestReportedAt() %></div>
                                             </td>
                                             <td style="text-align: right;">
-                                                <div class="action-cell" style="justify-content: flex-end;">
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/group/<%= g.getComment().getId() %>/dismiss" method="POST" style="display:inline;">
-                                                        <button type="submit" class="btn btn-dismiss" onclick="return confirm('Dismiss ALL <%= g.getReportCount() %> reports for this comment as false alarm?')">Dismiss Group</button>
-                                                    </form>
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/group/<%= g.getComment().getId() %>/resolve" method="POST" style="display:inline; margin-top:4px;">
-                                                        <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
-                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve group: delete comment, ban commenter, and clear all <%= g.getReportCount() %> pending reports?')">Resolve & Ban</button>
+                                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+
+                                                    <!-- RESOLVE & BAN FORM WITH DURATION & SCOPE SELECTORS -->
+                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/group/<%= g.getComment().getId() %>/resolve" method="POST" style="display:flex; flex-wrap:wrap; gap:4px; justify-content:flex-end; align-items:center;">
+                                                        <select name="duration" class="select-duration" title="Select Ban Time Limit">
+                                                            <option value="1_WEEK">⏱️ 1 Week</option>
+                                                            <option value="1_MONTH">🗓️ 1 Month</option>
+                                                            <option value="1_YEAR">📆 1 Year</option>
+                                                            <option value="PERMANENT">⛔ Permanent</option>
+                                                        </select>
+                                                        
+                                                        <select name="banType" class="select-duration" title="Select Restriction Scope">
+                                                            <option value="COMMENT_ONLY">💬 Comment Ban</option>
+                                                            <option value="POST_ONLY">🚫 Post Ban</option>
+                                                            <option value="FULL">🔒 Full Ban</option>
+                                                        </select>
+
+                                                        <input type="text" name="reason" class="input-reason" placeholder="Ban reason..." required />
+                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve report, delete comment, and ban commenter for selected duration?')">
+                                                            <i class="fas fa-gavel"></i> Resolve & Ban
+                                                        </button>
                                                     </form>
 
-                                                    <% if (commenter != null) { %>
-                                                        <% if (isCommenterBanned) { %>
-                                                            <form action="<%= ctx %>/admin/users/<%= commenter.getId() %>/unban" method="POST" style="display:inline; margin-top:4px;">
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Commenter အား ကင်းလွှတ်ခွင့် ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
-                                                                    <i class="fas fa-key"></i> 🎉 Unban Commenter
+                                                    <% if (commenter != null && isCommenterBanned) { %>
+                                                        <div style="display:inline-flex; gap:4px; margin-top:2px;">
+                                                            <form action="<%= ctx %>/admin/users/<%= commenter.getId() %>/unban" method="POST" style="margin:0;">
+                                                                <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
+                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Pardon and unban @<%= commenter.getUsername() %>?');">
+                                                                    <i class="fas fa-key"></i> 🎉 Unban
                                                                 </button>
                                                             </form>
-                                                        <% } else { %>
-                                                            <button type="button" class="btn btn-ban" style="margin-top:4px;" onclick="openBanModal('<%= commenter.getId() %>', '<%= commenter.getUsername().replace("'", "\\'") %>')">
-                                                                <i class="fas fa-ban"></i> Ban Commenter
-                                                            </button>
-                                                        <% } %>
+                                                            <span class="type-tag-badge">Currently Banned (<%= commenter.getBanDurationLabel() %>)</span>
+                                                        </div>
                                                     <% } %>
                                                 </div>
                                             </td>
@@ -531,7 +591,7 @@
                                         <tr id="<%= detailsId %>" class="details-row">
                                             <td colspan="3">
                                                 <div class="details-container">
-                                                    <strong style="font-size: 13px; color: #0284c7;">📄 Individual Reports (<%= g.getReportCount() %>):</strong>
+                                                    <strong style="font-size: 13px; color: #0284c7;">&#128203; Individual Reports (<%= g.getReportCount() %>):</strong>
                                                     <table class="details-table">
                                                         <thead>
                                                             <tr>
@@ -539,7 +599,6 @@
                                                                 <th>Reason</th>
                                                                 <th>Description</th>
                                                                 <th>Date</th>
-                                                                <th>Individual Action</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -549,11 +608,6 @@
                                                                     <td><span class="reason-badge"><%= r.getReason() %></span></td>
                                                                     <td><%= r.getDescription() != null && !r.getDescription().isEmpty() ? r.getDescription() : "<em>No description</em>" %></td>
                                                                     <td><%= r.getCreatedAt() %></td>
-                                                                    <td>
-                                                                        <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
-                                                                            <button type="submit" class="btn btn-dismiss" style="padding: 4px 8px; font-size:11px;" onclick="return confirm('Dismiss only this single report?')">Dismiss</button>
-                                                                        </form>
-                                                                    </td>
                                                                 </tr>
                                                             <% } %>
                                                         </tbody>
@@ -573,47 +627,69 @@
         </main>
     </div>
 
-    <!-- ===== TIMED BAN MODAL ===== -->
+    <!-- ===== TIMED BAN & EDIT MODAL ===== -->
     <div class="modal-mask" id="banModal" onclick="if(event.target.classList.contains('modal-mask')) this.classList.remove('open')">
         <div class="modal-body" onclick="event.stopPropagation()">
             <button class="modal-close-x" onclick="document.getElementById('banModal').classList.remove('open')">&times;</button>
-            <h3 style="font-size: 18px; color: #0f1724; margin-bottom: 8px;">🚫 Suspend / Ban User</h3>
+            <h3 style="font-size: 18px; color: #0f172a; margin-bottom: 8px;">🚫 Suspend / Edit User Restriction</h3>
             <p style="color: #64748b; font-size: 13px; margin-bottom: 16px;">
                 Target User: <strong id="banTargetUsername" style="color: #2563eb;">@username</strong>
             </p>
 
             <form id="banForm" action="" method="POST">
+                <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
+
                 <div style="margin-bottom: 14px;">
                     <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">
-                        Ban Duration (အချိန်ကာလ သတ်မှတ်ချက်):
+                        Restriction Scope:
                     </label>
-                    <select name="duration" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px;">
-                        <option value="1_WEEK">1 Week (၁ ပတ်)</option>
-                        <option value="1_MONTH">1 Month (၁ လ)</option>
-                        <option value="1_YEAR">1 Year (၁ နှစ်)</option>
-                        <option value="PERMANENT">Permanent Ban (ထာဝရ ပိတ်ပင်မည်)</option>
+                    <select id="banTypeSelect" name="banType" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px;">
+                        <option value="POST_ONLY">Post Creation Restriction Only (Post Ban)</option>
+                        <option value="COMMENT_ONLY">Comment Restriction Only (Comment Ban)</option>
+                        <option value="FULL">Full Account Suspension (Full Ban)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">
+                        Ban Duration (Time Limit):
+                    </label>
+                    <select id="banDurationSelect" name="duration" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px;">
+                        <option value="1_WEEK">1 Week</option>
+                        <option value="1_MONTH">1 Month</option>
+                        <option value="1_YEAR">1 Year</option>
+                        <option value="PERMANENT">Permanent Ban</option>
                     </select>
                 </div>
 
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">
-                        Reason for Suspension (အကြောင်းအရင်း):
+                        Reason for Suspension:
                     </label>
-                    <textarea name="reason" rows="3" required placeholder="Violated community guidelines..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px;"></textarea>
+                    <textarea id="banReasonInput" name="reason" rows="3" required placeholder="Violated community guidelines..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px;"></textarea>
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 8px;">
                     <button type="button" class="btn btn-dismiss" onclick="document.getElementById('banModal').classList.remove('open')">Cancel</button>
-                    <button type="submit" class="btn btn-resolve">Confirm Ban / Suspend</button>
+                    <button type="submit" class="btn btn-resolve"><i class="fas fa-save"></i> Save Ban Settings</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        function openBanModal(userId, username) {
+        function openBanModal(userId, username, banType, reason, duration) {
             document.getElementById('banTargetUsername').textContent = '@' + username;
             document.getElementById('banForm').action = '<%= ctx %>/admin/users/' + userId + '/ban';
+            if (banType) {
+                document.getElementById('banTypeSelect').value = banType;
+            }
+            if (duration) {
+                document.getElementById('banDurationSelect').value = duration;
+            }
+            if (reason) {
+                document.getElementById('banReasonInput').value = reason;
+            }
             document.getElementById('banModal').classList.add('open');
         }
 

@@ -153,6 +153,13 @@ public class ReportServiceImpl implements ReportService {
             if (post != null) {
                 moderationService.softDeletePost(adminId, post.getId(),
                         "Resolved report " + reportId + ": " + reason);
+
+                User author = post.getAuthor();
+                User admin = getUser(adminId);
+                if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
+                    moderationService.banUser(adminId, author.getId(),
+                            "Banned due to resolved post report " + reportId + ": " + reason, "1_WEEK", "POST_ONLY");
+                }
             }
         }
     }
@@ -175,7 +182,7 @@ public class ReportServiceImpl implements ReportService {
                 User admin = getUser(adminId);
                 if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
                     moderationService.banUser(adminId, author.getId(),
-                            "Banned due to resolved comment report " + reportId + ": " + reason, "PERMANENT");
+                            "Banned due to resolved comment report " + reportId + ": " + reason, "PERMANENT", "FULL");
                 }
             }
         }
@@ -194,6 +201,12 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional
     public void resolveAllPostReportsByPostId(Long adminId, Integer postId, String reason) {
+        resolveAllPostReportsByPostId(adminId, postId, reason, "1_WEEK", "POST_ONLY");
+    }
+
+    @Override
+    @Transactional
+    public void resolveAllPostReportsByPostId(Long adminId, Integer postId, String reason, String duration, String banType) {
         List<PostReport> pendingList = postReportRepository.findPendingByPostId(postId);
         if (pendingList.isEmpty()) {
             return;
@@ -207,6 +220,15 @@ public class ReportServiceImpl implements ReportService {
         if (post != null) {
             moderationService.softDeletePost(adminId, post.getId(),
                     "Resolved all pending reports (" + pendingList.size() + "): " + reason);
+
+            User author = post.getAuthor();
+            User admin = getUser(adminId);
+            if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
+                moderationService.banUser(adminId, author.getId(),
+                        "Banned due to resolved post reports (" + pendingList.size() + "): " + reason,
+                        duration != null ? duration : "1_WEEK",
+                        banType != null ? banType : "POST_ONLY");
+            }
         }
     }
 
@@ -223,6 +245,12 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional
     public void resolveAllCommentReportsByCommentId(Long adminId, Integer commentId, String reason) {
+        resolveAllCommentReportsByCommentId(adminId, commentId, reason, "1_WEEK", "COMMENT_ONLY");
+    }
+
+    @Override
+    @Transactional
+    public void resolveAllCommentReportsByCommentId(Long adminId, Integer commentId, String reason, String duration, String banType) {
         List<CommentReport> pendingList = commentReportRepository.findPendingByCommentId(commentId);
         if (pendingList.isEmpty()) {
             return;
@@ -241,7 +269,9 @@ public class ReportServiceImpl implements ReportService {
             User admin = getUser(adminId);
             if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
                 moderationService.banUser(adminId, author.getId(),
-                        "Banned due to resolved comment reports (" + pendingList.size() + "): " + reason, "PERMANENT");
+                        "Banned due to resolved comment reports (" + pendingList.size() + "): " + reason,
+                        duration != null ? duration : "1_WEEK",
+                        banType != null ? banType : "COMMENT_ONLY");
             }
         }
     }
