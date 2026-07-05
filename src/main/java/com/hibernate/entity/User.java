@@ -58,6 +58,42 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "ban_expires_at")
+    private LocalDateTime banExpiresAt;
+
+    @Column(name = "ban_reason", columnDefinition = "TEXT")
+    private String banReason;
+
+    public boolean isCurrentlyBanned() {
+        if (this.status == UserStatus.BANNED) {
+            if (this.banExpiresAt == null) {
+                return true; // Permanent ban
+            }
+            return LocalDateTime.now().isBefore(this.banExpiresAt);
+        }
+        return false;
+    }
+
+    public String getBanRemainingText() {
+        if (!isCurrentlyBanned()) {
+            return "Active";
+        }
+        if (this.banExpiresAt == null) {
+            return "Permanent Ban (ထာဝရ)";
+        }
+        java.time.Duration remaining = java.time.Duration.between(LocalDateTime.now(), this.banExpiresAt);
+        long days = remaining.toDays();
+        long hours = remaining.toHours() % 24;
+        if (days > 0) {
+            return days + " days " + hours + " hours remaining (until " + this.banExpiresAt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + ")";
+        } else if (hours > 0) {
+            return hours + " hours remaining";
+        } else {
+            long mins = Math.max(1, remaining.toMinutes());
+            return mins + " minutes remaining";
+        }
+    }
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

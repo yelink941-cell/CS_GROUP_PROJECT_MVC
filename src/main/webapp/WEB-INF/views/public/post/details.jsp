@@ -685,7 +685,7 @@ commentForm.addEventListener('submit', function(e) {
         if (err.message && err.message.includes('401')) {
             window.location.href = '${pageContext.request.contextPath}/login';
         } else {
-            alert('Comment ပို့၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။');
+            alert('Comment error: ' + (err.message || 'Comment ပို့၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။'));
         }
     });
 });
