@@ -2,22 +2,21 @@ package com.hibernate.controller;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hibernate.entity.PostLike;
-import com.hibernate.entity.Post;
 import com.hibernate.entity.User;
 import com.hibernate.repository.PostLikeRepository;
 import com.hibernate.repository.PostRepository;
 import com.hibernate.repository.UserRepository;
+import com.hibernate.service.PostLikeService;
 
 @RestController
 public class LikeRestController {
@@ -31,43 +30,51 @@ public class LikeRestController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PostLikeService postLikeService;
+
     @PostMapping("/api/toggle-like")
     @ResponseBody
-    @Transactional
-    public Map<String, Object> toggleLike(@RequestParam Integer postId, HttpSession session) { // 🟢 Integer သို့ ပြောင်းလဲခြင်း
-        Long userId = (Long) session.getAttribute("userId");
+    public ResponseEntity<Map<String, Object>> toggleLike(@RequestParam("postId") Integer postId, HttpSession session) {
+
+    	System.out.println("🪲 Debug - Session User ID: " + session.getAttribute("userId"));
+	Object sessionUserId = session.getAttribute("userId");
+        Long userId = null;
+        if (sessionUserId instanceof Number) {
+            userId = ((Number) sessionUserId).longValue();
+        } else if (sessionUserId != null) {
+            userId = Long.valueOf(sessionUserId.toString());
+        }
+
+        // 🟢 userId null ဖြစ်နေလျှင် session ထဲမှ user object ကို အမှီလိုက်ရှာပြီး ပြန်ထုတ်ပေးခြင်း
+        if (userId == null) {
+            User sessionUser = (User) session.getAttribute("user");
+            if (sessionUser == null) {
+                sessionUser = (User) session.getAttribute("currentUser");
+            }
+
+            if (sessionUser != null) {
+                userId = Long.valueOf(sessionUser.getId());
+                session.setAttribute("userId", userId);
+            }
+        }
+
         Map<String, Object> response = new HashMap<>();
-        
+
         if (userId == null) {
             response.put("status", "error");
             response.put("message", "Login လိုအပ်ပါသည်။");
-            return response;
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        // Integer ဖြစ်သွားပြီဖြစ်သောကြောင့် .intValue() ထပ်ထည့်ရန် မလိုတော့ပါ
-        boolean hasLiked = postLikeRepository.existsByPostIdAndUserId(postId, userId);
-                
-        if (hasLiked) {
-            Optional<PostLike> existingLike = postLikeRepository.findByPostIdAndUserId(postId, userId);
-            existingLike.ifPresent(postLike -> postLikeRepository.delete(postLike));
-            response.put("isLiked", false);
-        } else {
-            Post post = postRepository.findById(postId).orElse(null);
-            
-            User user = userRepository.getUserById(userId); 
-            
-            PostLike newLike = new PostLike();
-            newLike.setPost(post);
-            newLike.setUser(user);
-            
-            postLikeRepository.save(newLike);
-            response.put("isLiked", true);
-        }
-        
-        long totalLikes = postLikeRepository.countByPostId(postId);
+        // Service layer မှာ @Transactional + flush/clear ပါ၊ return value က isLiked
+        boolean isLiked = postLikeService.toggleLike(postId, userId);
+        long totalLikes = postLikeService.getLikeCount(postId);
+
         response.put("status", "success");
+        response.put("isLiked", isLiked);
         response.put("totalLikes", totalLikes);
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 }

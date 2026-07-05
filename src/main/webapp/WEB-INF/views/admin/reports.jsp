@@ -2,8 +2,12 @@
 <%@ page import="com.hibernate.entity.User" %>
 <%@ page import="com.hibernate.entity.PostReport" %>
 <%@ page import="com.hibernate.entity.CommentReport" %>
+<%@ page import="com.hibernate.dto.GroupedPostReportDto" %>
+<%@ page import="com.hibernate.dto.GroupedCommentReportDto" %>
+<%@ page import="com.hibernate.entity.enums.ReportReason" %>
 <%@ page import="com.hibernate.entity.enums.ReportStatus" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -65,7 +69,30 @@
         .status-dismissed { background: #e2e8f0; color: #475569; }
         .status-other { background: #fef3c7; color: #92400e; }
         .date-meta { font-size: 12px; color: #64748b; margin-top: 6px; }
+
+        /* Grouped Reports UI Styles */
+        .count-badge { background: #ef4444; color: white; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+        .reason-pill { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 4px; margin-bottom: 4px; display: inline-block; }
+        .btn-toggle-details { background: #f1f5f9; color: #0284c7; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; margin-top: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s; }
+        .btn-toggle-details:hover { background: #e2e8f0; color: #0369a1; }
+        .details-row { display: none; background: #f8fafc; }
+        .details-container { padding: 16px 20px; border-top: 1px dashed #cbd5e1; }
+        .details-table { width: 100%; margin-top: 8px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background: white; border-collapse: collapse; }
+        .details-table th { background: #f1f5f9; font-size: 12px; padding: 10px; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; color: #475569; }
+        .details-table td { padding: 10px; font-size: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
     </style>
+    <script>
+        function toggleDetails(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                if (el.style.display === 'table-row') {
+                    el.style.display = 'none';
+                } else {
+                    el.style.display = 'table-row';
+                }
+            }
+        }
+    </script>
 </head>
 <body>
 
@@ -76,6 +103,9 @@
     
     List<PostReport> postReports = (List<PostReport>) request.getAttribute("postReports");
     List<CommentReport> commentReports = (List<CommentReport>) request.getAttribute("commentReports");
+    List<GroupedPostReportDto> groupedPostReports = (List<GroupedPostReportDto>) request.getAttribute("groupedPostReports");
+    List<GroupedCommentReportDto> groupedCommentReports = (List<GroupedCommentReportDto>) request.getAttribute("groupedCommentReports");
+
     String reportType = (String) request.getAttribute("reportType");
     String reportView = (String) request.getAttribute("reportView");
     if (reportType == null) reportType = "posts";
@@ -156,70 +186,139 @@
             <!-- POST REPORTS -->
             <div class="section-card">
                 <div class="section-header">
-                    <span><%= isHistoryView ? "&#128218; Post Report History" : "&#128196; Pending Post Reports" %></span>
+                    <span><%= isHistoryView ? "&#128218; Post Report History" : "&#128196; Pending Grouped Post Reports" %></span>
                     <span style="font-size: 13px; font-weight: normal; background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 9999px;">
-                        <%= postReports != null ? postReports.size() : 0 %> <%= isHistoryView ? "records" : "pending" %>
+                        <%= isHistoryView ? (postReports != null ? postReports.size() : 0) : (groupedPostReports != null ? groupedPostReports.size() : 0) %> <%= isHistoryView ? "records" : "reported posts" %>
                     </span>
                 </div>
                 <div class="section-body">
-                    <% if (postReports == null || postReports.isEmpty()) { %>
-                        <div class="no-data"><%= isHistoryView ? "No post report history found." : "No pending post reports found." %></div>
-                    <% } else { %>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Report Details</th>
-                                    <th>Post Info</th>
-                                    <th>Parties Involved</th>
-                                    <% if (isHistoryView) { %>
-                                        <th>Outcome</th>
-                                    <% } else { %>
-                                        <th style="width: 320px;">Administrative Handling</th>
-                                    <% } %>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% for (PostReport r : postReports) {
-                                    ReportStatus status = r.getStatus();
-                                    String statusClass = "status-other";
-                                    if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
-                                    else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
-                                %>
+                    <% if (isHistoryView) { %>
+                        <% if (postReports == null || postReports.isEmpty()) { %>
+                            <div class="no-data">No post report history found.</div>
+                        <% } else { %>
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <span class="reason-badge"><%= r.getReason() %></span><br/>
-                                            <p style="margin-top:8px; font-size:13px; color:#475569;"><%= r.getDescription() %></p>
-                                            <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
-                                        </td>
-                                        <td>
-                                            <strong>Title:</strong> <%= r.getPost().getTitle() %><br/>
-                                            <span style="font-size:12px; color:#64748b;">Slug: <%= r.getPost().getSlug() %></span>
-                                        </td>
-                                        <td>
-                                            <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
-                                            <span style="font-size:12px;"><strong>Author:</strong> @<%= r.getPost().getAuthor().getUsername() %></span>
-                                        </td>
-                                        <% if (isHistoryView) { %>
+                                        <th>Report Details</th>
+                                        <th>Post Info</th>
+                                        <th>Parties Involved</th>
+                                        <th>Outcome</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% for (PostReport r : postReports) {
+                                        ReportStatus status = r.getStatus();
+                                        String statusClass = "status-other";
+                                        if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
+                                        else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
+                                    %>
+                                        <tr>
+                                            <td>
+                                                <span class="reason-badge"><%= r.getReason() %></span><br/>
+                                                <p style="margin-top:8px; font-size:13px; color:#475569;"><%= r.getDescription() %></p>
+                                                <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
+                                            </td>
+                                            <td>
+                                                <strong>Title:</strong> <%= r.getPost().getTitle() %><br/>
+                                                <span style="font-size:12px; color:#64748b;">Slug: <%= r.getPost().getSlug() %></span>
+                                            </td>
+                                            <td>
+                                                <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
+                                                <span style="font-size:12px;"><strong>Author:</strong> @<%= r.getPost().getAuthor().getUsername() %></span>
+                                            </td>
                                             <td>
                                                 <span class="status-badge <%= statusClass %>"><%= status %></span>
                                             </td>
-                                        <% } else { %>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        <% } %>
+                    <% } else { %>
+                        <!-- PENDING QUEUE (GROUPED BY POST) -->
+                        <% if (groupedPostReports == null || groupedPostReports.isEmpty()) { %>
+                            <div class="no-data">No pending post reports found.</div>
+                        <% } else { %>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Post Details & Author</th>
+                                        <th>Report Summary</th>
+                                        <th style="width: 340px;">Group Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% for (GroupedPostReportDto g : groupedPostReports) {
+                                        String detailsId = "post-details-" + g.getPost().getId();
+                                    %>
+                                        <tr>
+                                            <td>
+                                                <strong style="font-size: 15px; color: #0f172a;"><%= g.getPost().getTitle() %></strong><br/>
+                                                <span style="font-size: 12px; color: #64748b;">Slug: <%= g.getPost().getSlug() %></span><br/>
+                                                <span style="font-size: 12px; color: #475569;">Author: <strong>@<%= g.getPost().getAuthor().getUsername() %></strong></span>
+                                                <br/>
+                                                <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
+                                                    &#128065; View Reporter Details (<%= g.getReportCount() %>)
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <span class="count-badge">&#128293; <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
+                                                <div style="margin-top: 8px;">
+                                                    <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
+                                                        <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
+                                                    <% } %>
+                                                </div>
+                                                <div class="date-meta">Latest: <%= g.getLatestReportedAt() %></div>
+                                            </td>
                                             <td>
                                                 <div class="action-cell">
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
-                                                        <button type="submit" class="btn btn-dismiss" onclick="return confirm('Dismiss this report as false alarm?')">Dismiss</button>
+                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/group/<%= g.getPost().getId() %>/dismiss" method="POST" style="display:inline;">
+                                                        <button type="submit" class="btn btn-dismiss" onclick="return confirm('Dismiss ALL <%= g.getReportCount() %> reports for this post as false alarm?')">Dismiss Group</button>
                                                     </form>
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/resolve" method="POST" style="display:inline;">
+                                                    <form action="${pageContext.request.contextPath}/admin/reports/posts/group/<%= g.getPost().getId() %>/resolve" method="POST" style="display:inline; margin-top:4px;">
                                                         <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
-                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve report: ban and remove this post? The author account will NOT be banned.')">Resolve & Ban Post</button>
+                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve group: remove post and clear all <%= g.getReportCount() %> pending reports?')">Resolve & Remove</button>
                                                     </form>
                                                 </div>
                                             </td>
-                                        <% } %>
-                                    </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
+                                        </tr>
+                                        <tr id="<%= detailsId %>" class="details-row">
+                                            <td colspan="3">
+                                                <div class="details-container">
+                                                    <strong style="font-size: 13px; color: #0284c7;">&#128203; Individual Reports (<%= g.getReportCount() %>):</strong>
+                                                    <table class="details-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Reporter</th>
+                                                                <th>Reason</th>
+                                                                <th>Description</th>
+                                                                <th>Date</th>
+                                                                <th>Individual Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <% for (PostReport r : g.getReports()) { %>
+                                                                <tr>
+                                                                    <td><strong>@<%= r.getReporter().getUsername() %></strong></td>
+                                                                    <td><span class="reason-badge"><%= r.getReason() %></span></td>
+                                                                    <td><%= r.getDescription() != null && !r.getDescription().isEmpty() ? r.getDescription() : "<em>No description</em>" %></td>
+                                                                    <td><%= r.getCreatedAt() %></td>
+                                                                    <td>
+                                                                        <form action="${pageContext.request.contextPath}/admin/reports/posts/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
+                                                                            <button type="submit" class="btn btn-dismiss" style="padding: 4px 8px; font-size:11px;" onclick="return confirm('Dismiss only this single report?')">Dismiss</button>
+                                                                        </form>
+                                                                    </td>
+                                                                </tr>
+                                                            <% } %>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        <% } %>
                     <% } %>
                 </div>
             </div>
@@ -227,72 +326,143 @@
             <!-- COMMENT REPORTS -->
             <div class="section-card">
                 <div class="section-header">
-                    <span><%= isHistoryView ? "&#128218; Comment Report History" : "&#128172; Pending Comment Reports" %></span>
+                    <span><%= isHistoryView ? "&#128218; Comment Report History" : "&#128172; Pending Grouped Comment Reports" %></span>
                     <span style="font-size: 13px; font-weight: normal; background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 9999px;">
-                        <%= commentReports != null ? commentReports.size() : 0 %> <%= isHistoryView ? "records" : "pending" %>
+                        <%= isHistoryView ? (commentReports != null ? commentReports.size() : 0) : (groupedCommentReports != null ? groupedCommentReports.size() : 0) %> <%= isHistoryView ? "records" : "reported comments" %>
                     </span>
                 </div>
                 <div class="section-body">
-                    <% if (commentReports == null || commentReports.isEmpty()) { %>
-                        <div class="no-data"><%= isHistoryView ? "No comment report history found." : "No pending comment reports found." %></div>
-                    <% } else { %>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Report Details</th>
-                                    <th>Comment Info</th>
-                                    <th>Parties Involved</th>
-                                    <% if (isHistoryView) { %>
-                                        <th>Outcome</th>
-                                    <% } else { %>
-                                        <th style="width: 320px;">Administrative Handling</th>
-                                    <% } %>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% for (CommentReport r : commentReports) {
-                                    ReportStatus status = r.getStatus();
-                                    String statusClass = "status-other";
-                                    if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
-                                    else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
-                                %>
+                    <% if (isHistoryView) { %>
+                        <% if (commentReports == null || commentReports.isEmpty()) { %>
+                            <div class="no-data">No comment report history found.</div>
+                        <% } else { %>
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <span class="reason-badge"><%= r.getReason() %></span><br/>
-                                            <p style="margin-top:8px; font-size:13px; color:#475569;"><%= r.getDescription() %></p>
-                                            <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
-                                        </td>
-                                        <td>
-                                            <p style="background: #f8fafc; padding: 8px; border-radius: 6px; font-size:13px; border-left:3px solid #cbd5e1;">
-                                                "<%= r.getComment().getContent() %>"
-                                            </p>
-                                            <span style="font-size:11px; color:#64748b; margin-top:4px; display:block;">On Post: <%= r.getComment().getPost().getTitle() %></span>
-                                        </td>
-                                        <td>
-                                            <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
-                                            <span style="font-size:12px;"><strong>Commenter:</strong> @<%= r.getComment().getUser().getUsername() %></span>
-                                        </td>
-                                        <% if (isHistoryView) { %>
+                                        <th>Report Details</th>
+                                        <th>Comment Info</th>
+                                        <th>Parties Involved</th>
+                                        <th>Outcome</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% for (CommentReport r : commentReports) {
+                                        ReportStatus status = r.getStatus();
+                                        String statusClass = "status-other";
+                                        if (ReportStatus.RESOLVED.equals(status)) statusClass = "status-resolved";
+                                        else if (ReportStatus.DISMISSED.equals(status)) statusClass = "status-dismissed";
+                                    %>
+                                        <tr>
+                                            <td>
+                                                <span class="reason-badge"><%= r.getReason() %></span><br/>
+                                                <p style="margin-top:8px; font-size:13px; color:#475569;"><%= r.getDescription() %></p>
+                                                <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
+                                            </td>
+                                            <td>
+                                                <p style="background: #f8fafc; padding: 8px; border-radius: 6px; font-size:13px; border-left:3px solid #cbd5e1;">
+                                                    "<%= r.getComment().getContent() %>"
+                                                </p>
+                                                <span style="font-size:11px; color:#64748b; margin-top:4px; display:block;">On Post: <%= r.getComment().getPost().getTitle() %></span>
+                                            </td>
+                                            <td>
+                                                <span style="font-size:12px;"><strong>Reporter:</strong> @<%= r.getReporter().getUsername() %></span><br/>
+                                                <span style="font-size:12px;"><strong>Commenter:</strong> @<%= r.getComment().getUser().getUsername() %></span>
+                                            </td>
                                             <td>
                                                 <span class="status-badge <%= statusClass %>"><%= status %></span>
                                             </td>
-                                        <% } else { %>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        <% } %>
+                    <% } else { %>
+                        <!-- PENDING QUEUE (GROUPED BY COMMENT) -->
+                        <% if (groupedCommentReports == null || groupedCommentReports.isEmpty()) { %>
+                            <div class="no-data">No pending comment reports found.</div>
+                        <% } else { %>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Comment Content & Author</th>
+                                        <th>Report Summary</th>
+                                        <th style="width: 340px;">Group Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% for (GroupedCommentReportDto g : groupedCommentReports) {
+                                        String detailsId = "comment-details-" + g.getComment().getId();
+                                    %>
+                                        <tr>
+                                            <td>
+                                                <p style="background: #f8fafc; padding: 10px; border-radius: 6px; font-size:13px; border-left:3px solid #0284c7; color: #1e293b;">
+                                                    "<%= g.getComment().getContent() %>"
+                                                </p>
+                                                <span style="font-size:12px; color:#64748b; margin-top:4px; display:block;">On Post: <strong><%= g.getComment().getPost().getTitle() %></strong></span>
+                                                <span style="font-size:12px; color:#475569;">Commenter: <strong>@<%= g.getComment().getUser().getUsername() %></strong></span>
+                                                <br/>
+                                                <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
+                                                    &#128065; View Reporter Details (<%= g.getReportCount() %>)
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <span class="count-badge">&#128293; <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
+                                                <div style="margin-top: 8px;">
+                                                    <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
+                                                        <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
+                                                    <% } %>
+                                                </div>
+                                                <div class="date-meta">Latest: <%= g.getLatestReportedAt() %></div>
+                                            </td>
                                             <td>
                                                 <div class="action-cell">
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
-                                                        <button type="submit" class="btn btn-dismiss" onclick="return confirm('Dismiss this report as false alarm?')">Dismiss</button>
+                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/group/<%= g.getComment().getId() %>/dismiss" method="POST" style="display:inline;">
+                                                        <button type="submit" class="btn btn-dismiss" onclick="return confirm('Dismiss ALL <%= g.getReportCount() %> reports for this comment as false alarm?')">Dismiss Group</button>
                                                     </form>
-                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/resolve" method="POST" style="display:inline;">
+                                                    <form action="${pageContext.request.contextPath}/admin/reports/comments/group/<%= g.getComment().getId() %>/resolve" method="POST" style="display:inline; margin-top:4px;">
                                                         <input type="text" name="reason" class="input-reason" placeholder="Resolution reason..." required />
-                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve report: soft delete comment and BAN the commenter?')">Resolve & Ban</button>
+                                                        <button type="submit" class="btn btn-resolve" onclick="return confirm('Resolve group: delete comment, ban commenter, and clear all <%= g.getReportCount() %> pending reports?')">Resolve & Ban</button>
                                                     </form>
                                                 </div>
                                             </td>
-                                        <% } %>
-                                    </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
+                                        </tr>
+                                        <tr id="<%= detailsId %>" class="details-row">
+                                            <td colspan="3">
+                                                <div class="details-container">
+                                                    <strong style="font-size: 13px; color: #0284c7;">&#128203; Individual Reports (<%= g.getReportCount() %>):</strong>
+                                                    <table class="details-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Reporter</th>
+                                                                <th>Reason</th>
+                                                                <th>Description</th>
+                                                                <th>Date</th>
+                                                                <th>Individual Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <% for (CommentReport r : g.getReports()) { %>
+                                                                <tr>
+                                                                    <td><strong>@<%= r.getReporter().getUsername() %></strong></td>
+                                                                    <td><span class="reason-badge"><%= r.getReason() %></span></td>
+                                                                    <td><%= r.getDescription() != null && !r.getDescription().isEmpty() ? r.getDescription() : "<em>No description</em>" %></td>
+                                                                    <td><%= r.getCreatedAt() %></td>
+                                                                    <td>
+                                                                        <form action="${pageContext.request.contextPath}/admin/reports/comments/<%= r.getId() %>/dismiss" method="POST" style="display:inline;">
+                                                                            <button type="submit" class="btn btn-dismiss" style="padding: 4px 8px; font-size:11px;" onclick="return confirm('Dismiss only this single report?')">Dismiss</button>
+                                                                        </form>
+                                                                    </td>
+                                                                </tr>
+                                                            <% } %>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        <% } %>
                     <% } %>
                 </div>
             </div>

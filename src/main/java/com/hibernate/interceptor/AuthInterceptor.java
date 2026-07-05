@@ -17,48 +17,45 @@ public class AuthInterceptor implements HandlerInterceptor {
             HttpServletRequest request,
             HttpServletResponse response,
             Object handler) throws Exception {
-        String path = getPath(request);
-
-        // Allow suspended page, logout, and resources to load
-        if ("/suspended".equals(path) || "/logout".equals(path) || path.startsWith("/resources/")) {
-            return true;
+    
+    	String requestedWith = request.getHeader("X-Requested-With");
+        if ("XMLHttpRequest".equals(requestedWith)) {
+            return true; 
         }
-
         HttpSession session = request.getSession(false);
         User user = normalizeSession(session);
+        
+        String requestPath = request.getServletPath();
 
-        // Gatekeeper Logic: Check if logged-in user is BANNED
-        if (user != null) {
-            User dbUser = userService.getUserById(user.getId());
-            if (dbUser != null && com.hibernate.entity.enums.UserStatus.BANNED.equals(dbUser.getStatus())) {
-                if (session != null) {
-                    session.invalidate();
-                }
-                org.springframework.security.core.context.SecurityContextHolder.clearContext();
-                redirect(request, response, "/suspended");
-                return false;
-            }
+        if ("/login".equals(requestPath) || 
+            "/register".equals(requestPath) ||
+            requestPath.startsWith("/posts/") ||
+            requestPath.startsWith("/resources/") ||
+            requestPath.startsWith("/css/") ||
+            requestPath.startsWith("/js/") ||
+            requestPath.startsWith("/images/")) {
+            
+            return true; 
         }
-
-        if (isAdminPath(path)) {
+        
+        // Web page များအတွက်သာ အောက်ပါအတိုင်း စစ်ဆေးပါ
+        if (isAdminPath(requestPath)) {
             if (user == null) {
                 redirect(request, response, "/login");
                 return false;
             }
-
-            if (!user.isAdmin()) {
+            if (!Role.ADMIN.equals(user.getRole())) {
                 redirect(request, response, "/");
                 return false;
             }
         }
 
-        if (isUserPath(path)) {
+        if (isUserPath(requestPath)) {
             if (user == null) {
                 redirect(request, response, "/login");
                 return false;
             }
-
-            if (user.isAdmin()) {
+            if (Role.ADMIN.equals(user.getRole())) {
                 redirect(request, response, "/admin-dashboard");
                 return false;
             }
@@ -73,32 +70,31 @@ public class AuthInterceptor implements HandlerInterceptor {
             return null;
         }
 
+        // Session ထဲမှ user အချက်အလက်ကို သေချာပြန်ထုတ်ယူပါ
         User user = (User) session.getAttribute("user");
 
         if (user == null) {
             user = (User) session.getAttribute("currentUser");
         }
 
-        if (user != null) {
-            session.setAttribute("user", user);
-            session.setAttribute("currentUser", user);
-            session.setAttribute("userId", user.getId());
-            session.setAttribute("role", user.getRole().name());
-        }
-
         return user;
     }
 
-    private String getPath(HttpServletRequest request) {
-        return request.getRequestURI().substring(request.getContextPath().length());
-    }
-
     private boolean isAdminPath(String path) {
-        return "/admin-dashboard".equals(path) || path.startsWith("/admin/");
+        boolean isApi = path.contains("/api/") || path.contains("/rest/");
+        return ("/admin-dashboard".equals(path) || path.startsWith("/admin/")) && !isApi;
     }
 
     private boolean isUserPath(String path) {
-        return path.startsWith("/user/");
+        // Web page လမ်းကြောင်းများသာဖြစ်ပြီး API လမ်းကြောင်းများနှင့် မသက်ဆိုင်ကြောင်း အတိအကျ သတ်မှတ်ပေးခြင်း
+        boolean isApiOrAction = path.startsWith("/api/") || 
+                                path.startsWith("/comments/") || 
+                                path.contains("/like") || 
+                                path.contains("/add") || 
+                                path.contains("/bookmark") || 
+                                path.contains("/rating");
+                                
+        return path.startsWith("/user/") && !isApiOrAction;
     }
 
     private void redirect(

@@ -12,6 +12,8 @@ public class ChatInboxItem {
     private Long partnerUserId;
     private String lastMessagePreview;
     private LocalDateTime lastMessageAt;
+    private boolean partnerOnline;
+    private String partnerLastSeenFormatted;
 
     public Long getConversationId() { return conversationId; }
     public void setConversationId(Long conversationId) { this.conversationId = conversationId; }
@@ -36,4 +38,11 @@ public class ChatInboxItem {
 
     public LocalDateTime getLastMessageAt() { return lastMessageAt; }
     public void setLastMessageAt(LocalDateTime lastMessageAt) { this.lastMessageAt = lastMessageAt; }
+
+    public boolean isPartnerOnline() { return partnerOnline; }
+    public void setPartnerOnline(boolean partnerOnline) { this.partnerOnline = partnerOnline; }
+
+    public String getPartnerLastSeenFormatted() { return partnerLastSeenFormatted; }
+    public void setPartnerLastSeenFormatted(String partnerLastSeenFormatted) { this.partnerLastSeenFormatted = partnerLastSeenFormatted; }
 }
+

@@ -21,6 +21,7 @@ public class MessageResponse {
     private List<AttachmentResponse> attachments = new ArrayList<>();
     private List<Long> readByUserIds = new ArrayList<>();
     private int readCount;
+    private List<MessageReactionDto> reactions = new ArrayList<>();
 
     public MessageResponse() {}
 
@@ -65,4 +66,7 @@ public class MessageResponse {
 
     public int getReadCount() { return readCount; }
     public void setReadCount(int readCount) { this.readCount = readCount; }
+
+    public List<MessageReactionDto> getReactions() { return reactions; }
+    public void setReactions(List<MessageReactionDto> reactions) { this.reactions = reactions; }
 }

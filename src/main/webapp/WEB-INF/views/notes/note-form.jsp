@@ -14,16 +14,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg:        #0d1117;
-            --surface:   #161b22;
-            --surface2:  #1c2128;
-            --border:    #30363d;
-            --accent:    #7c3aed;
-            --accent-glow: rgba(124,58,237,0.25);
-            --text:      #e6edf3;
-            --muted:     #8b949e;
+            --bg:        #f8fafc; /* Changed to match the main notes page */
+            --surface:   #ffffff;
+            --surface2:  #f8fafc;
+            --border:    #e2e8f0;
+            --accent:    #6366f1;
+            --accent2:   #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --text:      #0f172a;
+            --muted:     #64748b;
             --red:       #ef4444;
-            --radius:    14px;
+            --radius:    16px; /* Slightly rounder edges */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,7 +40,7 @@
         .form-page {
             max-width: 760px;
             margin: 0 auto;
-            padding: 48px 24px 80px;
+            padding: 56px 24px 80px;
         }
 
         /* ── Back link ──────────────────────────── */
@@ -47,29 +48,30 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
+            font-size: 14px;
+            font-weight: 500;
             color: var(--muted);
             text-decoration: none;
             margin-bottom: 28px;
-            transition: color 0.15s;
+            transition: color 0.2s ease, transform 0.2s ease;
         }
-        .back-link:hover { color: var(--text); }
+        .back-link:hover { 
+            color: var(--text); 
+            transform: translateX(-2px);
+        }
 
         /* ── Form header ────────────────────────── */
         .form-header {
             margin-bottom: 32px;
         }
         .form-header h1 {
-            font-size: 26px;
+            font-size: 32px; /* Matched the larger title size */
             font-weight: 800;
             letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #a78bfa, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text);
         }
         .form-header p {
-            font-size: 13px;
+            font-size: 15px;
             color: var(--muted);
             margin-top: 6px;
         }
@@ -78,9 +80,9 @@
         .form-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 36px 40px;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+            border-radius: 20px; /* Matched updated modal roundness */
+            padding: 40px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.03); /* Softer shadow */
         }
 
         /* ── Private badge ──────────────────────── */
@@ -88,14 +90,14 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(124,58,237,0.12);
-            border: 1px solid rgba(124,58,237,0.3);
-            color: #a78bfa;
+            background: #eeeffe;
+            border: 1px solid #c7d2fe;
+            color: var(--accent2);
             font-size: 12px;
             font-weight: 600;
             padding: 6px 14px;
             border-radius: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
 
         /* ── Form fields ────────────────────────── */
@@ -114,21 +116,22 @@
         .form-input, .form-textarea {
             width: 100%;
             background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 13px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px 16px;
             color: var(--text);
             font-family: 'Inter', sans-serif;
             font-size: 15px;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: all 0.2s ease;
         }
         .form-input::placeholder,
-        .form-textarea::placeholder { color: var(--muted); }
+        .form-textarea::placeholder { color: #94a3b8; }
         .form-input:focus,
         .form-textarea:focus {
+            background: var(--surface);
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
+            box-shadow: 0 0 0 4px var(--accent-glow);
         }
         .form-textarea {
             resize: vertical;
@@ -138,31 +141,32 @@
 
         /* Character counter */
         .char-hint {
-            font-size: 11px;
-            color: var(--muted);
+            font-size: 12px;
+            color: #94a3b8;
             text-align: right;
-            margin-top: 5px;
+            margin-top: 6px;
+            font-weight: 500;
         }
 
         /* ── Action buttons ─────────────────────── */
         .form-actions {
             display: flex;
             gap: 12px;
-            margin-top: 10px;
+            margin-top: 16px;
             flex-wrap: wrap;
         }
         .btn-save {
             flex: 1;
-            padding: 13px 28px;
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: #fff;
             font-weight: 700;
             font-size: 15px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 0 18px var(--accent-glow);
-            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -170,27 +174,27 @@
         }
         .btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 28px rgba(124,58,237,0.5);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
         }
         .btn-save:active { transform: translateY(0); }
 
         .btn-cancel {
-            padding: 13px 24px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            color: var(--muted);
+            padding: 14px 24px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
             font-weight: 600;
             font-size: 15px;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: background 0.15s, color 0.15s;
+            transition: all 0.2s ease;
         }
         .btn-cancel:hover {
-            background: var(--border);
+            background: #e2e8f0;
             color: var(--text);
         }
 
@@ -198,13 +202,15 @@
         .divider {
             height: 1px;
             background: var(--border);
-            margin: 24px 0;
+            margin: 28px 0;
         }
 
         /* ── Responsive ─────────────────────────── */
         @media (max-width: 480px) {
-            .form-card { padding: 24px 20px; }
-            .form-header h1 { font-size: 22px; }
+            .form-card { padding: 28px 20px; }
+            .form-header h1 { font-size: 26px; }
+            .form-actions { flex-direction: column-reverse; }
+            .btn-cancel { justify-content: center; width: 100%; }
         }
     </style>
 </head>
@@ -226,8 +232,8 @@
             </h1>
             <p>
                 <c:choose>
-                    <c:when test="${isEdit}">Note ကို ပြင်ဆင်ပြီး သိမ်းဆည်းပါ</c:when>
-                    <c:otherwise>ကိုယ်ပိုင် private note တစ်ခု ရေးသားပါ</c:otherwise>
+                    <c:when test="${isEdit}">Edit and save your note</c:when>
+                    <c:otherwise>Write a personal private note</c:otherwise>
                 </c:choose>
             </p>
         </div>
@@ -238,11 +244,15 @@
                 <i class="fas fa-lock"></i> This note is private — only you can see it
             </div>
 
-            <form action="${pageContext.request.contextPath}/notes/save" method="POST" id="noteForm">
-                <%-- Hidden id for edit mode --%>
-                <c:if test="${isEdit}">
-                    <input type="hidden" name="id" value="${note.id}">
-                </c:if>
+            <c:choose>
+                <c:when test="${isEdit}">
+                    <form action="${pageContext.request.contextPath}/notes/${note.id}/update" method="POST" id="noteForm">
+                        <input type="hidden" name="id" value="${note.id}">
+                </c:when>
+                <c:otherwise>
+                    <form action="${pageContext.request.contextPath}/notes/save" method="POST" id="noteForm">
+                </c:otherwise>
+            </c:choose>
 
                 <%-- Title --%>
                 <div class="form-group">
