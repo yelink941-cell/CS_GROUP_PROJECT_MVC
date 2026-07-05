@@ -2,7 +2,6 @@ package com.hibernate.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.hibernate.Hibernate;
@@ -45,15 +44,7 @@ public class CommentServiceImpl implements CommentService {
     private void initializeReplies(Comment comment) {
         if (comment.getReplies() != null) {
             Hibernate.initialize(comment.getReplies());
-            
-            // Reply များကိုပါ Active ဖြစ်သော replies များကိုသာ Filter စစ်ထုတ်ပြီး initialize လုပ်ပေးခြင်း
-            List<Comment> activeReplies = comment.getReplies().stream()
-                    .filter(r -> r.getDeletedAt() == null)
-                    .collect(Collectors.toList());
-            
-            comment.setReplies(activeReplies);
-
-            for (Comment reply : activeReplies) {
+            for (Comment reply : comment.getReplies()) {
                 initializeReplies(reply);
             }
         }
@@ -113,8 +104,13 @@ public class CommentServiceImpl implements CommentService {
             comment.setDeletedAt(now);
             commentRepository.save(comment);
             
+            // Lazy loading ဖြစ်နေသော replies များကို initialize လုပ်ပြီးမှ cascade လုပ်ပါ
+            if (comment.getReplies() != null) {
+                Hibernate.initialize(comment.getReplies());
+                cascadeSoftDeleteReplies(comment.getReplies(), now);
+            }
+            
             System.out.println("DEBUG: Comment (ID: " + id + ") soft-deleted successfully.");
-            cascadeSoftDeleteReplies(comment.getReplies(), now);
         } else {
             System.err.println("🚨 Cannot delete: Comment not found with ID: " + id);
         }

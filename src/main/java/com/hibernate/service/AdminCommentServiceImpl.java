@@ -3,11 +3,14 @@ package com.hibernate.service;
 import com.hibernate.entity.Comment;
 import com.hibernate.repository.AdminCommentRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
+@Component
 @RequiredArgsConstructor
 public class AdminCommentServiceImpl implements AdminCommentService {
 
