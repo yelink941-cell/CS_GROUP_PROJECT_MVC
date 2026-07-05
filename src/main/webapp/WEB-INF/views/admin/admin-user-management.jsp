@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.hibernate.entity.User" %>
 <%@ page import="com.hibernate.entity.UserProfile" %>
-<%@ page import="com.hibernate.entity.UserPreference" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Base64" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -740,7 +739,6 @@
                             <td style="text-align: center; white-space: nowrap;">
                                 <form action="${pageContext.request.contextPath}/admin/users/update-status" method="POST" style="display: inline-block;">
                                     <input type="hidden" name="userId" value="<%= u.getId() %>" />
-                                    <!-- ✅ Role Dropdown ဖယ်ပါ - Role ကို static text အနေနဲ့ပြပါ -->
                                     <select name="role" class="form-select" style="display: inline-block; width: auto; margin-bottom: 4px;">
                                         <option value="USER" <%= u.getRole().name().equals("USER")?"selected":"" %>>USER</option>
                                         <option value="ADMIN" <%= u.getRole().name().equals("ADMIN")?"selected":"" %>>ADMIN</option>

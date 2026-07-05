@@ -6,13 +6,6 @@
 
         <li id="reply-item-${reply.id}" style="list-style:none; margin-bottom:12px;">
 
-            <c:if test="${sessionScope.userId != null && sessionScope.userId != reply.user.id}">
-                <button type="button" class="button-link" style="color:#dc2626; margin-left:8px;"
-                        onclick="openReportModal('comment', ${reply.id})">
-                    Report
-                </button>
-            </c:if>
-
             <!-- Header -->
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; margin-bottom:6px;">
                 <strong><c:out value="${reply.user.username}" /></strong>
@@ -25,20 +18,28 @@
             </p>
 
             <!-- Actions -->
-            <div class="comment-actions">
+            <div class="comment-actions" style="display: flex; gap: 12px; margin-bottom: 8px;">
                 <button type="button"
-                        class="btn-action"
+                        class="button-link"
                         onclick="toggleReplyForm('r-${reply.id}')">
                     Reply
                 </button>
 
                 <c:if test="${sessionScope.userId == reply.user.id}">
                     <button type="button"
-                            class="btn-action btn-delete"
+                            class="button-link"
+                            style="color: #dc3545;"
                             onclick="deleteComment(${reply.id})">
                         Delete
                     </button>
                 </c:if>
+
+                <button type="button"
+                        class="button-link"
+                        style="color: #dc2626;"
+                        onclick="openReportModal('comment', ${reply.id})">
+                    Report
+                </button>
             </div>
 
             <!-- Reply Form -->

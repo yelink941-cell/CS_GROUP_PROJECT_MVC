@@ -432,9 +432,7 @@
                                 <a href="${pageContext.request.contextPath}/profile" class="menu-item">
                                     <span class="icon">👤</span> My Profile
                                 </a>
-                                <a href="${pageContext.request.contextPath}/settings" class="menu-item">
-                                    <span class="icon">⚙️</span> Settings
-                                </a>
+                            
                                 <div class="menu-divider"></div>
                                 <a href="${pageContext.request.contextPath}/logout" class="menu-item logout">
                                     <span class="icon">🚪</span> Logout

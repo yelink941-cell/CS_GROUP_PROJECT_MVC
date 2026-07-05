@@ -175,7 +175,7 @@ public class ReportServiceImpl implements ReportService {
                 User admin = getUser(adminId);
                 if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
                     moderationService.banUser(adminId, author.getId(),
-                            "Banned due to resolved comment report " + reportId + ": " + reason);
+                            "Banned due to resolved comment report " + reportId + ": " + reason, "PERMANENT");
                 }
             }
         }
@@ -241,7 +241,7 @@ public class ReportServiceImpl implements ReportService {
             User admin = getUser(adminId);
             if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
                 moderationService.banUser(adminId, author.getId(),
-                        "Banned due to resolved comment reports (" + pendingList.size() + "): " + reason);
+                        "Banned due to resolved comment reports (" + pendingList.size() + "): " + reason, "PERMANENT");
             }
         }
     }
