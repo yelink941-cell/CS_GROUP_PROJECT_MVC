@@ -149,6 +149,11 @@
                 </a>
             </li>
             <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/reports/cheatsheet" class="sidebar-link">
+                    <span>&#128196; CheatSheet Report</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link active">
                     <span>&#128680; Report Logs</span>
                 </a>

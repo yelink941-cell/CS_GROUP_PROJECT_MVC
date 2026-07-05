@@ -73,4 +73,4 @@ public class RatingServiceImpl implements RatingService {
                 .map(Rating::getRating)
                 .orElse(null);
     }
-}
+}	

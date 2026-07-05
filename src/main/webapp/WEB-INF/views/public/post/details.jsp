@@ -190,40 +190,10 @@
     <article class="detail-card">
         <h1><c:out value="${post.title}" /></h1>
 
-            <div class="post-meta" style="display: flex; gap: 20px; align-items: center;">
-    <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
-    <span>
-        <strong>Author:</strong> 
-        <a href="${pageContext.request.contextPath}/profile?id=${post.author.id}" style="color: #4038ff; text-decoration: none; font-weight: 600; margin-right: 8px;">
-            @<c:out value="${post.author.username}" />
-        </a>
-    </span>
-    <span><strong>Views:</strong> <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /></span>
-
-    <c:if test="${not empty userId && userId != post.author.id}">
-        <div style="margin-left: auto;">
-            <c:choose>
-                <%-- 🎯 FIX: Evaluate the direct model variable --%>
-                <c:when test="${isFollowing}">
-                    <form action="${pageContext.request.contextPath}/user/unfollow" method="POST" style="margin: 0;">
-                        <input type="hidden" name="targetId" value="${post.author.id}" />
-                        <button type="submit" style="color: #64748b; text-decoration: none; font-weight: 600; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 20px; background: #f8fafc; cursor: pointer;">
-                            ✓ Following
-                        </button>
-                    </form>
-                </c:when>
-                <c:otherwise>
-                    <form action="${pageContext.request.contextPath}/user/follow" method="POST" style="margin: 0;">
-                        <input type="hidden" name="targetId" value="${post.author.id}" />
-                        <button type="submit" class="button" style="background: #4038ff; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;">
-                            ➕ Follow Creator
-                        </button>
-                    </form>
-                </c:otherwise>
-            </c:choose>
+        <div class="post-meta">
+            <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
+            <span><strong>Author:</strong> <c:out value="${post.author.username}" /></span>
         </div>
-    </c:if>
-</div>
 
         <div class="badge-row" style="margin-top: 18px;">
             <span class="visibility-badge visibility-public">PUBLIC</span>
@@ -340,6 +310,12 @@
             <button type="button" id="commentCountBtn" class="button button-secondary" onclick="toggleCommentsSection()">
                 💬 Comments (${not empty totalComments ? totalComments : 0})
             </button>
+
+            <c:if test="${sessionScope.userId != post.author.id}">
+                <button type="button" onclick="openReportModal('post', ${post.id})" class="button button-secondary" style="display: inline-flex; align-items: center; gap: 8px; color: #dc2626; border-color: #fca5a5;">
+                    🚩 Report Post
+                </button>
+            </c:if>
         </div>
 
         <div id="commentsToggleWrapper" style="display: none;">
@@ -348,7 +324,7 @@
                 <form id="commentForm" style="margin-bottom: 30px;">
                     <input type="hidden" id="postId" name="postId" value="${post.id}" />
                     <div class="form-group">
-                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Comment တစ်ခုခုရေးပါ..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
+                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Write a comment..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
                     </div>
                     <button type="submit" class="button button-primary" style="margin-top: 10px;">Comment ပို့မည်</button>
                 </form>
@@ -377,6 +353,7 @@
                                 <c:if test="${sessionScope.userId == comment.user.id}">
                                     <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
                                 </c:if>
+                                <button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal('comment', ${comment.id})">Report</button>
                             </div>
 
                             <%-- Main Comment Reply Form --%>
@@ -473,6 +450,36 @@
 
     <div class="public-back-actions">
         <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal-mask" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center;">
+        <div style="background: #ffffff; padding: 24px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-family: inherit;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #0f172a;" id="reportModalTitle">Report Comment</h3>
+                <button type="button" onclick="closeReportModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #64748b; line-height: 1;">&times;</button>
+            </div>
+            <form id="reportForm" onsubmit="handleReportSubmit(event)">
+                <input type="hidden" id="reportTargetType" value="comment">
+                <input type="hidden" id="reportTargetId" value="">
+                <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Reason</label>
+                    <select id="reportReason" required style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; background-color: #fff;">
+                        <option value="TEXT">Inappropriate Text</option>
+                        <option value="LINK">Spam / Dangerous Link</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Description (Optional)</label>
+                    <textarea id="reportDescription" rows="3" placeholder="Provide additional details..." style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; resize: vertical; box-sizing: border-box;"></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="closeReportModal()" class="button button-secondary" style="padding: 8px 16px;">Cancel</button>
+                    <button type="submit" class="button" style="background-color: #dc2626; color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">Submit Report</button>
+                </div>
+            </form>
+        </div>
     </div>
 </main>
 
@@ -646,6 +653,7 @@ commentForm.addEventListener('submit', function(e) {
                 '<div style="display: flex; gap: 12px; margin-bottom: 8px;">' +
                     '<button type="button" class="button-link" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">Reply</button>' +
                     '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.commentId + ')">Delete</button>' +
+                    '<button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal(\'comment\', ' + data.commentId + ')">Report</button>' +
                 '</div>' +
                 '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
                     '<form onsubmit="submitReply(event, \'c-' + data.commentId + '\', ' + data.commentId + ', ' + postId + ')">' +
@@ -774,9 +782,10 @@ function submitReply(e, commentId, parentId, postId) {
             '<!-- Content -->' +
             '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
             '<!-- Actions -->' +
-            '<div class="comment-actions">' +
-                '<button type="button" class="btn-action" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">Reply</button>' +
-                '<button type="button" class="btn-action btn-delete" style="margin-left: 8px;" onclick="deleteComment(' + data.replyId + ')">Delete</button>' +
+            '<div class="comment-actions" style="display: flex; gap: 12px; margin-bottom: 8px;">' +
+                '<button type="button" class="button-link" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">Reply</button>' +
+                '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.replyId + ')">Delete</button>' +
+                '<button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal(\'comment\', ' + data.replyId + ')">Report</button>' +
             '</div>' +
             '<!-- Reply Form -->' +
             '<div id="replyFormContainer-r-' + data.replyId + '" style="display: none; margin-top: 8px; margin-left: 20px;">' +
@@ -1050,6 +1059,69 @@ function toggleCommentsSection() {
 if (window.location.hash === '#comment' || window.location.hash === '#reply') {
     showCommentsSection();
     attachCommentFormListener();
+}
+
+/* =========================
+   🚩 REPORT MODAL & SUBMISSION
+========================= */
+function openReportModal(targetType, targetId) {
+    const isLoggedIn = "${sessionScope.userId != null}" === "true";
+    if (!isLoggedIn) {
+        alert('Report ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။');
+        window.location.href = '${pageContext.request.contextPath}/login';
+        return;
+    }
+
+    document.getElementById('reportTargetType').value = targetType;
+    document.getElementById('reportTargetId').value = targetId;
+    document.getElementById('reportModalTitle').innerText = targetType === 'post' ? 'Report Post' : 'Report Comment';
+    document.getElementById('reportReason').value = 'TEXT';
+    document.getElementById('reportDescription').value = '';
+
+    const modal = document.getElementById('reportModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function handleReportSubmit(e) {
+    e.preventDefault();
+    const type = document.getElementById('reportTargetType').value;
+    const id = document.getElementById('reportTargetId').value;
+    const reason = document.getElementById('reportReason').value;
+    const description = document.getElementById('reportDescription').value;
+
+    let path = type === 'post' ? ('/posts/report/' + id) : ('/comments/reports/report/' + id);
+
+    fetch(getCleanUrl(path), {
+        method: 'POST',
+        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+        body: 'reason=' + encodeURIComponent(reason) + '&description=' + encodeURIComponent(description)
+    })
+    .then(r => {
+        return r.text().then(text => {
+            return { ok: r.ok, status: r.status, text: text };
+        });
+    })
+    .then(res => {
+        if (res.ok) {
+            alert(res.text || 'Report submitted successfully.');
+            closeReportModal();
+        } else {
+            alert('Report error: ' + (res.text || ('HTTP ' + res.status)));
+        }
+    })
+    .catch(err => {
+        console.error('Report submission failed:', err);
+        alert('Report submission failed. Please try again.');
+    });
 }
 </script>
 </body>
