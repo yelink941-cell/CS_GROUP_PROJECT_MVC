@@ -53,4 +53,19 @@ public class UserNote {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public String getDisplayUpdatedAt() {
+        LocalDateTime dt = (updatedAt != null) ? updatedAt : createdAt;
+        if (dt == null) {
+            return "";
+        }
+        return dt.format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"));
+    }
+
+    public String getDisplayCreatedAt() {
+        if (createdAt == null) {
+            return "";
+        }
+        return createdAt.format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"));
+    }
 }

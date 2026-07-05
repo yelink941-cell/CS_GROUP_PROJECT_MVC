@@ -1,4 +1,4 @@
-﻿  <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+  <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <style>
@@ -124,6 +124,9 @@
         <div class="nav-right-zone">
             
             <c:if test="${not empty sessionScope.currentUser}">
+                <a href="${pageContext.request.contextPath}/notes" class="nav-notes-btn" style="text-decoration:none;font-weight:600;padding:6px 14px;background:#1e293b;border-radius:20px;font-size:13px;display:inline-flex;align-items:center;white-space:nowrap;color:#a78bfa;border:1px solid #6d28d9;gap:6px;">
+                    📝 My Notes
+                </a>
                 <a href="${pageContext.request.contextPath}/notifications" class="nav-notifications-btn">
                     &#128276; Notifications
                     <c:if test="${unreadNotificationCount > 0}">
@@ -148,6 +151,7 @@
                 <c:choose>
                     <c:when test="${sessionScope.role == 'ADMIN'}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/admin-dashboard">Dashboard</a>
+                        <a class="nav-link" href="${pageContext.request.contextPath}/notes">My Notes</a>
                         <a class="nav-link" href="${pageContext.request.contextPath}/admin/categories">Categories</a>
                         <a class="nav-link" href="${pageContext.request.contextPath}/admin/tags">Tags</a>
                         <a class="nav-link" href="${pageContext.request.contextPath}/admin/posts/pending">Pending Posts</a>
@@ -158,6 +162,7 @@
 
                 <c:when test="${sessionScope.role == 'USER'}">
                     <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/notes">My Notes</a>
                     <div class="nav-item nav-dropdown">
                         <a class="nav-link" href="${pageContext.request.contextPath}/posts/public">View Posts</a>
                         <div class="nav-dropdown-menu">

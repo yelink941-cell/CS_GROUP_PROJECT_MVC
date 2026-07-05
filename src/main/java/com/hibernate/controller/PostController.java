@@ -198,7 +198,6 @@ public class PostController {
         return "redirect:/user/posts";
     }
 
-    
     @GetMapping("/{slug}")
     public String showPostDetail(@PathVariable String slug, Model model, HttpSession session) {
         return postService.getPostBySlug(slug).map(post -> {

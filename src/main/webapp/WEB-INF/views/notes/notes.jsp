@@ -15,18 +15,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg:        #0d1117;
-            --surface:   #161b22;
-            --surface2:  #1c2128;
-            --border:    #30363d;
-            --accent:    #7c3aed;
-            --accent2:   #6d28d9;
-            --accent-glow: rgba(124,58,237,0.25);
-            --gold:      #f59e0b;
+            --bg:        #ffffff;
+            --surface:   #ffffff;
+            --surface2:  #f8fafc;
+            --border:    #e2e8f0;
+            --accent:    #6366f1;
+            --accent2:   #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --gold:      #d97706;
             --green:     #10b981;
             --red:       #ef4444;
-            --text:      #e6edf3;
-            --muted:     #8b949e;
+            --text:      #0f172a;
+            --muted:     #64748b;
             --radius:    14px;
         }
 
@@ -34,8 +34,8 @@
 
         body {
             font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            background: #ffffff;
+            color: #0f172a;
             min-height: 100vh;
         }
 
@@ -60,14 +60,11 @@
             font-size: 28px;
             font-weight: 800;
             letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #a78bfa, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #0f172a;
         }
 
         .page-title-block p {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--muted);
             margin-top: 4px;
         }
@@ -77,19 +74,19 @@
             align-items: center;
             gap: 8px;
             padding: 10px 22px;
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
             color: #fff;
             font-weight: 700;
             font-size: 14px;
             border-radius: 10px;
             text-decoration: none;
-            box-shadow: 0 0 18px var(--accent-glow);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
             transition: transform 0.15s, box-shadow 0.15s;
             white-space: nowrap;
         }
         .btn-create:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 28px rgba(124,58,237,0.45);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
         }
 
         /* ── Flash messages ─────────────────────── */
@@ -104,8 +101,8 @@
             font-weight: 500;
             animation: slideDown 0.3s ease;
         }
-        .flash-success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: #34d399; }
-        .flash-error   { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.35);  color: #f87171; }
+        .flash-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
+        .flash-error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
 
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
@@ -121,8 +118,8 @@
 
         /* ── Note card ──────────────────────────── */
         .note-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: var(--radius);
             padding: 22px 24px;
             display: flex;
@@ -131,29 +128,30 @@
             transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
         .note-card::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #7c3aed, #a78bfa);
+            background: linear-gradient(90deg, #6366f1, #818cf8);
             opacity: 0;
             transition: opacity 0.25s;
         }
         .note-card:hover {
-            border-color: #7c3aed;
+            border-color: #6366f1;
             transform: translateY(-3px);
-            box-shadow: 0 12px 36px rgba(0,0,0,0.4), 0 0 0 1px rgba(124,58,237,0.15);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.12);
         }
         .note-card:hover::before { opacity: 1; }
 
         .note-private-badge {
             position: absolute;
             top: 14px; right: 14px;
-            background: rgba(124,58,237,0.15);
-            border: 1px solid rgba(124,58,237,0.3);
-            color: #a78bfa;
+            background: #eeeffe;
+            border: 1px solid #c7d2fe;
+            color: #4f46e5;
             font-size: 10px;
             font-weight: 700;
             padding: 2px 8px;
@@ -165,7 +163,7 @@
         .note-title {
             font-size: 16px;
             font-weight: 700;
-            color: var(--text);
+            color: #0f172a;
             padding-right: 60px;
             line-height: 1.4;
             word-break: break-word;
@@ -173,7 +171,7 @@
 
         .note-snippet {
             font-size: 13px;
-            color: var(--muted);
+            color: #475569;
             line-height: 1.6;
             flex: 1;
             overflow: hidden;
@@ -185,11 +183,11 @@
 
         .note-meta {
             font-size: 11px;
-            color: var(--muted);
+            color: #64748b;
             display: flex;
             align-items: center;
             gap: 6px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid #f1f5f9;
             padding-top: 10px;
             margin-top: 4px;
         }
@@ -214,18 +212,18 @@
             transition: background 0.15s, transform 0.12s;
         }
         .btn-edit {
-            background: rgba(124,58,237,0.15);
-            color: #a78bfa;
-            border: 1px solid rgba(124,58,237,0.25);
+            background: #eeeffe;
+            color: #4f46e5;
+            border: 1px solid #c7d2fe;
         }
-        .btn-edit:hover { background: rgba(124,58,237,0.3); transform: translateY(-1px); }
+        .btn-edit:hover { background: #e0e7ff; transform: translateY(-1px); }
 
         .btn-delete {
-            background: rgba(239,68,68,0.1);
-            color: #f87171;
-            border: 1px solid rgba(239,68,68,0.2);
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #fecaca;
         }
-        .btn-delete:hover { background: rgba(239,68,68,0.22); transform: translateY(-1px); }
+        .btn-delete:hover { background: #fee2e2; transform: translateY(-1px); }
 
         /* ── Empty state ────────────────────────── */
         .empty-state {
@@ -237,22 +235,22 @@
             font-size: 64px;
             margin-bottom: 20px;
             display: block;
-            opacity: 0.6;
+            opacity: 0.8;
             animation: floatIcon 3s ease-in-out infinite;
         }
         @keyframes floatIcon {
             0%, 100% { transform: translateY(0); }
             50%       { transform: translateY(-10px); }
         }
-        .empty-state h2 { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-        .empty-state p  { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+        .empty-state h2 { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+        .empty-state p  { font-size: 14px; color: #64748b; margin-bottom: 28px; }
 
         /* ── Delete confirm modal ───────────────── */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.65);
+            background: rgba(15, 23, 42, 0.4);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -260,29 +258,30 @@
         }
         .modal-overlay.active { display: flex; }
         .modal-box {
-            background: var(--surface2);
-            border: 1px solid var(--border);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 16px;
             padding: 32px;
             max-width: 420px;
             width: 90%;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            color: #0f172a;
             animation: popIn 0.2s ease;
         }
         @keyframes popIn {
             from { opacity: 0; transform: scale(0.9); }
             to   { opacity: 1; transform: scale(1); }
         }
-        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
-        .modal-body  { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+        .modal-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+        .modal-body  { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height: 1.6; }
         .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
         .modal-cancel {
             padding: 9px 20px; border-radius: 8px;
-            background: var(--surface); border: 1px solid var(--border);
-            color: var(--text); font-weight: 600; font-size: 14px;
+            background: #f1f5f9; border: 1px solid #cbd5e1;
+            color: #334155; font-weight: 600; font-size: 14px;
             cursor: pointer; transition: background 0.15s;
         }
-        .modal-cancel:hover { background: var(--border); }
+        .modal-cancel:hover { background: #e2e8f0; }
         .modal-confirm {
             padding: 9px 20px; border-radius: 8px;
             background: var(--red); border: none;
@@ -301,7 +300,7 @@
         <div class="page-header">
             <div class="page-title-block">
                 <h1>📝 My Private Notes</h1>
-                <p>သင်တစ်ယောက်တည်းသာ မြင်ရမည့် personal notes များ</p>
+                <p>personal notes </p>
             </div>
             <a href="${pageContext.request.contextPath}/notes/new" class="btn-create" id="btn-new-note">
                 <i class="fas fa-plus"></i> New Note
@@ -337,17 +336,10 @@
                             <div class="note-snippet"><c:out value="${note.content}" /></div>
                             <div class="note-meta">
                                 <i class="fas fa-clock" style="font-size:10px;"></i>
-                                <c:choose>
-                                    <c:when test="${not empty note.updatedAt}">
-                                        Updated: <fmt:formatDate value="${note.updatedAt}" pattern="dd MMM yyyy, hh:mm a" type="both"/>
-                                    </c:when>
-                                    <c:otherwise>
-                                        Created: <fmt:formatDate value="${note.createdAt}" pattern="dd MMM yyyy" type="date"/>
-                                    </c:otherwise>
-                                </c:choose>
+                                Updated: <c:out value="${note.displayUpdatedAt}" />
                             </div>
                             <div class="note-actions">
-                                <a href="${pageContext.request.contextPath}/notes/edit?id=${note.id}"
+                                <a href="${pageContext.request.contextPath}/notes/${note.id}/edit"
                                    class="btn-edit" id="edit-note-${note.id}">
                                     <i class="fas fa-pen"></i> Edit
                                 </a>

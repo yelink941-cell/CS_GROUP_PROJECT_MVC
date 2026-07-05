@@ -605,6 +605,36 @@
     transform: translateY(-2px);
     opacity: 0.9;
 }
+        .blocked-banner {
+            background: var(--accent-black);
+            color: #ffffff;
+            padding: 14px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .blocked-banner.muted {
+            background: var(--accent-gray);
+            color: var(--text-muted);
+            justify-content: center;
+            text-align: center;
+            border: 1px solid var(--border-clean);
+        }
+        .banner-unblock-btn {
+            background: #ffffff;
+            color: var(--accent-black);
+            border: none;
+            padding: 7px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .banner-unblock-btn:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -633,14 +663,38 @@
                 </c:choose>
             </div>
             <div class="status-container">
-                <span id="statusDot" class="status-dot connecting"></span>
-                <span id="statusText" class="status-text">Connecting...</span>
+                <c:choose>
+                    <c:when test="${isGroup}">
+                        <span id="statusDot" class="status-dot connecting"></span>
+                        <span id="statusText" class="status-text">Connecting...</span>
+                    </c:when>
+                    <c:otherwise>
+                        <span id="statusDot" class="status-dot ${partnerOnline ? 'online' : 'offline'}"></span>
+                        <span id="statusText" class="status-text">${partnerOnline ? 'Online' : (not empty partnerLastSeenFormatted ? partnerLastSeenFormatted : 'Offline')}</span>
+                    </c:otherwise>
+                </c:choose>
                 <span id="typingIndicator" class="status-text" style="color: var(--success-color); font-weight: 500; margin-left: 4px;"></span>
             </div>
         </div>
         <div class="header-menu-wrap">
             <button type="button" id="btnHeaderMenu" class="header-menu-btn" title="More options" aria-label="More options">&#8942;</button>
             <div id="headerDropdown" class="header-dropdown">
+                <c:if test="${!isGroup && not empty partnerUserId}">
+                    <c:choose>
+                        <c:when test="${blockedByMe}">
+                            <button type="button" id="btnUnblockUserHeader" style="color:var(--text-main);">
+                                <span class="menu-icon">🔓</span>
+                                Unblock user
+                            </button>
+                        </c:when>
+                        <c:otherwise>
+                            <button type="button" id="btnBlockUserHeader">
+                                <span class="menu-icon">🚫</span>
+                                Block user
+                            </button>
+                        </c:otherwise>
+                    </c:choose>
+                </c:if>
                 <button type="button" id="btnDeleteChat">
                     <span class="menu-icon">🗑</span>
                     Delete chat
@@ -653,24 +707,43 @@
     <div id="chatBox"></div>
 
     <div class="footer">
-        <div id="uploadHint" class="upload-hint" style="display: none;">
-            <span class="status-dot connecting" style="width:6px;height:6px;"></span> Sending media files...
-        </div>
+        <c:choose>
+            <c:when test="${blockedEitherWay}">
+                <c:choose>
+                    <c:when test="${blockedByMe}">
+                        <div class="blocked-banner">
+                            <span>You blocked this user.</span>
+                            <button type="button" id="btnFooterUnblock" class="banner-unblock-btn">UNBLOCK</button>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="blocked-banner muted">
+                            <span>You cannot send messages to this user because you are blocked.</span>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </c:when>
+            <c:otherwise>
+                <div id="uploadHint" class="upload-hint" style="display: none;">
+                    <span class="status-dot connecting" style="width:6px;height:6px;"></span> Sending media files...
+                </div>
 
-        <div id="attachmentPreview" class="attachment-preview-container"></div>
+                <div id="attachmentPreview" class="attachment-preview-container"></div>
 
-        <div id="replyBar" class="reply-bar">
-            <span>↩ Reply:</span>
-            <span id="replyBarText" class="reply-bar-text"></span>
-            <button type="button" id="btnCancelReply" style="background:transparent;border:none;cursor:pointer;">✕</button>
-        </div>
+                <div id="replyBar" class="reply-bar">
+                    <span>↩ Reply:</span>
+                    <span id="replyBarText" class="reply-bar-text"></span>
+                    <button type="button" id="btnCancelReply" style="background:transparent;border:none;cursor:pointer;">✕</button>
+                </div>
 
-        <div class="input-row">
-            <input type="file" id="mediaFile" accept="image/*,video/*" multiple>
-            <button type="button" class="icon-btn attach" id="btnAttach" title="Attach Files">📎</button>
-            <input type="text" id="messageText" placeholder="စာတို ရေးရန်..." autocomplete="off">
-            <button type="button" class="icon-btn" id="btnSend" title="Send">➤</button>
-        </div>
+                <div class="input-row">
+                    <input type="file" id="mediaFile" accept="image/*,video/*" multiple>
+                    <button type="button" class="icon-btn attach" id="btnAttach" title="Attach Files">📎</button>
+                    <input type="text" id="messageText" placeholder="စာတို ရေးရန်..." autocomplete="off">
+                    <button type="button" class="icon-btn" id="btnSend" title="Send">➤</button>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </div>
 </div>
 <div id="imageLightbox" class="image-lightbox-modal">
@@ -685,6 +758,10 @@
     const ctx = '${ctx}';
     const chatId = '${conversationId}';
     const myUserId = '${currentUser.id}';
+    const partnerUserId = '${partnerUserId}';
+    const blockedByMe = ${blockedByMe};
+    const blockedByPartner = ${blockedByPartner};
+    const blockedEitherWay = ${blockedEitherWay};
     const canModerate = ${canModerate};
     const partnerDisplayName = '<c:out value="${conversationTitle}" />';
     
@@ -704,6 +781,7 @@
         }
         loadChatHistory();
         connectWebSocket();
+        pollInterval = setInterval(pollNewMessages, 4000);
         
         $('#btnSend').click(handleSend);
         $('#btnAttach').click(function() { $('#mediaFile').click(); });
@@ -798,7 +876,6 @@
             if (!msg) return;
             if (action === 'reply') startReply(msg);
             else if (action === 'edit') startEdit(msg);
-            else if (action === 'report') reportMessage(msg);
             else if (action === 'delete') deleteMessage(msg);
         });
 
@@ -822,6 +899,18 @@
             deleteChat();
         });
 
+        $('#btnBlockUserHeader').click(function(e) {
+            e.stopPropagation();
+            closeHeaderMenu();
+            blockPartnerUser();
+        });
+
+        $('#btnUnblockUserHeader, #btnFooterUnblock').click(function(e) {
+            e.stopPropagation();
+            closeHeaderMenu();
+            unblockPartnerUser();
+        });
+
     });
  // မူရင်း function ကို Smooth Scroll လေးနဲ့ အစားထိုးပါ
     function scrollToBottom() {
@@ -832,23 +921,33 @@
     }
 
     function updateConnectionStatus(status) {
-        const dot = $('#statusDot');
-        const text = $('#statusText');
-        dot.removeClass('online offline connecting');
-        
-        if (status === 'online') {
-            dot.addClass('online');
-            text.text('Online');
-        } else if (status === 'connecting') {
-            dot.addClass('connecting');
-            text.text('Connecting...');
-        } else {
-            dot.addClass('offline');
-            text.text('Offline');
+        const isGroupRoom = ${isGroup};
+        if (isGroupRoom) {
+            const dot = $('#statusDot');
+            const text = $('#statusText');
+            dot.removeClass('online offline connecting');
+            
+            if (status === 'online') {
+                dot.addClass('online');
+                text.text('Online');
+            } else if (status === 'connecting') {
+                dot.addClass('connecting');
+                text.text('Connecting...');
+            } else {
+                dot.addClass('offline');
+                text.text('Offline');
+            }
         }
     }
 
+    let reconnectTimer = null;
+    let pollInterval = null;
+
     function connectWebSocket() {
+        if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+            return;
+        }
+
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = wsProtocol + '//' + window.location.host + ctx + '/ws/chat';
         
@@ -856,15 +955,36 @@
         socket = new WebSocket(wsUrl);
 
         socket.onopen = function() {
-            console.log('WebSocket Connected');
+            console.log('[WebSocket] Connected successfully');
             updateConnectionStatus('online');
-            isReconnecting = false;
+            if (reconnectTimer) {
+                clearTimeout(reconnectTimer);
+                reconnectTimer = null;
+            }
         };
 
         socket.onmessage = function(event) {
             try {
                 const data = JSON.parse(event.data);
                 if (data.type === 'error') return;
+
+                // === User Status Event (Online / Offline & Last Seen) ===
+                if (data.type === 'user_status_changed' && data.payload) {
+                    const partnerId = '${partnerUserId}';
+                    if (partnerId && String(data.payload.userId) === String(partnerId)) {
+                        const dot = $('#statusDot');
+                        const text = $('#statusText');
+                        dot.removeClass('online offline connecting');
+                        if (data.payload.isOnline) {
+                            dot.addClass('online');
+                            text.text('Online');
+                        } else {
+                            dot.addClass('offline');
+                            text.text(data.payload.lastSeenFormatted || 'Offline');
+                        }
+                    }
+                    return;
+                }
 
                 // === စာရိုက်ခြင်းဆိုင်ရာ Event များ ဖမ်းရန် ===
                 if (data.type === 'user_typing') {
@@ -885,6 +1005,11 @@
 
                 if (data.type === 'message_edited' && data.payload) {
                     updateMessageDom(data.payload);
+                    return;
+                }
+
+                if (data.type === 'message_reaction' && data.payload) {
+                    updateMessageReactions(data.payload);
                     return;
                 }
 
@@ -924,17 +1049,41 @@
         };
 
         socket.onclose = function(e) {
+            console.log('[WebSocket] Closed, scheduling reconnect...');
             updateConnectionStatus('offline');
-            if (!isReconnecting) {
-                isReconnecting = true;
-                setTimeout(connectWebSocket, 3000);
-            }
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(connectWebSocket, 3000);
         };
 
         socket.onerror = function(err) {
+            console.error('[WebSocket] Error occurred');
             updateConnectionStatus('offline');
-            socket.close();
+            try { socket.close(); } catch(e) {}
         };
+    }
+
+    function pollNewMessages() {
+        if (!chatId) return;
+        $.ajax({
+            url: ctx + '/api/chat/history',
+            type: 'GET',
+            data: { conversationId: chatId },
+            success: function(messages) {
+                if (messages && messages.length) {
+                    let hasNew = false;
+                    const reversed = messages.slice().reverse();
+                    reversed.forEach(function(msg) {
+                        if ($('#msg-' + msg.id).length === 0) {
+                            appendMessage(msg);
+                            hasNew = true;
+                        }
+                    });
+                    if (hasNew) {
+                        scrollToBottom();
+                    }
+                }
+            }
+        });
     }
 
     function loadChatHistory() {
@@ -1070,7 +1219,6 @@
             if (hasText) actions.push({ id: 'edit', label: 'Edit', icon: '✎' });
             actions.push({ id: 'delete', label: 'Delete', icon: '🗑', danger: true });
         } else {
-            actions.push({ id: 'report', label: 'Report', icon: '⚠' });
             if (canModerate) actions.push({ id: 'delete', label: 'Delete', icon: '🗑', danger: true });
         }
         return actions;
@@ -1081,6 +1229,18 @@
         contextMenuMessage = msg;
         var menu = $('#msgContextMenu');
         menu.empty();
+
+        var quickBar = $('<div class="quick-reaction-bar" style="display:flex; justify-content:space-around; align-items:center; padding:8px 12px; border-bottom:1px solid var(--border-clean, #334155);"></div>');
+        ['👍', '❤️', '😂', '😮', '😢', '🔥'].forEach(function(emoji) {
+            var btn = $('<button type="button" class="reaction-btn" style="background:none; border:none; font-size:18px; cursor:pointer; padding:4px 6px; border-radius:6px; transition:transform 0.15s ease;"></button>')
+                .text(emoji)
+                .click(function(e) {
+                    e.stopPropagation();
+                    toggleReaction(msg.id, emoji);
+                });
+            quickBar.append(btn);
+        });
+        menu.append(quickBar);
 
         getMessageActions(msg).forEach(function(action, idx) {
             if (action.danger && idx > 0) {
@@ -1111,15 +1271,49 @@
         $('#msgContextBackdrop').removeClass('active');
     }
 
-    function reportMessage(msg) {
+    function toggleReaction(messageId, emoji) {
+        closeMessageContextMenu();
         $.ajax({
-            url: ctx + '/api/chat/messages/' + msg.id + '/report',
+            url: ctx + '/api/chat/messages/' + messageId + '/reactions',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ reason: 'TEXT', description: 'Reported from chat UI' }),
-            success: function() { alert('Report submitted.'); },
-            error: function(xhr) { alert('Report failed: ' + xhr.responseText); }
+            data: JSON.stringify({ emoji: emoji }),
+            success: function(updatedMsg) {
+                updateMessageReactions(updatedMsg);
+            },
+            error: function(xhr) {
+                alert('Reaction failed: ' + (xhr.responseText || 'Error'));
+            }
         });
+    }
+
+    function updateMessageReactions(msg) {
+        var row = $('#msg-' + msg.id);
+        if (!row.length) return;
+        row.data('msg', msg);
+        var bubble = row.find('.bubble');
+        bubble.find('.message-reactions').remove();
+        if (msg.reactions && msg.reactions.length) {
+            var reactionsEl = renderReactionsHtml(msg);
+            bubble.append(reactionsEl);
+        }
+    }
+
+    function renderReactionsHtml(msg) {
+        var reactionsContainer = $('<div class="message-reactions" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;"></div>');
+        if (msg.reactions && msg.reactions.length) {
+            msg.reactions.forEach(function(r) {
+                var hasUserReacted = r.userIds && r.userIds.map(String).includes(String(myUserId));
+                var badge = $('<span class="reaction-badge ' + (hasUserReacted ? 'user-reacted' : '') + '" style="display:inline-flex; align-items:center; gap:3px; background:' + (hasUserReacted ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.15)') + '; border:1px solid ' + (hasUserReacted ? '#38bdf8' : 'rgba(255, 255, 255, 0.2)') + '; border-radius:12px; padding:2px 7px; font-size:12px; cursor:pointer; user-select:none;"></span>')
+                    .html(r.emoji + ' <span style="font-size:11px; opacity:0.9;">' + r.count + '</span>')
+                    .click(function(e) {
+                        e.stopPropagation();
+                        toggleReaction(msg.id, r.emoji);
+                    });
+                reactionsContainer.append(badge);
+            });
+        }
+        return reactionsContainer;
     }
 
     function deleteMessage(msg) {
@@ -1170,6 +1364,36 @@
             },
             error: function(xhr) {
                 alert('Chat delete failed: ' + xhr.responseText);
+            }
+        });
+    }
+
+    function blockPartnerUser() {
+        if (!partnerUserId) return;
+        if (!confirm('ဒီ user ကို block လုပ်မှာသေချာလား?')) return;
+        $.ajax({
+            url: ctx + '/api/chat/users/' + partnerUserId + '/block',
+            type: 'POST',
+            success: function() {
+                location.reload();
+            },
+            error: function(xhr) {
+                alert('Block failed: ' + xhr.responseText);
+            }
+        });
+    }
+
+    function unblockPartnerUser() {
+        if (!partnerUserId) return;
+        if (!confirm('ဒီ user ကို unblock လုပ်မှာသေချာလား?')) return;
+        $.ajax({
+            url: ctx + '/api/chat/users/' + partnerUserId + '/unblock',
+            type: 'POST',
+            success: function() {
+                location.reload();
+            },
+            error: function(xhr) {
+                alert('Unblock failed: ' + xhr.responseText);
             }
         });
     }
@@ -1374,6 +1598,10 @@
         }
         timeHtml += '</span>';
         bubble.append(timeHtml);
+
+        if (msg.reactions && msg.reactions.length) {
+            bubble.append(renderReactionsHtml(msg));
+        }
 
         row.append(bubble);
         $('#chatBox').append(row);

@@ -338,7 +338,53 @@ public class UserController {
         return "redirect:/profile";
     }
     
-    
+    @GetMapping("/settings")
+    public String showSettingsSpace(HttpSession session, Model model) {
+        User current = (User) session.getAttribute("currentUser");
+        UserPreference pref = userService.getUserPreferenceByUserId(current.getId());
+        if (pref == null) {
+            pref = new UserPreference(); 
+        }
+        
+        model.addAttribute("userPreference", pref);
+        return "profile/account-settings";
+    }
+
+    @PostMapping("/settings/save")
+    public String saveSettingsAction(
+            @ModelAttribute("userPreference") UserPreference incomingPref,
+            HttpSession session) {
+        User current = (User) session.getAttribute("currentUser");
+        UserPreference existing = userService.getUserPreferenceByUserId(current.getId());
+        if (existing != null) {
+            existing.setTheme(incomingPref.getTheme());
+            existing.setLanguageCode(incomingPref.getLanguageCode());
+            existing.setEmailNotifications(incomingPref.getEmailNotifications());
+            existing.setPushNotifications(incomingPref.getPushNotifications());
+            existing.setAllowMessages(incomingPref.getAllowMessages());
+            existing.setProfileVisibility(incomingPref.getProfileVisibility());
+            userService.saveUserPreference(existing);
+        } else {
+            incomingPref.setUser(current);
+        }
+        return "redirect:/settings"; // 🟢 Return ပိတ်ပေးပါ
+    }
+    @GetMapping("/admin-dashboard")
+    public String showAdminDashboard(HttpSession session) {
+        // 🟢 ပြင်ဆင်ချက်- currentUser အစား ပိုမိုကျယ်ပြန့်သော user ကိုပါ ထည့်သွင်းစစ်ဆေးပေးခြင်း 
+        // (Interceptor သို့မဟုတ် Intercept အချို့ကြောင့် session key တစ်ခုခု ပြတ်တောက်သွားလျှင်ပင် အခြားတစ်ခုဖြင့် ဆက်ဖမ်းနိုင်ရန်)
+        User adminUser = (User) session.getAttribute("user");
+        
+        if (adminUser == null) {
+            adminUser = (User) session.getAttribute("currentUser");
+        }
+        
+        if (adminUser == null || !Role.ADMIN.equals(adminUser.getRole())) {
+            return "redirect:/login"; 
+        }
+        
+        return "redirect:/settings";
+    }
     
     @PostMapping("/user/follow")
     public String followAction(@RequestParam("targetId") Long targetId,HttpServletRequest request, HttpSession session) {
@@ -410,6 +456,14 @@ public class UserController {
 
     @GetMapping("/logout")
     public String processLogout(HttpSession session) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser != null) {
+            try {
+                userService.updateUserOnlineStatus(currentUser.getId(), false);
+            } catch (Exception e) {
+                System.err.println("Failed to set offline status on logout: " + e.getMessage());
+            }
+        }
         session.invalidate();
         SecurityContextHolder.clearContext();
         return "redirect:/?logout=true";

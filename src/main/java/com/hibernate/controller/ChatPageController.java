@@ -60,6 +60,11 @@ public class ChatPageController {
         model.addAttribute("partnerRole", roomView.getPartnerRole());
         model.addAttribute("isGroup", roomView.isGroup());
         model.addAttribute("canModerate", roomView.isCanModerate());
+        model.addAttribute("blockedByMe", roomView.isBlockedByMe());
+        model.addAttribute("blockedByPartner", roomView.isBlockedByPartner());
+        model.addAttribute("blockedEitherWay", roomView.isBlockedEitherWay());
+        model.addAttribute("partnerOnline", roomView.isPartnerOnline());
+        model.addAttribute("partnerLastSeenFormatted", roomView.getPartnerLastSeenFormatted());
         model.addAttribute("currentUser", currentUser);
         return "chat/room";
     }
