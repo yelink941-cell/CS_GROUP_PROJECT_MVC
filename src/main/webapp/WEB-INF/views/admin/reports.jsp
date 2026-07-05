@@ -14,21 +14,15 @@
     <meta charset="UTF-8">
     <title>Admin - Report Logs Queue</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ✅ Admin CSS for sidebar -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin.css">
+    
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { display: flex; min-height: 100vh; background-color: #f8fafc; color: #1e293b; }
-        .sidebar { width: 260px; background-color: #1e293b; color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; }
-        .sidebar-brand { padding: 24px; font-size: 20px; font-weight: bold; background-color: #0f172a; text-align: center; color: #38bdf8; }
-        .sidebar-menu { list-style: none; flex-grow: 1; padding: 20px 0; }
-        .sidebar-item { margin: 4px 15px; }
-        .sidebar-link { display: flex; align-items: center; padding: 12px 16px; color: #cbd5e1; text-decoration: none; border-radius: 6px; font-size: 15px; transition: all 0.2s; }
-        .sidebar-link:hover { background-color: #334155; color: #fff; }
-        .sidebar-link.active { background-color: #0284c7; color: #fff; font-weight: 600; }
-        .main-workspace { margin-left: 260px; flex-grow: 1; display: flex; flex-direction: column; }
-        .top-navbar { height: 70px; background-color: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .nav-title { font-size: 18px; font-weight: 600; color: #475569; }
-        .user-profile-badge { display: flex; align-items: center; gap: 10px; }
-        .badge { background-color: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        /* ============================================
+           REPORT LOGS PAGE STYLES (Keep as is)
+           ============================================ */
+        
         .content-area { padding: 40px; max-width: 1300px; width: 100%; margin: 0 auto; }
         
         .section-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 40px; overflow: hidden; }
@@ -133,52 +127,58 @@
     String ctx = request.getContextPath();
 %>
 
+    <!-- Sidebar (Same as admin-dashboard) -->
     <aside class="sidebar">
-        <div class="sidebar-brand">CheatSheet Admin Panel &#128081;</div>
+        <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link">
-                    <span>&#128202; Core Dashboard</span>
+                    <span>📊 Core Dashboard</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/categories" class="sidebar-link">
-                    <span>&#128451; Category Management</span>
+                    <span>📁 Category Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
+                    <span>🏷️ Tags Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
-                    <span>&#128221; Post Management</span>
+                    <span>📄 Post Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
-                    <span>&#9203; Pending Posts</span>
+                    <span>⏳ Pending Posts</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/comments" class="sidebar-link">
-                    <span>&#128172; Comment Management</span>
+                    <span>💬 Comment Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
-                    <span>&#128101; User Management</span>
+                    <span>👥 User Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/announcements" class="sidebar-link">
-                    <span>&#128364; Event Announcements</span>
+                    <span>📢 Event Announcements</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports/cheatsheet" class="sidebar-link">
-                    <span>&#128196; CheatSheet Report</span>
+                    <span>📊 CheatSheet Report</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link active">
-                    <span>&#128680; Report Logs</span>
+                    <span>📊 Report Logs</span>
                 </a>
             </li>
         </ul>
@@ -198,23 +198,23 @@
 
             <div class="type-tabs">
                 <a href="<%= ctx %>/admin/reports?type=posts&view=<%= reportView %>"
-                   class="type-tab <%= isPostType ? "active" : "" %>">&#128196; Post Reports</a>
+                   class="type-tab <%= isPostType ? "active" : "" %>">📄 Post Reports</a>
                 <a href="<%= ctx %>/admin/reports?type=comments&view=<%= reportView %>"
-                   class="type-tab <%= !isPostType ? "active" : "" %>">&#128172; Comment Reports</a>
+                   class="type-tab <%= !isPostType ? "active" : "" %>">💬 Comment Reports</a>
             </div>
 
             <div class="view-tabs">
                 <a href="<%= ctx %>/admin/reports?type=<%= reportType %>&view=queue"
-                   class="view-tab <%= !isHistoryView ? "active" : "" %>">&#128203; Pending Queue</a>
+                   class="view-tab <%= !isHistoryView ? "active" : "" %>">📥 Pending Queue</a>
                 <a href="<%= ctx %>/admin/reports?type=<%= reportType %>&view=history"
-                   class="view-tab <%= isHistoryView ? "active" : "" %>">&#128337; History</a>
+                   class="view-tab <%= isHistoryView ? "active" : "" %>">📜 History</a>
             </div>
             
             <% if (isPostType) { %>
             <!-- POST REPORTS -->
             <div class="section-card">
                 <div class="section-header">
-                    <span><%= isHistoryView ? "&#128218; Post Report History" : "&#128196; Pending Grouped Post Reports" %></span>
+                    <span><%= isHistoryView ? "📜 Post Report History" : "📥 Pending Grouped Post Reports" %></span>
                     <span style="font-size: 13px; font-weight: normal; background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 9999px;">
                         <%= isHistoryView ? (postReports != null ? postReports.size() : 0) : (groupedPostReports != null ? groupedPostReports.size() : 0) %> <%= isHistoryView ? "records" : "reported posts" %>
                     </span>
@@ -309,11 +309,11 @@
                                                 <span style="font-size: 12px; color: #475569;">Author: <strong>@<%= author != null ? author.getUsername() : "N/A" %></strong></span>
                                                 <br/>
                                                 <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
-                                                    &#128065; View Reporter Details (<%= g.getReportCount() %>)
+                                                    👁️ View Reporter Details (<%= g.getReportCount() %>)
                                                 </button>
                                             </td>
                                             <td>
-                                                <span class="count-badge">&#128293; <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
+                                                <span class="count-badge">🔥 <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
                                                 <div style="margin-top: 8px;">
                                                     <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
                                                         <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
@@ -350,7 +350,7 @@
                                         <tr id="<%= detailsId %>" class="details-row">
                                             <td colspan="3">
                                                 <div class="details-container">
-                                                    <strong style="font-size: 13px; color: #0284c7;">&#128203; Individual Reports (<%= g.getReportCount() %>):</strong>
+                                                    <strong style="font-size: 13px; color: #0284c7;">📄 Individual Reports (<%= g.getReportCount() %>):</strong>
                                                     <table class="details-table">
                                                         <thead>
                                                             <tr>
@@ -391,7 +391,7 @@
             <!-- COMMENT REPORTS -->
             <div class="section-card">
                 <div class="section-header">
-                    <span><%= isHistoryView ? "&#128218; Comment Report History" : "&#128172; Pending Grouped Comment Reports" %></span>
+                    <span><%= isHistoryView ? "📜 Comment Report History" : "📥 Pending Grouped Comment Reports" %></span>
                     <span style="font-size: 13px; font-weight: normal; background: #38bdf8; color: #0f172a; padding: 2px 8px; border-radius: 9999px;">
                         <%= isHistoryView ? (commentReports != null ? commentReports.size() : 0) : (groupedCommentReports != null ? groupedCommentReports.size() : 0) %> <%= isHistoryView ? "records" : "reported comments" %>
                     </span>
@@ -443,7 +443,6 @@
                                                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                                                     <% if (commenter != null) { %>
                                                         <% if (isCommenterBanned) { %>
-                                                            <!-- 🎉 UNBAN / PARDON BUTTON IN HISTORY -->
                                                             <form action="<%= ctx %>/admin/users/<%= commenter.getId() %>/unban" method="POST" style="margin:0;">
                                                                 <button type="submit" class="btn btn-unban" onclick="return confirm('Commenter အား ကင်းလွှတ်ခွင့် ပေးပြီး (Unban) ပြန်ဖွင့်ပေးမှာ သေချာပါသလား။');">
                                                                     <i class="fas fa-key"></i> 🎉 Unban (ကင်းလွှတ်ခွင့်)
@@ -491,11 +490,11 @@
                                                 <span style="font-size:12px; color:#475569;">Commenter: <strong>@<%= commenter != null ? commenter.getUsername() : "N/A" %></strong></span>
                                                 <br/>
                                                 <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
-                                                    &#128065; View Reporter Details (<%= g.getReportCount() %>)
+                                                    👁️ View Reporter Details (<%= g.getReportCount() %>)
                                                 </button>
                                             </td>
                                             <td>
-                                                <span class="count-badge">&#128293; <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
+                                                <span class="count-badge">🔥 <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
                                                 <div style="margin-top: 8px;">
                                                     <% for (Map.Entry<ReportReason, Integer> entry : g.getReasonCounts().entrySet()) { %>
                                                         <span class="reason-pill"><%= entry.getKey() %> (<%= entry.getValue() %>)</span>
@@ -532,7 +531,7 @@
                                         <tr id="<%= detailsId %>" class="details-row">
                                             <td colspan="3">
                                                 <div class="details-container">
-                                                    <strong style="font-size: 13px; color: #0284c7;">&#128203; Individual Reports (<%= g.getReportCount() %>):</strong>
+                                                    <strong style="font-size: 13px; color: #0284c7;">📄 Individual Reports (<%= g.getReportCount() %>):</strong>
                                                     <table class="details-table">
                                                         <thead>
                                                             <tr>
