@@ -8,17 +8,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Panel - User Directory</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; }
         body { display: flex; min-height: 100vh; background: #f0f2f5; color: #1a2332; }
-        
-        .sidebar { width: 260px; background: linear-gradient(180deg, #1a2332 0%, #0f1724 100%); color: #fff; position: fixed; height: 100vh; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
-        .sidebar-brand { padding: 28px 24px; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.03); text-align: center; color: #60a5fa; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-menu { list-style: none; padding: 16px 0; }
-        .sidebar-link { display: block; padding: 12px 20px; color: #94a3b8; text-decoration: none; margin: 4px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; transition: all 0.25s ease; }
-        .sidebar-link:hover { background: rgba(255,255,255,0.08); color: #fff; transform: translateX(4px); }
-        .sidebar-link.active { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; font-weight: 600; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
         
         .main-workspace { margin-left: 260px; flex-grow: 1; padding: 32px 40px; background: #f0f2f5; }
         h2 { font-size: 26px; color: #0f1724; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px; }
@@ -82,7 +76,7 @@
         <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link">
+                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link ">
                     <span>📊 Core Dashboard</span>
                 </a>
             </li>
@@ -102,12 +96,13 @@
                 </a>
             </li>
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link active">
+                <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
                     <span>⏳ Pending Posts</span>
                 </a>
             </li>
+           
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
+                <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link active">
                     <span>👥 User Management</span>
                 </a>
             </li>

@@ -664,4 +664,70 @@ body > form .form-actions a:hover {
         padding: 4px 10px;
         font-size: 12px;
     }
+    /* --- အသစ်ပြင်ဆင်ထားသော ပိုမိုလှပသော အစိတ်အပိုင်းများ --- */
+
+/* 1. ပိုမိုနူးညံ့သော Shadow */
+:root {
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+/* 2. Table ကို ပိုသန့်ရှင်းစေရန် */
+.data-table {
+    border: none; /* အပြင်ဘောင်ကို ဖျောက်ပြီး Shadow နဲ့ပဲ ပုံဖော် */
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+}
+
+.data-table thead tr {
+    background-color: #f1f5f9;
+}
+
+.data-table th {
+    border-bottom: 2px solid #e2e8f0;
+    padding: 16px 20px !important;
+}
+
+.data-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* 3. Action Buttons တွေကို ပိုလှစေရန် */
+.action-btn {
+    padding: 6px 14px;
+    border-radius: 8px; /* ပိုဝိုင်းစေရန် */
+    border: 1px solid transparent;
+    transition: all 0.25s ease;
+}
+
+.action-btn.edit:hover {
+    border-color: #bfdbfe;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.action-btn.delete:hover {
+    border-color: #fecaca;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+/* 4. Sidebar Link ပိုလှစေရန် */
+.sidebar-link {
+    margin: 4px 8px; /* လမ်းကြောင်းတွေကို ခွာပေးထား */
+    padding: 14px 16px;
+}
+
+.sidebar-link:hover {
+    background: #1e293b; /* အရောင်ကို နည်းနည်းညှိ */
+    transform: translateX(5px); /* Hover လုပ်ရင် နည်းနည်းလေး ရွေ့သွားအောင် */
+}
+
+/* 5. Welcome Card အတွက် */
+.welcome-card {
+    border-left: 6px solid #0284c7;
+    background: linear-gradient(to right, #ffffff, #fcfcfc);
+}
 }

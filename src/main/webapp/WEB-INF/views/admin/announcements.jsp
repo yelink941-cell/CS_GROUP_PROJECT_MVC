@@ -200,12 +200,11 @@
     String userInitial = displayUsername.substring(0, 1).toUpperCase();
 %>
 
-    <!-- Sidebar (Same as admin-dashboard) -->
-    <aside class="sidebar">
+     <aside class="sidebar">
         <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link">
+                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link ">
                     <span>📊 Core Dashboard</span>
                 </a>
             </li>
@@ -229,11 +228,7 @@
                     <span>⏳ Pending Posts</span>
                 </a>
             </li>
-            <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/comments" class="sidebar-link">
-                    <span>💬 Comment Management</span>
-                </a>
-            </li>
+           
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
                     <span>👥 User Management</span>
@@ -241,12 +236,12 @@
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/announcements" class="sidebar-link active">
-                    <span>📢 Event Announcements</span>
+                    <span>&#128364; Event Announcements</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports/cheatsheet" class="sidebar-link">
-                    <span>📊 CheatSheet Report</span>
+                    <span>&#128196; CheatSheet Report</span>
                 </a>
             </li>
             <li class="sidebar-item">
