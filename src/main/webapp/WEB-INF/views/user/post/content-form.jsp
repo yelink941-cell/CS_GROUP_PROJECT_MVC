@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-form.css">
+     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 </head>
 <body>
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
@@ -138,5 +139,31 @@
             updateFields();
         }());
     </script>
+    <footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <h2>📚 CheatSheet Hub</h2>
+            <p>Community-built cheat sheets for quick learning, practical references, and clean knowledge sharing. Your go-to resource for developer guides and technical references.</p>
+        </div>
+        <div class="footer-links">
+            <h3>Quick Links</h3>
+            <nav>
+                <a href="${pageContext.request.contextPath}/">🏠 Home</a>
+                <a href="${pageContext.request.contextPath}/posts/public">📄 View Posts</a>
+                <a href="${pageContext.request.contextPath}/posts/categories">📁 Categories</a>
+                <a href="${pageContext.request.contextPath}/posts/popular">🔥 Popular</a>
+                <a href="${pageContext.request.contextPath}/posts/trending">📈 Trending</a>
+            </nav>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <small>&copy; 2026 CheatSheet Hub. All rights reserved.</small>
+        <div class="footer-legal">
+            <a href="#"><i class="fas fa-lock"></i> Privacy Policy</a>
+            <a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a>
+            <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

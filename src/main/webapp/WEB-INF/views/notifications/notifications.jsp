@@ -9,14 +9,12 @@
     <title>Notifications — CheatSheet Hub</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* ============================================
-           STYLE FROM POPULAR.JSP
-           ============================================ */
         
         * {
             box-sizing: border-box;
@@ -443,6 +441,7 @@
 </head>
 <body>
 
+<!-- ===== SITE NAVIGATION WITH NOTIFICATIONS BADGE ===== -->
 <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
 <main>
@@ -463,6 +462,26 @@
         <div class="back-link-wrapper">
             <a href="${pageContext.request.contextPath}/" class="back-link">
                 <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+
+        <!-- ===== BACK LINK TO COLLECTIONS (ADDED) ===== -->
+        <div style="margin-bottom: 20px;">
+            <a href="${pageContext.request.contextPath}/user/collections" class="back-link" style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                color: #64748b;
+                text-decoration: none;
+                transition: all 0.2s ease;
+                padding: 8px 16px;
+                background: #ffffff;
+                border-radius: 10px;
+                border: 1px solid #e8edf4;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            ">
             </a>
         </div>
 
@@ -536,7 +555,32 @@
         </div>
     </div>
 </main>
-
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <h2>📚 CheatSheet Hub</h2>
+            <p>Community-built cheat sheets for quick learning, practical references, and clean knowledge sharing. Your go-to resource for developer guides and technical references.</p>
+        </div>
+        <div class="footer-links">
+            <h3>Quick Links</h3>
+            <nav>
+                <a href="${pageContext.request.contextPath}/">🏠 Home</a>
+                <a href="${pageContext.request.contextPath}/posts/public">📄 View Posts</a>
+                <a href="${pageContext.request.contextPath}/posts/categories">📁 Categories</a>
+                <a href="${pageContext.request.contextPath}/posts/popular">🔥 Popular</a>
+                <a href="${pageContext.request.contextPath}/posts/trending">📈 Trending</a>
+            </nav>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <small>&copy; 2026 CheatSheet Hub. All rights reserved.</small>
+        <div class="footer-legal">
+            <a href="#"><i class="fas fa-lock"></i> Privacy Policy</a>
+            <a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a>
+            <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+        </div>
+    </div>
+</footer>
 <script>
     // Auto-hide flash messages after 4 seconds
     setTimeout(() => {

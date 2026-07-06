@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-list.css?v=8">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/home.css?v=1">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .home-main-content { 
@@ -612,19 +613,34 @@
         </c:choose>
     </main>
 
-    <footer class="site-footer">
-        <div>
-            <h2>CheatSheet Hub</h2>
-            <p>Community-built cheat sheets for quick learning, practical references, and clean knowledge sharing.</p>
+    <!-- ===== FOOTER - DARK THEME (SAME AS POPULAR.JSP STYLE) ===== -->
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <h2>📚 CheatSheet Hub</h2>
+            <p>Community-built cheat sheets for quick learning, practical references, and clean knowledge sharing. Your go-to resource for developer guides and technical references.</p>
         </div>
-        <nav>
-            <a href="${pageContext.request.contextPath}/">Home</a>
-            <a href="${pageContext.request.contextPath}/posts/public">View Posts</a>
-            <a href="${pageContext.request.contextPath}/posts/categories">Categories</a>
-            <a href="${pageContext.request.contextPath}/posts/popular">Popular</a>
-        </nav>
+        <div class="footer-links">
+            <h3>Quick Links</h3>
+            <nav>
+                <a href="${pageContext.request.contextPath}/">🏠 Home</a>
+                <a href="${pageContext.request.contextPath}/posts/public">📄 View Posts</a>
+                <a href="${pageContext.request.contextPath}/posts/categories">📁 Categories</a>
+                <a href="${pageContext.request.contextPath}/posts/popular">🔥 Popular</a>
+                <a href="${pageContext.request.contextPath}/posts/trending">📈 Trending</a>
+            </nav>
+        </div>
+       
+    </div>
+    <div class="footer-bottom">
         <small>&copy; 2026 CheatSheet Hub. All rights reserved.</small>
-    </footer>
+        <div class="footer-legal">
+            <a href="#"><i class="fas fa-lock"></i> Privacy Policy</a>
+            <a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a>
+            <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+        </div>
+    </div>
+</footer>
 
     <c:if test="${not empty sessionScope.currentUser}">
         <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages">💬</a>
