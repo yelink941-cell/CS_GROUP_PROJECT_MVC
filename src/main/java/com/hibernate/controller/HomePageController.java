@@ -38,6 +38,7 @@ public class HomePageController {
     private final BookmarkService bookmarkService;
     private final PostViewService postViewService;
     private final UserService userService;
+    private final com.hibernate.repository.BlockedUserRepository blockedUserRepository;
 
     @GetMapping("/")
     public String homePage(Model model) {
@@ -83,6 +84,13 @@ public class HomePageController {
                     User viewer = session != null ? (User) session.getAttribute("currentUser") : null;
                     boolean isAdmin = viewer != null && viewer.isAdmin();
                     boolean isAuthor = viewer != null && post.getAuthor() != null && viewer.getId().equals(post.getAuthor().getId());
+
+                    // If user is blocked either way by the author, hide the post
+                    if (userId != null && post.getAuthor() != null && !isAdmin) {
+                        if (blockedUserRepository.isBlockedEitherWay(userId, post.getAuthor().getId())) {
+                            return "redirect:/posts/public";
+                        }
+                    }
 
                     // If post is deleted or banned, block normal public users, but allow admins and authors
                     if (post.isDeleted() || post.getStatus() == com.hibernate.entity.enums.PostStatus.BANNED) {

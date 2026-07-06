@@ -14,6 +14,7 @@ public class ChatInboxItem {
     private LocalDateTime lastMessageAt;
     private boolean partnerOnline;
     private String partnerLastSeenFormatted;
+    private long unreadCount;
 
     public Long getConversationId() { return conversationId; }
     public void setConversationId(Long conversationId) { this.conversationId = conversationId; }
@@ -44,5 +45,7 @@ public class ChatInboxItem {
 
     public String getPartnerLastSeenFormatted() { return partnerLastSeenFormatted; }
     public void setPartnerLastSeenFormatted(String partnerLastSeenFormatted) { this.partnerLastSeenFormatted = partnerLastSeenFormatted; }
-}
 
+    public long getUnreadCount() { return unreadCount; }
+    public void setUnreadCount(long unreadCount) { this.unreadCount = unreadCount; }
+}

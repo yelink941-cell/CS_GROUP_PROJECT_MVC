@@ -33,8 +33,8 @@ public class PublicPostController {
     private final TagService tagService;
     private final CollectionService collectionService; // 🎯 Injected CollectionService
     private final PostContentService postContentService;
-    private final PostViewService postViewService;
     private final UserService userService;
+    private final com.hibernate.repository.BlockedUserRepository blockedUserRepository;
 
     @GetMapping("/public")
     public String allPublicPosts(Model model, HttpSession session) {
@@ -43,8 +43,14 @@ public class PublicPostController {
         
         Long userId = (Long) session.getAttribute("userId");
         if (userId != null) {
+            List<Long> blockedIds = blockedUserRepository.getBlockedAndBlockerUserIds(userId);
+            if (!blockedIds.isEmpty()) {
+                posts = posts.stream()
+                        .filter(p -> p.getAuthor() == null || !blockedIds.contains(p.getAuthor().getId()))
+                        .collect(java.util.stream.Collectors.toList());
+            }
+
             for (Post post : posts) {
-                // 🎯 FIX 1: Null-safe check and direct Long object parameter passing (no .intValue())
                 if (post.getAuthor() != null) {
                     boolean followed = userService.isFollowing(userId, post.getAuthor().getId());
                     post.setFollowedByCurrentUser(followed);
@@ -53,7 +59,6 @@ public class PublicPostController {
             model.addAttribute("userId", userId);
         }
         
-        // 🎯 FIX 2: Pass the processed 'posts' list variable here so the follow flags actually render!
         return showPosts(
                 model,
                 posts, 

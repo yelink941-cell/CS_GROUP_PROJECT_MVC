@@ -47,6 +47,7 @@ public class PostController {
     private final CommentService commentService;
     private final BookmarkService bookmarkService;
     private final com.hibernate.repository.UserRepository userRepository;
+    private final com.hibernate.repository.BlockedUserRepository blockedUserRepository;
 
     @GetMapping
     public String listPosts(Model model, HttpSession session) {
@@ -369,6 +370,12 @@ public class PostController {
         User viewer = userRepository.findById(userId).orElse(null);
         boolean isAdmin = viewer != null && viewer.isAdmin();
         boolean isAuthor = viewer != null && post.getAuthor() != null && viewer.getId().equals(post.getAuthor().getId());
+
+        if (post.getAuthor() != null && !isAdmin) {
+            if (blockedUserRepository.isBlockedEitherWay(userId, post.getAuthor().getId())) {
+                return "redirect:/user/posts";
+            }
+        }
 
         if ((post.isDeleted() || post.getStatus() == com.hibernate.entity.enums.PostStatus.BANNED)) {
             if (!isAdmin && !isAuthor) {

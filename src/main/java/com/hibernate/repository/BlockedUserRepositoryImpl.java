@@ -54,6 +54,25 @@ public class BlockedUserRepositoryImpl implements BlockedUserRepository {
 
     @Override
     public boolean isBlockedEitherWay(Long userId, Long otherUserId) {
+        if (userId == null || otherUserId == null) return false;
         return isBlocked(userId, otherUserId) || isBlocked(otherUserId, userId);
+    }
+
+    @Override
+    public java.util.List<Long> getBlockedAndBlockerUserIds(Long userId) {
+        if (userId == null) return java.util.Collections.emptyList();
+        java.util.List<Long> blockedByMe = getSession().createQuery(
+                "SELECT b.blockedUserId FROM BlockedUser b WHERE b.userId = :userId", Long.class)
+                .setParameter("userId", userId)
+                .list();
+
+        java.util.List<Long> blockedMe = getSession().createQuery(
+                "SELECT b.userId FROM BlockedUser b WHERE b.blockedUserId = :userId", Long.class)
+                .setParameter("userId", userId)
+                .list();
+
+        java.util.Set<Long> allBlockedIds = new java.util.HashSet<>(blockedByMe);
+        allBlockedIds.addAll(blockedMe);
+        return new java.util.ArrayList<>(allBlockedIds);
     }
 }

@@ -153,6 +153,9 @@ public class ChatServiceImpl implements ChatService {
                 item.setLastMessagePreview(buildPreview(message));
             });
 
+            long unreadCount = seenStatusRepository.countUnreadMessages(conversation.getId(), currentUserId);
+            item.setUnreadCount(unreadCount);
+
             inbox.add(item);
         }
 
