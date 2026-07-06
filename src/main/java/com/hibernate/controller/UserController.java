@@ -397,53 +397,9 @@ public class UserController {
         
         return "redirect:/profile";
     }
-
-    // =========================================================
-    // SETTINGS
-    // =========================================================
-    @GetMapping("/settings")
-    public String showSettingsSpace(HttpSession session, Model model) {
-        User current = (User) session.getAttribute("currentUser");
-        if (current == null) {
-            return "redirect:/login";
-        }
-        UserPreference pref = userService.getUserPreferenceByUserId(current.getId());
-        if (pref == null) {
-            pref = new UserPreference();
-        }
-
-        model.addAttribute("userPreference", pref);
-        return "profile/account-settings";
-    }
-
-    @PostMapping("/settings/save")
-    public String saveSettingsAction(
-            @ModelAttribute("userPreference") UserPreference incomingPref,
-            HttpSession session) {
-        User current = (User) session.getAttribute("currentUser");
-        if (current == null) {
-            return "redirect:/login";
-        }
-        UserPreference existing = userService.getUserPreferenceByUserId(current.getId());
-        if (existing != null) {
-            existing.setTheme(incomingPref.getTheme());
-            existing.setLanguageCode(incomingPref.getLanguageCode());
-            existing.setEmailNotifications(incomingPref.getEmailNotifications());
-            existing.setPushNotifications(incomingPref.getPushNotifications());
-            existing.setAllowMessages(incomingPref.getAllowMessages());
-            existing.setProfileVisibility(incomingPref.getProfileVisibility());
-            userService.saveUserPreference(existing);
-        } else {
-            incomingPref.setUser(current);
-            userService.saveUserPreference(incomingPref);
-        }
-
-        return "redirect:/settings";
-    }
-
-    // =========================================================
-    // FOLLOW / UNFOLLOW
-    // =========================================================
+    
+    
+    
     @PostMapping("/user/follow")
     public String followAction(@RequestParam("targetId") Long targetId, HttpServletRequest request, HttpSession session) {
         User current = (User) session.getAttribute("currentUser");
