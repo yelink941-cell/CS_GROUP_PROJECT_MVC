@@ -9,276 +9,261 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><c:out value="${post.title}" /> - CheatSheet Hub</title>
-
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-detail.css">
 
-    <style>
-        .public-content-grid {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
-            gap: 24px !important;
-            margin-top: 30px !important;
-        }
+<style>
+/* ====================================================
+   Post Details Enhanced Styling
+   ==================================================== */
+.public-content-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+    gap: 24px !important;
+    margin-top: 30px !important;
+}
 
-        .public-content-card {
-            background: #f3f1ff !important;
-            border-radius: 12px !important;
-            overflow: hidden !important;
-            box-shadow: 0 12px 26px rgba(37, 28, 180, .12) !important;
-        }
+.public-content-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 25px rgba(30, 41, 59, 0.06) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
 
-        .public-content-card-header {
-            background: #4038ff !important;
-            color: white !important;
-            padding: 14px 18px !important;
-        }
+.public-content-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 14px 30px rgba(30, 41, 59, 0.1) !important;
+}
 
-        .public-content-card-header h2 {
-            color: white !important;
-            margin: 0 !important;
-            font-size: 20px !important;
-        }
+.public-content-card-header {
+    background: linear-gradient(135deg, #4038ff 0%, #6366f1 100%) !important;
+    color: white !important;
+    padding: 14px 18px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
 
-        .public-content-card-header span {
-            display: inline-block;
-            margin-top: 6px;
-            font-size: 12px;
-            opacity: .85;
-            font-weight: 700;
-        }
+.public-content-card-header h2 {
+    color: white !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+}
 
-        .public-content-card-body {
-            background: #f7f6ff !important;
-            padding: 18px !important;
-            line-height: 1.7 !important;
-        }
+.public-content-card-header span {
+    font-size: 11px !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    padding: 3px 8px !important;
+    border-radius: 999px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
 
-        .public-code-content {
-            background: #111827 !important;
-            color: #e5e7eb !important;
-            padding: 16px !important;
-            border-radius: 10px !important;
-            white-space: pre-wrap !important;
-            overflow-x: auto !important;
-        }
+.public-content-card-body {
+    background: #f8fafc !important;
+    padding: 18px !important;
+    line-height: 1.7 !important;
+}
 
-        .public-section-image {
-            max-width: 100%;
-            border-radius: 10px;
-            display: block;
-        }
+.public-code-content {
+    background: #0f172a !important;
+    color: #e2e8f0 !important;
+    padding: 16px !important;
+    border-radius: 10px !important;
+    white-space: pre-wrap !important;
+    overflow-x: auto !important;
+    font-family: Consolas, Monaco, 'Andale Mono', monospace !important;
+    font-size: 0.9rem !important;
+}
 
-        .public-back-actions {
-            margin-top: 35px !important;
-        }
+.public-back-actions {
+    margin-top: 35px !important;
+}
 
-        .collection-box {
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px dashed #e2e8f0;
-        }
+/* 📁 Collection Selector Styling */
+.collection-box {
+    margin-top: 24px; 
+    padding-top: 20px; 
+    border-top: 1px dashed #e2e8f0;
+}
+.collection-form {
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    flex-wrap: wrap;
+}
+.collection-label {
+    font-size: 14px; 
+    font-weight: 600; 
+    color: #4b5563;
+}
+.collection-select {
+    padding: 10px 16px; 
+    border: 1px solid #d1d5db; 
+    border-radius: 10px; 
+    background-color: #ffffff; 
+    color: #374151; 
+    font-size: 14px; 
+    min-width: 220px; 
+    outline: none; 
+    cursor: pointer;
+}
+.btn-add-collection {
+    background: #4038ff; 
+    color: white; 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: 10px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: background 0.2s, background-color 0.2s;
+}
+.btn-add-collection:hover {
+    background: #312bc4;
+}
+.btn-add-collection:disabled {
+    background-color: #94a3b8 !important; 
+    color: #f1f5f9 !important;
+    cursor: not-allowed; 
+    transform: none !important;
+}
 
-        .collection-form {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+.button-link {
+    background: none;
+    border: none;
+    color: #4038ff;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    font-size: 13px;
+    font-weight: 500;
+}
 
-        .collection-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #4b5563;
-        }
+/* Like & Bookmark button style classes */
+.liked-btn {
+    background-color: #4038ff !important;
+    color: white !important;
+    border: 1px solid #4038ff !important;
+}
 
-        .collection-select {
-            padding: 10px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 10px;
-            background-color: #ffffff;
-            color: #374151;
-            font-size: 14px;
-            min-width: 220px;
-            outline: none;
-            cursor: pointer;
-        }
+.unliked-btn {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #cccccc !important;
+}
 
-        .btn-add-collection {
-            background: #4038ff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, background-color 0.2s;
-        }
+.bookmarked-btn {
+    background-color: #f59e0b !important;
+    color: #ffffff !important;
+    border: 1px solid #f59e0b !important;
+}
 
-        .btn-add-collection:hover {
-            background: #312bc4;
-        }
+.unbookmarked-btn {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #cccccc !important;
+}
 
-        .btn-add-collection:disabled {
-            background-color: #94a3b8 !important;
-            color: #f1f5f9 !important;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+/* Rating Section Styles */
+.rating-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    flex-wrap: wrap;
+}
+.star-rating {
+    direction: rtl;
+    display: inline-flex;
+    font-size: 24px;
+    unicode-bidi: bidi-override;
+}
+.star-rating input {
+    display: none;
+}
+.star-rating label {
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: #ffc107;
+}
+.average-rating-box {
+    font-size: 14px;
+    background: #fffbe6;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #ffe58f;
+    color: #d48806;
+}
 
-        .button-link {
-            background: none;
-            border: none;
-            color: #4038ff;
-            cursor: pointer;
-            padding: 0;
-            text-decoration: underline;
-            font-size: 13px;
-        }
+/* Action Section Button Styling */
+.action-bar {
+    margin-bottom: 25px; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    flex-wrap: wrap; 
+    border-bottom: 1px solid #eee; 
+    padding-bottom: 15px;
+}
+.action-bar .button {
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
 
-        .liked-btn {
-            background-color: #007bff !important;
-            color: white !important;
-            border: 1px solid #007bff !important;
-        }
+/* Report Modal Backdrop & Card */
+.report-modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
 
-        .unliked-btn {
-            background-color: #ffffff !important;
-            color: #333333 !important;
-            border: 1px solid #cccccc !important;
-        }
+.report-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px 28px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
 
-        .bookmarked-btn {
-            background-color: #ffc107 !important;
-            color: #333333 !important;
-            border: 1px solid #ffc107 !important;
-        }
-
-        .unbookmarked-btn {
-            background-color: #ffffff !important;
-            color: #333333 !important;
-            border: 1px solid #cccccc !important;
-        }
-
-        .rating-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .star-rating {
-            direction: rtl;
-            display: inline-flex;
-            font-size: 24px;
-            unicode-bidi: bidi-override;
-        }
-
-        .star-rating input {
-            display: none;
-        }
-
-        .star-rating label {
-            color: #ccc;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .star-rating label:hover,
-        .star-rating label:hover ~ label,
-        .star-rating input:checked ~ label {
-            color: #ffc107;
-        }
-
-        .average-rating-box {
-            font-size: 15px;
-            background: #fff3cd;
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid #ffeeba;
-        }
-
-        #reportModal {
-            display: none;
-            position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, .55);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .report-modal-box {
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 14px;
-            max-width: 460px;
-            width: 92%;
-            box-shadow: 0 20px 60px rgba(15, 23, 42, .25);
-        }
-
-        .report-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 12px;
-        }
-
-        .report-modal-header h3 {
-            margin: 0;
-            color: #0f172a;
-            font-size: 18px;
-        }
-
-        .report-close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #64748b;
-        }
-
-        .report-field {
-            margin-bottom: 14px;
-        }
-
-        .report-field label {
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            color: #475569;
-            margin-bottom: 6px;
-        }
-
-        .report-field select,
-        .report-field textarea {
-            width: 100%;
-            padding: 9px 12px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-
-        .report-modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-    </style>
+.visibility-badge, .status-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.visibility-public { background: #dbeafe; color: #1e40af; }
+.visibility-private { background: #f3f4f6; color: #4b5563; }
+.status-published { background: #dcfce7; color: #166534; }
+</style>
 </head>
 <body>
-<jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
+    <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
 <main class="page-container">
     <article class="detail-card">
@@ -287,11 +272,18 @@
         <div class="post-meta">
             <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
             <span><strong>Author:</strong> <c:out value="${post.author.username}" /></span>
+            <c:if test="${not empty post.createdAt}">
+                <span><strong>Created:</strong> <c:out value="${post.createdAt}" /></span>
+            </c:if>
         </div>
 
-        <div class="badge-row" style="margin-top: 18px;">
-            <span class="visibility-badge visibility-public">PUBLIC</span>
-            <span class="status-badge status-published">PUBLISHED</span>
+        <div class="badge-row" style="margin-top: 14px; display: flex; gap: 8px;">
+            <span class="visibility-badge ${post.visibility == 'PUBLIC' ? 'visibility-public' : 'visibility-private'}">
+                <c:out value="${post.visibility}" />
+            </span>
+            <span class="status-badge status-published">
+                <c:out value="${post.status}" />
+            </span>
         </div>
 
         <c:if test="${not empty post.tags}">
@@ -304,21 +296,22 @@
 
         <div class="detail-excerpt">
             <c:choose>
-                <c:when test="${not empty post.excerpt}">
-                    <c:out value="${post.excerpt}" />
-                </c:when>
+                <c:when test="${not empty post.excerpt}"><c:out value="${post.excerpt}" /></c:when>
                 <c:otherwise>No excerpt provided.</c:otherwise>
             </c:choose>
         </div>
 
+        <%-- Collection Box (Logged In User) --%>
         <c:if test="${not empty sessionScope.userId}">
             <div class="collection-box">
                 <form action="${pageContext.request.contextPath}/user/collections/add-post" method="post" class="collection-form">
                     <input type="hidden" name="postId" value="${post.id}">
                     <input type="hidden" name="slug" value="${post.slug}">
-
-                    <label for="collectionSelect" class="collection-label">📁 Save to Folder:</label>
-
+                    
+                    <label for="collectionSelect" class="collection-label">
+                        📁 Save to Folder:
+                    </label>
+                    
                     <select id="collectionSelect" name="collectionId" required class="collection-select" onchange="checkFolderStatus()">
                         <option value="">-- Select Your Collection --</option>
                         <c:forEach var="col" items="${collections}">
@@ -327,15 +320,18 @@
                             </option>
                         </c:forEach>
                     </select>
-
-                    <button id="addFolderBtn" type="submit" class="btn-add-collection">➕ Add to Folder</button>
+                    
+                    <button id="addFolderBtn" type="submit" class="btn-add-collection">
+                        ➕ Add to Folder
+                    </button>
                 </form>
             </div>
         </c:if>
 
+        <%-- Rating Section --%>
         <div class="rating-section">
             <c:choose>
-                <c:when test="${not empty userLoggedIn}">
+                <c:when test="${not empty userLoggedIn || not empty sessionScope.userId}">
                     <div class="star-rating">
                         <input type="radio" id="star5" name="rating" value="5" onclick="submitRating(${post.id}, 5)" ${userRating == 5 ? 'checked' : ''}><label for="star5" title="5 stars">★</label>
                         <input type="radio" id="star4" name="rating" value="4" onclick="submitRating(${post.id}, 4)" ${userRating == 4 ? 'checked' : ''}><label for="star4" title="4 stars">★</label>
@@ -346,42 +342,47 @@
                 </c:when>
                 <c:otherwise>
                     <div class="star-rating" onclick="alert('Please login to rate this post.'); window.location.href='${pageContext.request.contextPath}/login';" style="cursor: pointer;" title="Click to rate">
-                        <label style="color: ${averageRating >= 1 ? '#ffc107' : '#ccc'};">★</label>
-                        <label style="color: ${averageRating >= 2 ? '#ffc107' : '#ccc'};">★</label>
-                        <label style="color: ${averageRating >= 3 ? '#ffc107' : '#ccc'};">★</label>
-                        <label style="color: ${averageRating >= 4 ? '#ffc107' : '#ccc'};">★</label>
-                        <label style="color: ${averageRating >= 5 ? '#ffc107' : '#ccc'};">★</label>
+                        <label style="color: ${averageRating >= 1 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 2 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 3 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 4 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
+                        <label style="color: ${averageRating >= 5 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
                     </div>
                 </c:otherwise>
             </c:choose>
 
             <div class="average-rating-box">
-                <strong>⭐ Average Rating:</strong>
-                <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>/5
+                <strong>⭐ Average:</strong> <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>/5 
                 (<span id="totalRatingCount">${not empty totalRatings ? totalRatings : 0}</span> ratings)
             </div>
         </div>
-
-        <div class="like-section" style="margin-bottom: 25px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+        
+        <%-- Interactive Action Bar --%>
+        <div class="action-bar">
             <c:choose>
                 <c:when test="${not empty sessionScope.userId}">
                     <button type="button" onclick="toggleLikePost(${post.id}, this)" class="button ${hasUserLiked ? 'liked-btn' : 'unliked-btn'}" style="display: inline-flex; align-items: center; gap: 8px;">
                         <span id="likeIcon-${post.id}">
                             <c:choose>
                                 <c:when test="${hasUserLiked}">👍 Unlike</c:when>
-                                <c:otherwise>👍🏻 Like</c:otherwise>
+                                <c:otherwise>👍 Like</c:otherwise>
                             </c:choose>
                         </span>
                     </button>
-                    <span style="font-size: 16px;"><strong>Likes:</strong> <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span></span>
+                    <span style="font-size: 14px; font-weight: 600; color: #475569;">
+                        Likes: <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span>
+                    </span>
                 </c:when>
                 <c:otherwise>
-                    <button type="button" onclick="alert('Please login to like this post.'); window.location.href='${pageContext.request.contextPath}/login';" class="button unliked-btn">
-                        👍🏻 Like
+                    <button type="button" onclick="alert('Please login to like this post.'); window.location.href='${pageContext.request.contextPath}/login';" class="button unliked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
+                        👍 Like
                     </button>
+                    <span style="font-size: 14px; font-weight: 600; color: #475569;">
+                        Likes: <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span>
+                    </span>
                 </c:otherwise>
             </c:choose>
-
+            
             <c:choose>
                 <c:when test="${not empty sessionScope.userId}">
                     <button type="button" onclick="toggleBookmark(${post.id}, this)" class="button ${hasUserBookmarked ? 'bookmarked-btn' : 'unbookmarked-btn'}" style="display: inline-flex; align-items: center; gap: 8px;">
@@ -394,15 +395,21 @@
                     </button>
                 </c:when>
                 <c:otherwise>
-                    <button type="button" onclick="alert('Please login to bookmark this post.'); window.location.href='${pageContext.request.contextPath}/login';" class="button unbookmarked-btn">
+                    <button type="button" onclick="alert('Please login to bookmark this post.'); window.location.href='${pageContext.request.contextPath}/login';" class="button unbookmarked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
                         ⭐ Bookmark
                     </button>
                 </c:otherwise>
             </c:choose>
 
             <button type="button" id="commentCountBtn" class="button button-secondary" onclick="toggleCommentsSection()">
-                💬 Comments (${not empty totalComments ? totalComments : 0})
+                💬 Comments (${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)})
             </button>
+
+            <c:if test="${post.status != 'USER_DELETED' && empty post.deletedAt}">
+                <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/${post.slug}/download-pdf" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                    📄 Download PDF
+                </a>
+            </c:if>
 
             <c:if test="${sessionScope.userId != post.author.id}">
                 <button type="button" onclick="openReportModal('post', ${post.id})" class="button button-secondary" style="display: inline-flex; align-items: center; gap: 8px; color: #dc2626; border-color: #fca5a5;">
@@ -411,12 +418,7 @@
             </c:if>
         </div>
 
-        <c:if test="${empty contents}">
-            <section class="empty-state">
-                <h2>No content sections yet</h2>
-            </section>
-        </c:if>
-
+        <%-- Post Content Grid --%>
         <c:if test="${not empty contents}">
             <div class="public-content-grid" aria-label="Cheat sheet sections">
                 <c:forEach var="content" items="${contents}">
@@ -424,9 +426,7 @@
                         <header class="public-content-card-header">
                             <h2>
                                 <c:choose>
-                                    <c:when test="${not empty content.subtitle}">
-                                        <c:out value="${content.subtitle}" />
-                                    </c:when>
+                                    <c:when test="${not empty content.subtitle}"><c:out value="${content.subtitle}" /></c:when>
                                     <c:otherwise>Untitled Section</c:otherwise>
                                 </c:choose>
                             </h2>
@@ -466,73 +466,77 @@
             </div>
         </c:if>
 
-        <div id="commentsToggleWrapper" style="display: none; margin-top: 32px;">
-            <h2 id="commentCountHeader" data-count="${not empty totalComments ? totalComments : 0}">
-                Comments (${not empty totalComments ? totalComments : 0})
+        <%-- Comments Section --%>
+        <section id="commentsToggleWrapper" class="comments-section" style="display: none; margin-top: 35px; padding-top: 25px; border-top: 1px solid #e2e8f0;">
+            <h2 id="commentCountHeader" data-count="${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)}" style="font-size: 20px; color: #1e293b; margin-bottom: 20px;">
+                💬 Comments (${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)})
             </h2>
 
-            <c:if test="${not empty userLoggedIn}">
-                <form id="commentForm" style="margin-bottom: 30px;">
-                    <input type="hidden" id="postId" name="postId" value="${post.id}">
-                    <div class="form-group">
-                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Write a comment..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
+            <%-- Comment Input Form --%>
+            <c:choose>
+                <c:when test="${not empty sessionScope.userId}">
+                    <form id="commentForm" style="margin-bottom: 25px;">
+                        <input type="hidden" id="postId" name="postId" value="${post.id}">
+                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Write a comment..." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
+                        <button type="submit" class="button button-primary" style="margin-top: 10px; padding: 10px 20px; background: #4038ff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Post Comment</button>
+                    </form>
+                </c:when>
+                <c:otherwise>
+                    <div style="padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 25px; color: #64748b; font-size: 14px;">
+                        Please <a href="${pageContext.request.contextPath}/login" style="color: #4038ff; font-weight: 600;">login</a> to leave a comment.
                     </div>
-                    <button type="submit" class="button button-primary" style="margin-top: 10px;">Post Comment</button>
-                </form>
-            </c:if>
+                </c:otherwise>
+            </c:choose>
 
-            <c:if test="${empty userLoggedIn}">
-                <p style="color: #666;">Please <a href="${pageContext.request.contextPath}/login">Login</a> to write a comment.</p>
-            </c:if>
+            <%-- Comment List --%>
+            <c:choose>
+                <c:when test="${not empty comments}">
+                    <div id="commentListContainer" class="comment-list" style="display: flex; flex-direction: column; gap: 16px;">
+                        <c:forEach var="comment" items="${comments}">
+                            <div class="comment-item" id="comment-${comment.id}" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">
+                                    <strong><c:out value="${comment.user.username}" /></strong>
+                                    <span><c:out value="${comment.createdAt}" /></span>
+                                </div>
+                                <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;"><c:out value="${comment.content}" /></p>
 
-            <c:if test="${empty comments}">
-                <p style="color: #888;" id="noCommentsMessage">No comments yet.</p>
-            </c:if>
+                                <div style="display: flex; gap: 12px; margin-bottom: 8px;">
+                                    <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+                                    <c:if test="${sessionScope.userId == comment.user.id}">
+                                        <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
+                                    </c:if>
+                                    <button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal('comment', ${comment.id})">Report</button>
+                                </div>
 
-            <c:if test="${not empty comments}">
-                <div id="commentListContainer" class="comment-list" style="display: flex; flex-direction: column; gap: 16px;">
-                    <c:forEach var="comment" items="${comments}">
-                        <div class="comment-item" id="comment-${comment.id}" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">
-                                <strong><c:out value="${comment.user.username}" /></strong>
-                                <span><c:out value="${comment.createdAt}" /></span>
-                            </div>
-
-                            <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">
-                                <c:out value="${comment.content}" />
-                            </p>
-
-                            <div style="display: flex; gap: 12px; margin-bottom: 8px;">
-                                <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
-
-                                <c:if test="${sessionScope.userId == comment.user.id}">
-                                    <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
+                                <%-- Main Comment Reply Form --%>
+                                <c:if test="${not empty sessionScope.userId}">
+                                    <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
+                                        <form onsubmit="submitReply(event, 'c-${comment.id}', ${comment.id}, ${post.id})">
+                                            <textarea id="replyText-c-${comment.id}" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>
+                                            <br>
+                                            <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 4px 10px; margin-top: 4px; cursor: pointer;">Post Reply</button>
+                                        </form>
+                                    </div>
                                 </c:if>
 
-                                <button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal('comment', ${comment.id})">Report</button>
+                                <div id="replyListContainer-${comment.id}">
+                                    <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
+                                        <c:if test="${not empty comment.replies}">
+                                            <c:set var="replyList" value="${comment.replies}" scope="request"/>
+                                            <jsp:include page="reply-recurse.jsp" />
+                                        </c:if>
+                                    </ul>
+                                </div>
                             </div>
+                        </c:forEach>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <p id="noCommentsMessage" style="color: #888;">No comments yet.</p>
+                </c:otherwise>
+            </c:choose>
+        </section>
 
-                            <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
-                                <form onsubmit="submitReply(event, 'c-${comment.id}', ${comment.id}, ${post.id})">
-                                    <textarea id="replyText-c-${comment.id}" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
-                                    <br>
-                                    <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Post Reply</button>
-                                </form>
-                            </div>
-
-                            <div id="replyListContainer-${comment.id}">
-                                <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
-                                    <c:if test="${not empty comment.replies}">
-                                        <c:set var="replyList" value="${comment.replies}" scope="request"/>
-                                        <jsp:include page="reply-recurse.jsp" />
-                                    </c:if>
-                                </ul>
-                            </div>
-                        </div>
-                    </c:forEach>
-                </div>
-            </c:if>
-        </div>
     </article>
 
     <div class="public-back-actions">
@@ -540,40 +544,43 @@
     </div>
 </main>
 
-<div id="reportModal" onclick="closeReportModal()">
-    <div class="report-modal-box" onclick="event.stopPropagation()">
-        <div class="report-modal-header">
-            <h3 id="reportModalTitle">Report Content</h3>
-            <button type="button" class="report-close-btn" onclick="closeReportModal()">&times;</button>
-        </div>
-
+<%-- Report Modal Container --%>
+<div id="reportModal" class="report-modal-backdrop" onclick="closeReportModal()">
+    <div class="report-modal" onclick="event.stopPropagation()">
+        <h3 id="reportModalTitle" style="margin-top: 0; font-size: 18px; color: #1e293b;">Report Content</h3>
         <form id="reportForm" onsubmit="handleReportSubmit(event)">
-            <input type="hidden" id="reportTargetType" value="comment">
+            <input type="hidden" id="reportTargetType" value="post">
             <input type="hidden" id="reportTargetId" value="">
-
-            <div class="report-field">
-                <label for="reportReason">Reason</label>
-                <select id="reportReason" required>
+            
+            <div style="margin-bottom: 14px;">
+                <label for="reportReason" style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Reason</label>
+                <select id="reportReason" required style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; background-color: #fff;">
                     <option value="TEXT">Inappropriate Text</option>
+                    <option value="CODE">Harmful / Malicious Code</option>
+                    <option value="IMAGE">Inappropriate Image</option>
+                    <option value="VIDEO">Inappropriate Video</option>
                     <option value="LINK">Spam / Dangerous Link</option>
                     <option value="OTHER">Other</option>
                 </select>
             </div>
-
-            <div class="report-field">
-                <label for="reportDescription">Description (Optional)</label>
-                <textarea id="reportDescription" rows="3" placeholder="Provide additional details..."></textarea>
+            
+            <div style="margin-bottom: 18px;">
+                <label for="reportDescription" style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Description (Optional)</label>
+                <textarea id="reportDescription" rows="3" placeholder="Provide additional details..." style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; resize: vertical; box-sizing: border-box;"></textarea>
             </div>
-
-            <div class="report-modal-actions">
-                <button type="button" onclick="closeReportModal()" class="button button-secondary">Cancel</button>
-                <button type="submit" class="button" style="background-color: #dc2626; color: #ffffff; border: none;">Submit Report</button>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeReportModal()" class="button button-secondary" style="padding: 8px 16px; border-radius: 6px; cursor: pointer;">Cancel</button>
+                <button type="submit" class="button" style="background-color: #dc2626; color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">Submit Report</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+/* =========================
+   🔐 CSRF HELPER
+========================= */
 function getCsrfHeaders(contentType = 'application/json') {
     const csrfHeaderMeta = document.querySelector("meta[name='_csrf_header']");
     const csrfMeta = document.querySelector("meta[name='_csrf']");
@@ -587,7 +594,6 @@ function getCsrfHeaders(contentType = 'application/json') {
     if (csrfHeaderMeta && csrfMeta) {
         const headerName = csrfHeaderMeta.getAttribute("content");
         const tokenValue = csrfMeta.getAttribute("content");
-
         if (headerName && tokenValue && !headerName.startsWith('$')) {
             headers[headerName] = tokenValue;
         }
@@ -598,14 +604,15 @@ function getCsrfHeaders(contentType = 'application/json') {
 
 function getCleanUrl(path) {
     let ctx = '${pageContext.request.contextPath}';
-
     if (ctx === '/') {
         ctx = '';
     }
-
     return ctx + path;
 }
 
+/* =========================
+   🔗 URL HASH HELPER
+========================= */
 function updateUrlHash(hash) {
     try {
         history.replaceState(null, '', '#' + hash);
@@ -616,17 +623,16 @@ function updateUrlHash(hash) {
 
 function showCommentsSection() {
     const el = document.getElementById('commentsToggleWrapper');
-
     if (el) {
         el.style.display = 'block';
     }
 }
 
+/* =========================
+   🔡 HTML ESCAPE HELPER
+========================= */
 function escapeHtml(str) {
-    if (str === null || str === undefined) {
-        return '';
-    }
-
+    if (str === null || str === undefined) return '';
     return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -635,194 +641,186 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
+/* =========================
+   💬 COMMENT COUNT UPDATE HELPER
+========================= */
 function updateCommentCount(newCount) {
     const header = document.getElementById('commentCountHeader');
-
     if (header) {
         header.setAttribute('data-count', newCount);
-        header.innerText = 'Comments (' + newCount + ')';
+        header.innerText = '💬 Comments (' + newCount + ')';
     }
-
     const btn = document.getElementById('commentCountBtn');
-
     if (btn) {
         btn.innerText = '💬 Comments (' + newCount + ')';
     }
 }
 
+/* =========================
+   📁 Folder Check
+========================= */
 function checkFolderStatus() {
-    const selectBox = document.getElementById('collectionSelect');
-    const actionBtn = document.getElementById('addFolderBtn');
+    var selectBox = document.getElementById("collectionSelect");
+    var actionBtn = document.getElementById("addFolderBtn");
+    if (!selectBox || !actionBtn) return;
 
-    if (!selectBox || !actionBtn) {
-        return;
-    }
+    var selectedOption = selectBox.options[selectBox.selectedIndex];
+    var isSaved = selectedOption.getAttribute("data-saved");
 
-    const selectedOption = selectBox.options[selectBox.selectedIndex];
-    const isSaved = selectedOption.getAttribute('data-saved');
-
-    if (selectBox.value === '') {
-        actionBtn.innerHTML = '➕ Add to Folder';
+    if (selectBox.value === "") {
+        actionBtn.innerHTML = "➕ Add to Folder";
         actionBtn.disabled = false;
-    } else if (isSaved === 'true') {
-        actionBtn.innerHTML = '✓ Saved';
+    } else if (isSaved === "true") {
+        actionBtn.innerHTML = "✓ Saved";
         actionBtn.disabled = true;
     } else {
-        actionBtn.innerHTML = '➕ Add to Folder';
+        actionBtn.innerHTML = "➕ Add to Folder";
         actionBtn.disabled = false;
     }
 }
 
+/* =========================
+   💬 COMMENT SUBMIT
+========================= */
 let commentFormListenerAttached = false;
-
 function attachCommentFormListener() {
-    if (commentFormListenerAttached) {
-        return;
-    }
-
+    if (commentFormListenerAttached) return;
     const commentForm = document.getElementById('commentForm');
-
-    if (!commentForm) {
-        return;
-    }
-
+    if (!commentForm) return;
     commentFormListenerAttached = true;
 
-    commentForm.addEventListener('submit', function (e) {
+    commentForm.addEventListener('submit', function(e) {
         e.preventDefault();
-
+        
         const postId = document.querySelector('#postId').value;
-        const commentInput = document.getElementById('commentText');
-        const commentText = commentInput.value;
+        const commentText = document.getElementById('commentText').value;
 
         fetch(getCleanUrl('/comments/add'), {
             method: 'POST',
             headers: getCsrfHeaders('application/x-www-form-urlencoded'),
-            body: 'postId=' + encodeURIComponent(postId) + '&commentText=' + encodeURIComponent(commentText)
+            body: 'postId=' + postId + '&commentText=' + encodeURIComponent(commentText)
         })
-        .then(r => r.text().then(text => {
-            let data;
-
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                data = { status: 'error', message: text };
-            }
-
-            return { ok: r.ok, status: r.status, data: data };
-        }))
+        .then(r => {
+            return r.text().then(text => {
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    data = { status: 'error', message: text };
+                }
+                return { ok: r.ok, status: r.status, data: data };
+            });
+        })
         .then(res => {
             if (!res.ok) {
                 if (res.status === 401) {
-                    window.location.href = getCleanUrl('/login');
+                    window.location.href = '${pageContext.request.contextPath}/login';
                     return;
                 }
-
                 alert(res.data.message || 'Comment error (' + res.status + ')');
                 return;
             }
-
             const data = res.data;
+            if (data.status === 'success') {
+                const commentTextInput = document.getElementById('commentText');
+                if (commentTextInput) commentTextInput.value = '';
 
-            if (data.status !== 'success') {
+                let container = document.getElementById('commentListContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'commentListContainer';
+                    container.className = 'comment-list';
+                    container.style.cssText = 'display: flex; flex-direction: column; gap: 16px;';
+                    document.getElementById('commentsToggleWrapper').appendChild(container);
+                }
+
+                const noCommentsMsg = document.getElementById('noCommentsMessage');
+                if (noCommentsMsg) {
+                    noCommentsMsg.remove();
+                }
+
+                const newComment = document.createElement('div');
+                newComment.className = 'comment-item';
+                newComment.id = 'comment-' + data.commentId;
+                newComment.style.cssText = 'border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;';
+
+                const safeUser = escapeHtml(data.username);
+                const safeContent = escapeHtml(data.content);
+                const safeDate = escapeHtml(data.createdAt);
+
+                newComment.innerHTML =
+                    '<div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">' +
+                        '<strong>' + safeUser + '</strong>' +
+                        '<span>' + safeDate + '</span>' +
+                    '</div>' +
+                    '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
+                    '<div style="display: flex; gap: 12px; margin-bottom: 8px;">' +
+                        '<button type="button" class="button-link" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">Reply</button>' +
+                        '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.commentId + ')">Delete</button>' +
+                        '<button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal(\'comment\', ' + data.commentId + ')">Report</button>' +
+                    '</div>' +
+                    '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
+                        '<form onsubmit="submitReply(event, \'c-' + data.commentId + '\', ' + data.commentId + ', ' + postId + ')">' +
+                            '<textarea id="replyText-c-' + data.commentId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>' +
+                            '<br>' +
+                            '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 4px 10px; margin-top: 4px; cursor: pointer;">Post Reply</button>' +
+                        '</form>' +
+                    '</div>' +
+                    '<div id="replyListContainer-' + data.commentId + '"></div>';
+
+                container.appendChild(newComment);
+
+                const header = document.getElementById('commentCountHeader');
+                if (header) {
+                    const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
+                    updateCommentCount(newCount);
+                }
+
+                showCommentsSection();
+                updateUrlHash('comment');
+            } else {
                 alert('Comment error: ' + (data.message || ''));
-                return;
             }
-
-            commentInput.value = '';
-
-            let container = document.getElementById('commentListContainer');
-
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'commentListContainer';
-                container.className = 'comment-list';
-                container.style.cssText = 'display: flex; flex-direction: column; gap: 16px;';
-                document.getElementById('commentsToggleWrapper').appendChild(container);
-            }
-
-            const noCommentsMsg = document.getElementById('noCommentsMessage');
-
-            if (noCommentsMsg) {
-                noCommentsMsg.remove();
-            }
-
-            const safeUser = escapeHtml(data.username);
-            const safeContent = escapeHtml(data.content);
-            const safeDate = escapeHtml(data.createdAt);
-
-            const newComment = document.createElement('div');
-            newComment.className = 'comment-item';
-            newComment.id = 'comment-' + data.commentId;
-            newComment.style.cssText = 'border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;';
-
-            newComment.innerHTML =
-                '<div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">' +
-                    '<strong>' + safeUser + '</strong>' +
-                    '<span>' + safeDate + '</span>' +
-                '</div>' +
-                '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
-                '<div style="display: flex; gap: 12px; margin-bottom: 8px;">' +
-                    '<button type="button" class="button-link" onclick="toggleReplyForm(\\'c-' + data.commentId + '\\')">Reply</button>' +
-                    '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.commentId + ')">Delete</button>' +
-                    '<button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal(\\'comment\\', ' + data.commentId + ')">Report</button>' +
-                '</div>' +
-                '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
-                    '<form onsubmit="submitReply(event, \\'c-' + data.commentId + '\\', ' + data.commentId + ', ' + postId + ')">' +
-                        '<textarea id="replyText-c-' + data.commentId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
-                        '<br>' +
-                        '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Post Reply</button>' +
-                    '</form>' +
-                '</div>' +
-                '<div id="replyListContainer-' + data.commentId + '"></div>';
-
-            container.appendChild(newComment);
-
-            const header = document.getElementById('commentCountHeader');
-
-            if (header) {
-                const newCount = parseInt(header.getAttribute('data-count') || '0', 10) + 1;
-                updateCommentCount(newCount);
-            }
-
-            showCommentsSection();
-            updateUrlHash('comment');
         })
         .catch(err => {
             console.error('Comment request failed:', err);
-            alert('Comment error: ' + (err.message || 'Failed to post comment. Please try again.'));
+            if (err.message && err.message.includes('401')) {
+                window.location.href = '${pageContext.request.contextPath}/login';
+            } else {
+                alert('Comment error: ' + (err.message || 'Failed to post comment. Please try again.'));
+            }
         });
     });
 }
 
+/* =========================
+   🔁 REPLY TOGGLE
+========================= */
 function toggleReplyForm(commentId) {
     const replyForm = document.getElementById('replyFormContainer-' + commentId);
 
-    if (!replyForm) {
-        return;
-    }
+    if (!replyForm) return;
 
-    const isVisible = replyForm.style.display === 'block';
+    const isVisible = replyForm.style.display === "block";
 
-    document.querySelectorAll('[id^="replyFormContainer-"]').forEach(function (form) {
-        form.style.display = 'none';
-    });
+    document.querySelectorAll('[id^="replyFormContainer-"]')
+        .forEach(f => f.style.display = "none");
 
-    replyForm.style.display = isVisible ? 'none' : 'block';
+    replyForm.style.display = isVisible ? "none" : "block";
 }
 
+/* =========================
+   🔁 SUBMIT REPLY
+========================= */
 function submitReply(e, commentId, parentId, postId) {
     e.preventDefault();
 
     const replyInput = document.getElementById('replyText-' + commentId);
-
     if (!replyInput) {
         console.error('Reply textarea element not found for ID: replyText-' + commentId);
         return;
     }
-
     const replyText = replyInput.value.trim();
-
     if (!replyText) {
         alert('Reply content cannot be empty.');
         return;
@@ -831,40 +829,38 @@ function submitReply(e, commentId, parentId, postId) {
     fetch(getCleanUrl('/comments/reply'), {
         method: 'POST',
         headers: getCsrfHeaders('application/x-www-form-urlencoded'),
-        body: 'postId=' + encodeURIComponent(postId) +
-              '&parentId=' + encodeURIComponent(parentId) +
-              '&content=' + encodeURIComponent(replyText)
+        body:
+            'postId=' + postId +
+            '&parentId=' + parentId +
+            '&content=' + encodeURIComponent(replyText)
     })
-    .then(r => r.text().then(text => {
-        let data;
-
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            data = { status: 'error', message: text };
-        }
-
-        return { ok: r.ok, status: r.status, data: data };
-    }))
+    .then(r => {
+        return r.text().then(text => {
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                data = { status: 'error', message: text };
+            }
+            return { ok: r.ok, status: r.status, data: data };
+        });
+    })
     .then(res => {
         if (!res.ok) {
             if (res.status === 401) {
-                window.location.href = getCleanUrl('/login');
+                window.location.href = '${pageContext.request.contextPath}/login';
                 return;
             }
-
             alert(res.data.message || 'Reply error (' + res.status + ')');
             return;
         }
-
         const data = res.data;
-
         if (data.status !== 'success') {
             alert('Reply error: ' + (data.message || ''));
             return;
         }
 
-        replyInput.value = '';
+        if (replyInput) replyInput.value = '';
 
         const realParentId = data.parentId || parentId;
         let subList = document.getElementById('replySubListContainer-' + realParentId);
@@ -874,15 +870,23 @@ function submitReply(e, commentId, parentId, postId) {
             subList.id = 'replySubListContainer-' + realParentId;
             subList.style.cssText = 'margin-left: 20px; padding-left: 0; list-style-type: none;';
 
-            const wrap = document.getElementById('replyListContainer-' + realParentId);
-
-            if (wrap) {
-                wrap.appendChild(subList);
+            const mainCommentListWrap = document.getElementById('replyListContainer-' + realParentId);
+            if (mainCommentListWrap) {
+                mainCommentListWrap.appendChild(subList);
+            } else {
+                const parentReplyItem = document.getElementById('reply-item-' + realParentId);
+                if (parentReplyItem) {
+                    parentReplyItem.appendChild(subList);
+                } else {
+                    const mainComment = document.getElementById('comment-' + realParentId);
+                    if (mainComment) {
+                        const wrap = document.createElement('div');
+                        wrap.id = 'replyListContainer-' + realParentId;
+                        mainComment.appendChild(wrap);
+                        wrap.appendChild(subList);
+                    }
+                }
             }
-        }
-
-        if (!subList) {
-            return;
         }
 
         const safeUser = escapeHtml(data.username);
@@ -899,14 +903,14 @@ function submitReply(e, commentId, parentId, postId) {
             '</div>' +
             '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
             '<div class="comment-actions" style="display: flex; gap: 12px; margin-bottom: 8px;">' +
-                '<button type="button" class="button-link" onclick="toggleReplyForm(\\'r-' + data.replyId + '\\')">Reply</button>' +
+                '<button type="button" class="button-link" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">Reply</button>' +
                 '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.replyId + ')">Delete</button>' +
-                '<button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal(\\'comment\\', ' + data.replyId + ')">Report</button>' +
+                '<button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal(\'comment\', ' + data.replyId + ')">Report</button>' +
             '</div>' +
             '<div id="replyFormContainer-r-' + data.replyId + '" style="display: none; margin-top: 8px; margin-left: 20px;">' +
-                '<form onsubmit="submitReply(event, \\'r-' + data.replyId + '\\', ' + data.replyId + ', ' + postId + ')">' +
-                    '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
-                    '<button type="submit" class="button button-secondary" style="font-size: 12px; padding: 4px 10px; margin-top: 4px;">Submit Reply</button>' +
+                '<form onsubmit="submitReply(event, \'r-' + data.replyId + '\', ' + data.replyId + ', ' + postId + ')">' +
+                    '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>' +
+                    '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 4px 10px; margin-top: 4px; cursor: pointer;">Submit Reply</button>' +
                 '</form>' +
             '</div>' +
             '<ul id="replySubListContainer-' + data.replyId + '" style="margin-left: 20px; padding-left: 0; list-style: none;"></ul>';
@@ -914,15 +918,11 @@ function submitReply(e, commentId, parentId, postId) {
         subList.appendChild(replyEl);
 
         const replyForm = document.getElementById('replyFormContainer-' + commentId);
-
-        if (replyForm) {
-            replyForm.style.display = 'none';
-        }
+        if (replyForm) replyForm.style.display = 'none';
 
         const header = document.getElementById('commentCountHeader');
-
         if (header) {
-            const newCount = parseInt(header.getAttribute('data-count') || '0', 10) + 1;
+            const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
             updateCommentCount(newCount);
         }
 
@@ -935,20 +935,18 @@ function submitReply(e, commentId, parentId, postId) {
     });
 }
 
+/* =========================
+   🗑 DELETE COMMENT
+========================= */
 function deleteComment(commentId) {
-    if (!confirm('Delete?')) {
-        return;
-    }
+    if (!confirm('Are you sure you want to delete this comment?')) return;
 
-    fetch(getCleanUrl('/comments/delete/') + encodeURIComponent(commentId), {
+    fetch(getCleanUrl('/comments/delete/') + commentId, {
         method: 'POST',
         headers: getCsrfHeaders()
     })
     .then(r => {
-        if (!r.ok) {
-            throw new Error('HTTP ' + r.status);
-        }
-
+        if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
     })
     .then(data => {
@@ -960,7 +958,6 @@ function deleteComment(commentId) {
         let deletedCount = 0;
         const mainEl = document.getElementById('comment-' + commentId);
         const replyEl = document.getElementById('reply-item-' + commentId);
-
         if (mainEl) {
             deletedCount = 1 + mainEl.querySelectorAll('[id^="reply-item-"]').length;
             mainEl.remove();
@@ -970,12 +967,9 @@ function deleteComment(commentId) {
         }
 
         const container = document.getElementById('commentListContainer');
-
         if (container && container.children.length === 0) {
             container.remove();
-
             let msg = document.getElementById('noCommentsMessage');
-
             if (!msg) {
                 msg = document.createElement('p');
                 msg.style.color = '#888';
@@ -986,180 +980,169 @@ function deleteComment(commentId) {
         }
 
         const header = document.getElementById('commentCountHeader');
-
         if (header) {
-            let newCount = parseInt(header.getAttribute('data-count') || '0', 10) - deletedCount;
-
-            if (newCount < 0) {
-                newCount = 0;
-            }
-
+            let newCount = parseInt(header.getAttribute('data-count') || '0') - deletedCount;
+            if (newCount < 0) newCount = 0;
             updateCommentCount(newCount);
         }
     })
     .catch(err => {
         console.error('Delete request failed:', err);
-
         if (err.message && err.message.includes('401')) {
-            window.location.href = getCleanUrl('/login');
+            window.location.href = '${pageContext.request.contextPath}/login';
         } else {
             alert('Delete failed');
         }
     });
 }
 
+/* =========================
+   👍 LIKE
+========================= */
 function toggleLikePost(postId, btn) {
-    fetch(getCleanUrl('/api/toggle-like'), {
+    var url = getCleanUrl('/api/toggle-like');
+
+    fetch(url, {
         method: 'POST',
         headers: getCsrfHeaders('application/x-www-form-urlencoded'),
-        body: 'postId=' + encodeURIComponent(postId)
+        body: 'postId=' + postId
     })
-    .then(r => {
+    .then(function(r) {
         if (!r.ok) {
-            throw new Error('HTTP ' + r.status);
+            return r.text().then(function(txt) {
+                throw new Error('HTTP ' + r.status + ': ' + txt);
+            });
         }
-
         return r.json();
     })
-    .then(data => {
-        if (data.status !== 'success') {
-            alert('Like မအောင်မြင်ပါ: ' + (data.message || 'Unknown error'));
-            return;
-        }
+    .then(function(data) {
+        if (data.status === 'success') {
+            var countEl = document.getElementById('likeCount-' + postId);
+            if (countEl) countEl.innerText = data.totalLikes;
 
-        const countEl = document.getElementById('likeCount-' + postId);
+            var icon = document.getElementById('likeIcon-' + postId);
 
-        if (countEl) {
-            countEl.innerText = data.totalLikes;
-        }
+            if (data.isLiked) {
+                icon.innerHTML = "👍 Unlike";
+                btn.className = "button liked-btn";
+            } else {
+                icon.innerHTML = "👍 Like";
+                btn.className = "button unliked-btn";
+            }
 
-        const icon = document.getElementById('likeIcon-' + postId);
-
-        if (data.isLiked) {
-            icon.innerHTML = '👍 Unlike';
-            btn.className = 'button liked-btn';
+            updateUrlHash('like');
         } else {
-            icon.innerHTML = '👍🏻 Like';
-            btn.className = 'button unliked-btn';
+            alert('Like error: ' + (data.message || 'Unknown error'));
         }
-
-        updateUrlHash('like');
     })
-    .catch(err => {
+    .catch(function(err) {
         console.error('Like request failed:', err);
-
         if (err.message && err.message.includes('401')) {
-            window.location.href = getCleanUrl('/login');
+            window.location.href = '${pageContext.request.contextPath}/login';
         } else {
-            alert('Like ပြုလုပ်၍မရပါ။ Error: ' + err.message);
+            alert('Could not complete like action.');
         }
     });
 }
 
+/* =========================
+   ⭐ RATING
+========================= */
 function submitRating(postId, rating) {
     fetch(getCleanUrl('/api/toggle-rating'), {
         method: 'POST',
         headers: getCsrfHeaders('application/x-www-form-urlencoded'),
-        body: 'postId=' + encodeURIComponent(postId) + '&rating=' + encodeURIComponent(rating)
+        body:
+            'postId=' + postId +
+            '&rating=' + rating
     })
     .then(r => {
-        if (!r.ok) {
-            throw new Error('HTTP ' + r.status);
-        }
-
+        if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
     })
     .then(data => {
-        if (data.status !== 'success') {
+        if (data.status === 'success'){
+            document.getElementById("avgRatingValue").innerText = data.averageRating;
+            document.getElementById("totalRatingCount").innerText = data.totalRatings;
+
+            const starInputs = document.querySelectorAll('.star-rating input[name="rating"]');
+            starInputs.forEach(function (input) {
+                if (!data.hasRated) {
+                    input.checked = false;
+                } else if (parseInt(input.value) === rating) {
+                    input.checked = true;
+                }
+            });
+
+            updateUrlHash('rating');
+        } else {
             alert('Rating error: ' + (data.message || ''));
-            return;
         }
-
-        document.getElementById('avgRatingValue').innerText = data.averageRating;
-        document.getElementById('totalRatingCount').innerText = data.totalRatings;
-
-        const starInputs = document.querySelectorAll('.star-rating input[name="rating"]');
-
-        starInputs.forEach(function (input) {
-            if (!data.hasRated) {
-                input.checked = false;
-            } else if (parseInt(input.value, 10) === rating) {
-                input.checked = true;
-            }
-        });
-
-        updateUrlHash('rating');
     })
     .catch(err => {
         console.error('Rating request failed:', err);
-
         if (err.message && err.message.includes('401')) {
-            window.location.href = getCleanUrl('/login');
+            window.location.href = '${pageContext.request.contextPath}/login';
         } else {
-            alert('Rating ပြုလုပ်၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။');
+            alert('Failed to submit rating.');
         }
     });
 }
 
+/* =========================
+   🔖 BOOKMARK
+========================= */
 function toggleBookmark(postId, btn) {
-    const isLoggedIn = '${sessionScope.userId != null}' === 'true';
+    const isLoggedIn = "${sessionScope.userId != null}" === "true";
 
     if (!isLoggedIn) {
-        window.location.href = getCleanUrl('/login');
+        window.location.href = '${pageContext.request.contextPath}/login';
         return;
     }
 
     fetch(getCleanUrl('/api/toggle-bookmark'), {
         method: 'POST',
         headers: getCsrfHeaders('application/x-www-form-urlencoded'),
-        body: 'postId=' + encodeURIComponent(postId)
+        body: 'postId=' + postId
     })
     .then(r => {
-        if (!r.ok) {
-            throw new Error('HTTP ' + r.status);
-        }
-
+        if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
     })
     .then(data => {
-        if (data.status !== 'success') {
-            alert('Bookmark error: ' + (data.message || ''));
-            return;
-        }
+        if (data.status === 'success') {
+            const icon = document.getElementById('bookmarkIcon-' + postId);
 
-        const icon = document.getElementById('bookmarkIcon-' + postId);
-
-        if (data.isBookmarked) {
-            icon.innerHTML = '⭐ Bookmarked';
-            btn.className = 'button bookmarked-btn';
+            if (data.isBookmarked) {
+                icon.innerHTML = "⭐ Bookmarked";
+                btn.className = "button bookmarked-btn";
+            } else {
+                icon.innerHTML = "⭐ Bookmark";
+                btn.className = "button unbookmarked-btn";
+            }
+            updateUrlHash('bookmark');
         } else {
-            icon.innerHTML = '⭐ Bookmark';
-            btn.className = 'button unbookmarked-btn';
+            alert('Bookmark error: ' + (data.message || ''));
         }
-
-        updateUrlHash('bookmark');
     })
     .catch(err => {
         console.error('Bookmark request failed:', err);
-
         if (err.message && err.message.includes('401')) {
-            window.location.href = getCleanUrl('/login');
+            window.location.href = '${pageContext.request.contextPath}/login';
         } else {
-            alert('Bookmark ပြုလုပ်၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။');
+            alert('Failed to update bookmark status.');
         }
     });
 }
 
+/* =========================
+   💬 TOGGLE COMMENTS
+========================= */
 function toggleCommentsSection() {
     const el = document.getElementById('commentsToggleWrapper');
-
-    if (!el) {
-        return;
-    }
-
+    if (!el) return;
     const willShow = el.style.display !== 'block';
     el.style.display = willShow ? 'block' : 'none';
-
     if (willShow) {
         updateUrlHash('comment');
         attachCommentFormListener();
@@ -1171,12 +1154,14 @@ if (window.location.hash === '#comment' || window.location.hash === '#reply') {
     attachCommentFormListener();
 }
 
+/* =========================
+   🚩 REPORT MODAL & SUBMISSION
+========================= */
 function openReportModal(targetType, targetId) {
-    const isLoggedIn = '${sessionScope.userId != null}' === 'true';
-
+    const isLoggedIn = "${sessionScope.userId != null}" === "true";
     if (!isLoggedIn) {
-        alert('Report ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။');
-        window.location.href = getCleanUrl('/login');
+        alert('Please login to submit a report.');
+        window.location.href = '${pageContext.request.contextPath}/login';
         return;
     }
 
@@ -1186,12 +1171,14 @@ function openReportModal(targetType, targetId) {
     document.getElementById('reportReason').value = 'TEXT';
     document.getElementById('reportDescription').value = '';
 
-    document.getElementById('reportModal').style.display = 'flex';
+    const modal = document.getElementById('reportModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
 }
 
 function closeReportModal() {
     const modal = document.getElementById('reportModal');
-
     if (modal) {
         modal.style.display = 'none';
     }
@@ -1199,22 +1186,23 @@ function closeReportModal() {
 
 function handleReportSubmit(e) {
     e.preventDefault();
-
     const type = document.getElementById('reportTargetType').value;
     const id = document.getElementById('reportTargetId').value;
     const reason = document.getElementById('reportReason').value;
     const description = document.getElementById('reportDescription').value;
 
-    const path = type === 'post'
-        ? '/posts/report/' + encodeURIComponent(id)
-        : '/comments/reports/report/' + encodeURIComponent(id);
+    let path = type === 'post' ? ('/posts/report/' + id) : ('/comments/reports/report/' + id);
 
     fetch(getCleanUrl(path), {
         method: 'POST',
         headers: getCsrfHeaders('application/x-www-form-urlencoded'),
         body: 'reason=' + encodeURIComponent(reason) + '&description=' + encodeURIComponent(description)
     })
-    .then(r => r.text().then(text => ({ ok: r.ok, status: r.status, text: text })))
+    .then(r => {
+        return r.text().then(text => {
+            return { ok: r.ok, status: r.status, text: text };
+        });
+    })
     .then(res => {
         if (res.ok) {
             alert(res.text || 'Report submitted successfully.');
