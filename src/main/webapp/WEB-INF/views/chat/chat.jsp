@@ -307,11 +307,14 @@
         });
 
         $(document).keydown(function(e) {
-            if (e.key === 'Escape') closeChatListMenu();
+            if (e.key === 'Escape') {
+                closeChatListMenu();
+                $('#searchResults').hide();
+            }
         });
     });
 
-    $('#searchInput').on('input', function() {
+    $('#searchInput').on('input focus', function() {
         clearTimeout(searchTimer);
         const q = $(this).val().trim();
         if (q.length < 1) {
@@ -438,27 +441,47 @@
     }
 
     function searchUsers(keyword) {
-        $.get(ctx + '/api/chat/users/search', { q: keyword }, function(users) {
-            const box = $('#searchResults').empty();
-            if (!users.length) {
-                box.append('<div class="search-item" style="cursor:default;color:#667781;font-size:13px;justify-content:center;">No results found</div>').show();
-                return;
-            }
-            users.forEach(function(user) {
-                const badge = user.role === 'ADMIN'
-                    ? '<span class="badge-admin">Admin</span>'
-                    : '<span class="badge-user">User</span>';
-                const displayName = user.displayName || user.username;
-                const row = $('<div class="search-item"></div>');
-                row.html(
-                    '<div class="avatar" style="width:32px;height:32px;font-size:14px;">' + displayName.charAt(0).toUpperCase() + '</div>' +
-                    '<div style="font-size:14px;"><strong>' + escapeHtml(displayName) + '</strong> ' + badge + '</div>'
-                );
-                row.click(function() { startChat(user.id); });
-                box.append(row);
+        const box = $('#searchResults');
+        box.html('<div class="search-item" style="cursor:default;color:#667781;font-size:13px;justify-content:center;">Searching...</div>').show();
+
+        $.get(ctx + '/api/chat/users/search', { q: keyword })
+            .done(function(users) {
+                console.log("Search keyword:", keyword, "Results:", users);
+                box.empty();
+                if (!users || !users.length) {
+                    box.append('<div class="search-item" style="cursor:default;color:#667781;font-size:13px;justify-content:center;">No results found</div>').show();
+                    return;
+                }
+                users.forEach(function(user) {
+                    const badge = user.role === 'ADMIN'
+                        ? '<span class="badge-admin">Admin</span>'
+                        : '<span class="badge-user">User</span>';
+                    const displayName = user.displayName || user.username || 'User';
+                    const usernameHandle = user.username ? ' (@' + user.username + ')' : '';
+                    
+                    const row = $('<div class="search-item"></div>');
+                    const avatar = $('<div class="avatar" style="width:32px;height:32px;font-size:14px;"></div>')
+                                    .text(displayName.charAt(0).toUpperCase());
+                    const info = $('<div style="font-size:14px;overflow:hidden;text-overflow:ellipsis;"></div>');
+                    const strongName = $('<strong></strong>').text(displayName);
+                    
+                    info.append(strongName)
+                        .append(document.createTextNode(usernameHandle + ' '))
+                        .append(badge);
+                    
+                    row.append(avatar).append(info);
+                    row.click(function() {
+                        box.hide();
+                        startChat(user.id);
+                    });
+                    box.append(row);
+                });
+                box.show();
+            })
+            .fail(function(xhr) {
+                console.error("Search API Error:", xhr.status, xhr.responseText);
+                box.html('<div class="search-item" style="cursor:default;color:#e53935;font-size:13px;justify-content:center;">Failed to search users</div>').show();
             });
-            box.show();
-        });
     }
 
     function startChat(userId) {
