@@ -550,5 +550,5 @@ public class PostServiceImpl implements PostService {
         return postRepository.countByStatus(status);
     }
 
-}
+
 }

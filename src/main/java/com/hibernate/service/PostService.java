@@ -70,7 +70,7 @@ public interface PostService {
     void addComment(Integer postId, Long userId, String text);
     
     boolean hasUserLiked(Integer postId, Long userId);
-}
+
     
     List<Post> getApprovedPosts();
     List<Post> getRejectedPosts();
