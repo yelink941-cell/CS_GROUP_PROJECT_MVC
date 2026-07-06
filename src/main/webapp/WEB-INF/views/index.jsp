@@ -291,6 +291,238 @@
             color: #f59e0b;
             font-weight: 700;
         }
+        
+        /* Home Section Styles */
+        .home-section {
+            margin-top: 40px;
+        }
+        
+        .home-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .home-section-header .section-kicker {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #94a3b8;
+            font-weight: 600;
+            display: block;
+        }
+        
+        .home-section-header h2 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .home-section-header a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: color 0.2s ease;
+        }
+        
+        .home-section-header a:hover {
+            color: #4338ca;
+            text-decoration: underline;
+        }
+        
+        .home-empty {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            border: 2px dashed #e2e8f0;
+            color: #64748b;
+            grid-column: 1 / -1;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .category-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e8edf4;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.12);
+            border-color: #c7d2fe;
+        }
+        
+        .category-card .category-count {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .category-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 6px 0;
+        }
+        
+        .category-card p {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .post-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        
+        .home-post-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e8edf4;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .home-post-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.12);
+            border-color: #c7d2fe;
+        }
+        
+        .home-post-card .post-category {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            align-self: flex-start;
+        }
+        
+        .home-post-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 8px 0;
+            line-height: 1.3;
+        }
+        
+        .home-post-card p {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+            margin: 0 0 14px 0;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .home-post-card .post-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: #94a3b8;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+            margin-bottom: 12px;
+        }
+        
+        .home-post-card .post-meta span:first-child {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        
+        .home-post-card .post-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        .home-post-card .post-footer small {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .home-post-card .post-footer a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 20px;
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .home-post-card .post-footer a:hover {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .home-hero {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4f46e5 100%);
+            border-radius: 16px;
+            padding: 40px 40px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 30px rgba(79, 70, 229, 0.25);
+        }
+        
+        .home-hero h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 0 12px 0;
+            color: #ffffff;
+        }
+        
+        .home-hero p {
+            font-size: 16px;
+            opacity: 0.85;
+            margin: 0 0 8px 0;
+            color: #c7d2fe;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -353,7 +585,7 @@
                             <c:forEach var="col" items="${collectionResults}">
                                 <div class="result-item">
                                     <div>
-                                        <a href="${pageContext.request.contextPath}/user/collections/view?id=${col.id}" 
+                                        <a href="${pageContext.request.contextPath}/user/collections/${col.id}" 
                                            style="color: #d97706; font-weight: 600; font-size: 16px;">
                                             📁 <c:out value="${col.name}" />
                                         </a>
@@ -365,32 +597,36 @@
                         </div>
                     </c:if>
                     
-                    <%-- 3. Categories Section --%>
+                    <%-- 3. Categories Section - ✅ FIXED WITH LINK --%>
                     <c:if test="${not empty categoryResults}">
                         <div class="result-section">
-                            <div class="section-title">📁 Categories</div>
+                            <div class="section-title" style="color: #d97706; border-bottom: 2px solid #fef3c7;">📁 Categories</div>
                             <c:forEach var="cat" items="${categoryResults}">
                                 <div class="result-item">
                                     <div>
-                                        <strong style="color: #1e293b; font-size: 15px;"><c:out value="${cat.name}"/></strong>
-                                        <div style="font-size: 13px; color: #64748b; margin-top: 4px;"><c:out value="${cat.description}"/></div>
+                                        <a href="${pageContext.request.contextPath}/categories/${cat.id}" 
+                                           style="color: #d97706; font-weight: 600; font-size: 15px; text-decoration: none;">
+                                            📁 <c:out value="${cat.name}"/>
+                                        </a>
+                                        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
+                                            <c:out value="${cat.description}"/>
+                                        </div>
                                     </div>
-                                    <span class="badge">Category</span>
+                                    <span class="badge" style="background: #fef3c7; color: #d97706;">Category</span>
                                 </div>
                             </c:forEach>
                         </div>
                     </c:if>
 
-                    <%-- 4. Users Section (Fixed to correctly route to public views) --%>
+                    <%-- 4. Users Section --%>
                     <c:if test="${not empty userResults}">
                         <div class="result-section">
-                            <div class="section-title">👥 Users</div>
+                            <div class="section-title" style="color: #0f766e; border-bottom: 2px solid #ccfbf1;">👥 Users</div>
                             <c:forEach var="u" items="${userResults}">
                                 <div class="result-item">
                                     <div>
                                         <c:choose>
                                             <c:when test="${not empty sessionScope.currentUser}">
-                                                <%-- 🔗 Pointing to the specific public view mapping --%>
                                                 <a href="${pageContext.request.contextPath}/profile/view?id=${u.id}" 
                                                    style="color: #0f766e; font-weight: 600;">
                                                     @<c:out value="${u.username}"/>
@@ -410,7 +646,7 @@
                         </div>
                     </c:if>
 
-                    <%-- ✅ 5. RELATED SEARCHES (Search History with Delete - STAY ON PAGE) --%>
+                    <%-- 5. RELATED SEARCHES --%>
                     <div class="related-searches-section">
                         <div class="section-title">
                             <span>🔄 Related Searches</span>
@@ -424,15 +660,12 @@
                                 <div class="related-searches">
                                     <c:forEach var="history" items="${searchHistory}">
                                         <div class="related-search-item">
-                                            <%-- Search Link --%>
                                             <form action="${pageContext.request.contextPath}/doSearch" method="POST" style="display: inline;">
                                                 <input type="hidden" name="keyword" value="${history.keyword}" />
                                                 <button type="submit" class="search-link">
                                                     🔍 ${history.keyword}
                                                 </button>
                                             </form>
-                                            
-                                            <%-- Delete Button - ✅ STAY ON SEARCH RESULTS PAGE --%>
                                             <form action="${pageContext.request.contextPath}/history/delete" method="GET" class="delete-history-form">
                                                 <input type="hidden" name="id" value="${history.id}" />
                                                 <input type="hidden" name="keyword" value="${searchedKeyword}" />
@@ -449,13 +682,13 @@
                             <c:otherwise>
                                 <div class="related-empty">
                                     <span class="icon">🔍</span>
-                                    No related searches found. Start searching to see related queries here.
+                                    No related searches found.
                                 </div>
                             </c:otherwise>
                         </c:choose>
                     </div>
 
-                    <%-- Fallback Layout --%>
+                    <%-- No Results --%>
                     <c:if test="${empty postResults && empty collectionResults && empty categoryResults && empty userResults}">
                         <div style="background: #f8fafc; padding: 40px; text-align: center; border-radius: 16px; color: #64748b; border: 1px solid #e2e8f0; margin-top: 20px;">
                             <span style="font-size: 48px; display: block; margin-bottom: 10px;">🔍</span>
@@ -467,13 +700,13 @@
                 </div>
             </c:when>
 
-            <%-- CONDITION B: UNIFIED HOME SCREEN LAYOUT --%>
+            <%-- CONDITION B: HOME SCREEN --%>
             <c:otherwise>
                 <section class="home-hero">
                     <c:choose>
                         <c:when test="${not empty sessionScope.currentUser}">
                             <div class="accent-label">Dashboard Active</div>
-                            <h2>Welcome back, <c:out value="${sessionScope.currentUser.username}"/> &#128075;</h2>
+                            <h2>Welcome back, <c:out value="${sessionScope.currentUser.username}"/> 👋</h2>
                             <p>Explore categories, discover popular cheat sheets, and continue learning from community-approved guides.</p>
                             <p>You can now use the top navigation bar from your dashboard to look up references and manage your private notes.</p>
                             <div style="margin-top: 18px;">
@@ -482,7 +715,6 @@
                                 </a>
                             </div>
                         </c:when>
-                        
                         <c:otherwise>
                             <div class="accent-label">Public Library</div>
                             <h2>Explore Cheat Sheets</h2>
@@ -632,48 +864,36 @@
         </c:choose>
     </main>
 
-    <!-- ===== FOOTER - DARK THEME (SAME AS POPULAR.JSP STYLE) ===== -->
-<footer class="site-footer">
-    <div class="footer-container">
-        <div class="footer-brand">
-            <h2>📚 CheatSheet Hub</h2>
-            <p>Community-built cheat sheets for quick learning, practical references, and clean knowledge sharing. Your go-to resource for developer guides and technical references.</p>
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h2>📚 CheatSheet Hub</h2>
+                <p>Community-built cheat sheets for quick learning, practical references, and clean knowledge sharing. Your go-to resource for developer guides and technical references.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <nav>
+                    <a href="${pageContext.request.contextPath}/">🏠 Home</a>
+                    <a href="${pageContext.request.contextPath}/posts/public">📄 View Posts</a>
+                    <a href="${pageContext.request.contextPath}/posts/categories">📁 Categories</a>
+                    <a href="${pageContext.request.contextPath}/posts/popular">🔥 Popular</a>
+                    <a href="${pageContext.request.contextPath}/posts/trending">📈 Trending</a>
+                </nav>
+            </div>
         </div>
-        <div class="footer-links">
-            <h3>Quick Links</h3>
-            <nav>
-                <a href="${pageContext.request.contextPath}/">🏠 Home</a>
-                <a href="${pageContext.request.contextPath}/posts/public">📄 View Posts</a>
-                <a href="${pageContext.request.contextPath}/posts/categories">📁 Categories</a>
-                <a href="${pageContext.request.contextPath}/posts/popular">🔥 Popular</a>
-                <a href="${pageContext.request.contextPath}/posts/trending">📈 Trending</a>
-            </nav>
+        <div class="footer-bottom">
+            <small>&copy; 2026 CheatSheet Hub. All rights reserved.</small>
+            <div class="footer-legal">
+                <a href="#"><i class="fas fa-lock"></i> Privacy Policy</a>
+                <a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a>
+                <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+            </div>
         </div>
-       
-    </div>
-    <div class="footer-bottom">
-        <small>&copy; 2026 CheatSheet Hub. All rights reserved.</small>
-        <div class="footer-legal">
-            <a href="#"><i class="fas fa-lock"></i> Privacy Policy</a>
-            <a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a>
-            <a href="#"><i class="fas fa-envelope"></i> Contact</a>
-        </div>
-    </div>
-</footer>
+    </footer>
 
     <c:if test="${not empty sessionScope.currentUser}">
-        <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages" style="position:fixed; bottom:30px; right:30px;">
-            💬
-            <c:if test="${totalUnreadChatCount > 0}">
-                <span class="chat-fab-badge">
-                    <c:choose>
-                        <c:when test="${totalUnreadChatCount > 99}">99+</c:when>
-                        <c:otherwise>${totalUnreadChatCount}</c:otherwise>
-                    </c:choose>
-                </span>
-            </c:if>
-        </a>
+        <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages">💬</a>
     </c:if>
-
 </body>
 </html>
