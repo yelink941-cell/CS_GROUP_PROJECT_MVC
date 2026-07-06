@@ -217,29 +217,35 @@
                                 <c:choose>
                                     <c:when test="${not empty userPosts}">
                                         <c:forEach var="post" items="${userPosts}">
-                                            <div class="feed-item" style="margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
-                                                <div class="feed-header" style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 13px;">
-                                                    <span>📝 Published a cheat sheet</span>
-                                                    <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 600; text-transform: uppercase; font-size: 10px;">
-                                                        <c:out value="${post.category.name}" default="Programming" />
-                                                    </span>
+                                            <%-- 🛡️ SECURITY FILTER: View own drafts, but only show PUBLISHED posts to outside visitors --%>
+                                            <c:if test="${currentUser.id == userProfile.user.id || post.status == 'PUBLISHED'}">
+                                                <div class="feed-item" style="margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+                                                    <div class="feed-header" style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 13px;">
+                                                        <span>📝 Published a cheat sheet</span>
+                                                        <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 600; text-transform: uppercase; font-size: 10px;">
+                                                            <c:out value="${post.category.name}" default="Programming" />
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <h3 style="font-size: 18px; font-weight: 700; margin: 4px 0;">
+                                                        <a href="${pageContext.request.contextPath}/user/posts/${post.slug}" style="color: #4038ff; text-decoration: none;">
+                                                            <c:out value="${post.title}" />
+                                                        </a>
+                                                    </h3>
+                                                    
+                                                    <p style="color: #475569; font-size: 14px; line-height: 1.5;">
+                                                        <c:out value="${post.excerpt}" default="Click to view inside this cheat sheet portfolio." />
+                                                    </p>
+                                                    
+                                                    <div style="display: flex; gap: 16px; font-size: 12px; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 4px;">
+                                                        <span>❤️ <strong>${postLikeCounts[post.id] != null ? postLikeCounts[post.id] : 0}</strong> Likes</span>
+                                                        <%-- ⚙️ View Status indicators exclusively on your own dashboard profiles --%>
+                                                        <c:if test="${currentUser.id == userProfile.user.id}">
+                                                            <span>⚙️ Status: <strong style="color: ${post.status == 'PUBLISHED' ? '#10b981' : '#f59e0b'}"><c:out value="${post.status}" /></strong></span>
+                                                        </c:if>
+                                                    </div>
                                                 </div>
-                                                
-                                                <h3 style="font-size: 18px; font-weight: 700; margin: 4px 0;">
-                                                    <a href="${pageContext.request.contextPath}/user/posts/${post.slug}" style="color: #4038ff; text-decoration: none;">
-                                                        <c:out value="${post.title}" />
-                                                    </a>
-                                                </h3>
-                                                
-                                                <p style="color: #475569; font-size: 14px; line-height: 1.5;">
-                                                    <c:out value="${post.excerpt}" default="Click to view inside this cheat sheet portfolio." />
-                                                </p>
-                                                
-                                                <div style="display: flex; gap: 16px; font-size: 12px; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 4px;">
-                                                    <span>❤️ <strong>${postLikeCounts[post.id] != null ? postLikeCounts[post.id] : 0}</strong> Likes</span>
-                                                    <span>⚙️ Status: <strong style="color: ${post.status == 'PUBLISHED' ? '#10b981' : '#f59e0b'}"><c:out value="${post.status}" /></strong></span>
-                                                </div>
-                                            </div>
+                                            </c:if>
                                         </c:forEach>
                                     </c:when>
                                     <c:otherwise>
@@ -277,18 +283,30 @@
                                                 
                                                 <div style="display: flex; gap: 16px; font-size: 12px; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 4px;">
                                                     <span>❤️ <strong>${postLikeCounts[post.id] != null ? postLikeCounts[post.id] : 0}</strong> Likes</span>
-                                                    <span>⚙️ Status: <strong style="color: ${post.status == 'PUBLISHED' ? '#10b981' : '#f59e0b'}"><c:out value="${post.status}" /></strong></span>
+                                                    <c:if test="${currentUser.id == userProfile.user.id}">
+                                                        <span>⚙️ Status: <strong style="color: ${post.status == 'PUBLISHED' ? '#10b981' : '#f59e0b'}"><c:out value="${post.status}" /></strong></span>
+                                                    </c:if>
                                                 </div>
                                             </div>
                                         </c:forEach>
                                     </c:when>
                                     <c:otherwise>
-									    <div class="feed-item" style="text-align: center; padding: 40px; color: #64748b; border: 1px dashed #cbd5e1; background: #f8fafc; border-radius: 12px;">
-									        <span style="font-size: 28px; display: block; margin-bottom: 8px;">❤️</span>
-									        <p style="font-size: 14px; font-weight: 600; color: #0f172a;">Your Liked Posts</p>
-									        <p style="font-size: 13px; color: #64748b; margin-top: 4px;">Posts you like across the platform will show up here instantly.</p>
-									    </div>
-									</c:otherwise>
+                                        <div class="feed-item" style="text-align: center; padding: 40px; color: #64748b; border: 1px dashed #cbd5e1; background: #f8fafc; border-radius: 12px;">
+                                            <span style="font-size: 28px; display: block; margin-bottom: 8px;">❤️</span>
+                                            <p style="font-size: 14px; font-weight: 600; color: #0f172a;">
+                                                <c:choose>
+                                                    <c:when test="${currentUser.id == userProfile.user.id}">Your Liked Posts</c:when>
+                                                    <c:otherwise>No Liked Posts</c:otherwise>
+                                                </c:choose>
+                                            </p>
+                                            <p style="font-size: 13px; color: #64748b; margin-top: 4px;">
+                                                <c:choose>
+                                                    <c:when test="${currentUser.id == userProfile.user.id}">Posts you like across the platform will show up here instantly.</c:when>
+                                                    <c:otherwise>This user hasn't liked any cheat sheets yet.</c:otherwise>
+                                                </c:choose>
+                                            </p>
+                                        </div>
+                                    </c:otherwise>
                                 </c:choose>
                             </div>
                         </div>
@@ -308,6 +326,7 @@
         </c:choose>
     </main>
 
+    <%-- Followers Modal --%>
     <div id="followersModal" class="tiktok-modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
         <div style="background: white; width: 100%; max-width: 420px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); overflow: hidden;">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
@@ -324,7 +343,7 @@
                                         <c:out value="${not empty followerUser.profile.fullName ? followerUser.profile.fullName.substring(0,1).toUpperCase() : 'U'}" />
                                     </div>
                                     <div>
-                                        <div style="font-size: 14px; font-weight: 600;"><c:out value="${followerUser.profile.fullName}"/></div>
+                                        <div style="font-size: 14px; font-weight: 600;"><c:out value="${followedUser.profile.fullName}"/></div>
                                         <div style="font-size: 12px; color: var(--text-muted)">@<c:out value="${followerUser.username}"/></div>
                                     </div>
                                 </div>
@@ -339,6 +358,7 @@
         </div>
     </div>
 
+    <%-- Following Modal --%>
     <div id="followingModal" class="tiktok-modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
         <div style="background: white; width: 100%; max-width: 420px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); overflow: hidden;">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
@@ -360,12 +380,14 @@
                                     </div>
                                 </div>
                                 
-                                <form action="${pageContext.request.contextPath}/user/unfollow" method="POST" style="margin: 0;">
-                                    <input type="hidden" name="targetId" value="${followedUser.id}" />
-                                    <button type="submit" style="font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; background: #ffffff; border: 1px solid var(--border); cursor: pointer; color: var(--danger);">
-                                        Unfollow
-                                    </button>
-                                </form>
+                                <c:if test="${currentUser.id == userProfile.user.id}">
+                                    <form action="${pageContext.request.contextPath}/user/unfollow" method="POST" style="margin: 0;">
+                                        <input type="hidden" name="targetId" value="${followedUser.id}" />
+                                        <button type="submit" style="font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; background: #ffffff; border: 1px solid var(--border); cursor: pointer; color: var(--danger);">
+                                            Unfollow
+                                        </button>
+                                    </form>
+                                </c:if>
                             </div>
                         </c:forEach>
                     </c:when>

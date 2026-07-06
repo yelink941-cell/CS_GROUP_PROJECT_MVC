@@ -372,6 +372,68 @@ public class UserController {
 
         return "profile/profile"; 
     }
+    @GetMapping("/profile/view")
+    public String viewPublicProfile(@RequestParam("id") Long targetUserId, HttpSession session, Model model) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        
+        // 1. If they clicked on themselves in the search results, route them to their personal profile dashboard
+        if (currentUser != null && currentUser.getId().equals(targetUserId)) {
+            return "redirect:/profile";
+        }
+        
+        // 2. Fetch the Target User's Profile Info
+        UserProfile targetProfile = userService.getUserProfileByUserId(targetUserId);
+        if (targetProfile != null && targetProfile.getAvatar() != null) {
+            String base64Avatar = Base64.getEncoder().encodeToString(targetProfile.getAvatar());
+            model.addAttribute("avatarImage", base64Avatar);
+        }
+        
+        User targetUser = userService.getUserById(targetUserId);
+        if (targetUser == null) {
+            return "redirect:/?error=UserNotFound";
+        }
+
+        // Load metrics for the target user profile
+        long followerCount = userService.getFollowerCount(targetUserId);
+        long followingCount = userService.getFollowingCount(targetUserId);
+        long postCount = userService.getPostCountByUserId(targetUserId);
+        
+        // Check if the currently logged-in user is following this target user
+        boolean isFollowing = false;
+        if (currentUser != null) {
+            List<User> followers = userService.getFollowersByUserId(targetUserId);
+            isFollowing = followers.stream().anyMatch(u -> u.getId().equals(currentUser.getId()));
+        }
+
+        // ⭐ FIX: FETCH BOTH LISTS FOR THE TARGET USER AND ADD THEM TO THE MODEL ⭐
+        List<User> followersList = userService.getFollowersByUserId(targetUserId);
+        List<User> followingList = userService.getFollowingByUserId(targetUserId);
+        model.addAttribute("followersList", followersList);
+        model.addAttribute("followingList", followingList);
+
+        model.addAttribute("userProfile", targetProfile);
+        model.addAttribute("profileOwner", targetUser);
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("followerCount", followerCount);
+        model.addAttribute("followingCount", followingCount);
+        model.addAttribute("postCount", postCount);
+        model.addAttribute("isFollowing", isFollowing);
+
+        // 3. Fetch ONLY the target user's public posts
+        List<Post> userPosts = postService.getPostsByAuthorId(targetUserId);
+        model.addAttribute("userPosts", userPosts);
+
+        // Build the like count map for their post cards
+        Map<Integer, Long> postLikeCounts = new java.util.HashMap<>();
+        if (userPosts != null) {
+            for (Post post : userPosts) {
+                postLikeCounts.put(post.getId(), postLikeService.getLikeCount(post.getId()));
+            }
+        }
+        model.addAttribute("postLikeCounts", postLikeCounts);
+
+        return "profile/profile"; 
+    }
 
     @GetMapping("/profile/edit")
     public String showEditProfilePage(HttpSession session, Model model) {

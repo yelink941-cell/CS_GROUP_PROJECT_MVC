@@ -418,13 +418,6 @@
                         </article>
                     </c:forEach>
                 </div>
-                
-                <!-- ===== VIEW ALL LINK ===== -->
-                <div class="view-all-section">
-                    <a href="${pageContext.request.contextPath}/posts/public">
-                        📄 View All Public Posts
-                    </a>
-                </div>
             </c:if>
             
         </div>
