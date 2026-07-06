@@ -300,7 +300,7 @@
             <!-- Welcome Card -->
             <div class="welcome-card">
                 <div>
-                    <h2>Good Evening, System Administrator! Panel Loaded.</h2>
+                    <h2>System Administrator! Panel Loaded.</h2>
                     <p>Use the left sidebar navigation matrix to modify system collections, handle tags, or review reports.</p>
                 </div>
                 <div class="date-time">
@@ -347,7 +347,7 @@
                     </div>
                 </a>
 
-                <a href="${pageContext.request.contextPath}/admin/comments" class="stat-card">
+               <%--  <a href="${pageContext.request.contextPath}/admin/comments" class="stat-card">
                     <div class="card-top" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
                         <div>Comments</div>
                         <div class="stat-value">${totalComments}</div>
@@ -357,15 +357,11 @@
                         <span>View Details &rsaquo;</span>
                         <span class="trend-up">↑ 8%</span>
                     </div>
-                </a>
+                </a> --%>
             </div>
 
             <!-- Quick Actions -->
             <div class="quick-actions">
-                <a href="${pageContext.request.contextPath}/admin/posts/new" class="quick-action-btn">
-                    <span class="icon">✏️</span>
-                    <span class="label">Create Post</span>
-                </a>
                 <a href="${pageContext.request.contextPath}/admin/categories/new" class="quick-action-btn">
                     <span class="icon">📁</span>
                     <span class="label">New Category</span>
@@ -377,6 +373,14 @@
                 <a href="${pageContext.request.contextPath}/admin/tags" class="quick-action-btn">
                     <span class="icon">🏷️</span>
                     <span class="label">Manage Tags</span>
+                </a>
+                 <a href="${pageContext.request.contextPath}/admin/tags" class="quick-action-btn">
+                    <span class="icon">🏷️</span>
+                    <span class="label">Manage Tags</span>
+                     <a href="${pageContext.request.contextPath}/admin/" class="quick-action-btn">
+                    <span class="icon">🏷️</span>
+                    <span class="label">Manage Tags</span>
+                </a>
                 </a>
             </div>
 
