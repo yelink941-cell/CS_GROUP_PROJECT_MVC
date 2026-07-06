@@ -386,7 +386,7 @@
 
                     <c:when test="${sessionScope.role == 'USER'}">
                         <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
-                        <a class="nav-link" href="${pageContext.request.contextPath}/notes">My Notes</a>
+                      
                         
                         <!-- View Posts Dropdown -->
                         <div class="nav-dropdown">
