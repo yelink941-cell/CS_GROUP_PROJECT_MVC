@@ -572,6 +572,8 @@
                         <c:when test="${post.status == 'PUBLISHED'}"><c:set var="statusClass" value="is-published" /></c:when>
                         <c:when test="${post.status == 'PENDING'}"><c:set var="statusClass" value="is-pending" /></c:when>
                         <c:when test="${post.status == 'REJECTED'}"><c:set var="statusClass" value="is-rejected" /></c:when>
+                        <c:when test="${post.status == 'ARCHIVED'}"><c:set var="statusClass" value="is-draft" /></c:when>
+                        <c:when test="${post.status == 'REMOVED'}"><c:set var="statusClass" value="is-rejected" /></c:when>
                         <c:otherwise><c:set var="statusClass" value="is-draft" /></c:otherwise>
                     </c:choose>
 

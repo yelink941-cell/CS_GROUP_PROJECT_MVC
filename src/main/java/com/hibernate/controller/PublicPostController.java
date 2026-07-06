@@ -6,7 +6,6 @@ import com.hibernate.entity.Tag;
 import com.hibernate.service.CategoryService;
 import com.hibernate.service.CollectionService; // 🎯 Added import for CollectionService
 import com.hibernate.service.PostContentService;
-import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.PostViewService;
 import com.hibernate.service.TagService;
@@ -34,7 +33,6 @@ public class PublicPostController {
     private final TagService tagService;
     private final CollectionService collectionService; // 🎯 Injected CollectionService
     private final PostContentService postContentService;
-    private final PostFileService postFileService;
     private final PostViewService postViewService;
     private final UserService userService;
 
@@ -153,7 +151,6 @@ public class PublicPostController {
                     postViewService.recordView(post, viewerUserId, request, response);
                     model.addAttribute("post", post);
                     model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
-                    model.addAttribute("postFiles", postFileService.getFilesByPostId(post.getId()));
                     return "public/post/details";
                 })
                 .orElse("redirect:/posts/public");

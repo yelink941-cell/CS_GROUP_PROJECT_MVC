@@ -2,10 +2,8 @@ package com.hibernate.service;
 
 import com.hibernate.entity.Post;
 import com.hibernate.entity.PostContent;
-import com.hibernate.entity.PostFile;
 import com.hibernate.entity.Tag;
 import com.hibernate.entity.enums.ContentType;
-import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -40,7 +38,6 @@ public class PostPdfServiceImpl implements PostPdfService {
     private static final Color BORDER = new Color(226, 232, 240);
 
     private final PostContentService postContentService;
-    private final PostFileService postFileService;
     private final ServletContext servletContext;
 
     @Override
@@ -53,7 +50,6 @@ public class PostPdfServiceImpl implements PostPdfService {
 
             addHeader(document, post);
             addContents(document, post);
-            addAttachments(document, post);
 
             document.close();
             return outputStream.toByteArray();
@@ -167,60 +163,12 @@ public class PostPdfServiceImpl implements PostPdfService {
             return;
         }
 
-        if (ContentType.TABLE.equals(contentType)) {
-            body.addElement(new Paragraph(data, new Font(Font.COURIER, 9, Font.NORMAL, new Color(30, 41, 59))));
-            return;
-        }
-
         if (ContentType.LINK.equals(contentType)) {
             body.addElement(new Paragraph(data, new Font(Font.HELVETICA, 10, Font.UNDERLINE, PRIMARY)));
             return;
         }
 
         body.addElement(new Paragraph(data, bodyFont()));
-    }
-
-    private void addAttachments(Document document, Post post) throws Exception {
-        List<PostFile> postFiles = postFileService.getFilesByPostId(post.getId());
-        if (postFiles.isEmpty()) {
-            return;
-        }
-
-        Paragraph heading = new Paragraph("Uploaded Files", new Font(Font.HELVETICA, 16, Font.BOLD, new Color(15, 23, 42)));
-        heading.setSpacingBefore(8);
-        heading.setSpacingAfter(10);
-        document.add(heading);
-
-        for (PostFile postFile : postFiles) {
-            if (isImageFile(postFile)) {
-                try {
-                    Path filePath = postFileService.resolveFile(postFile);
-                    if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
-                        PdfPTable imageCard = new PdfPTable(1);
-                        imageCard.setWidthPercentage(100);
-                        imageCard.setSpacingAfter(10);
-                        PdfPCell cell = new PdfPCell();
-                        cell.setPadding(8);
-                        cell.setBorderColor(BORDER);
-                        cell.addElement(new Paragraph(postFile.getFileName(), new Font(Font.HELVETICA, 10, Font.BOLD)));
-                        Image image = Image.getInstance(filePath.toAbsolutePath().toString());
-                        addScaledImage(cell, image, 470, 240);
-                        imageCard.addCell(cell);
-                        document.add(imageCard);
-                        continue;
-                    }
-                } catch (Exception exception) {
-                    document.add(new Paragraph("Image attachment unavailable: " + postFile.getFileName(), bodyFont()));
-                    continue;
-                }
-            }
-
-            Paragraph attachment = new Paragraph();
-            attachment.add(new Chunk("• ", bodyFont()));
-            attachment.add(new Chunk(postFile.getFileName(), new Font(Font.HELVETICA, 10, Font.BOLD)));
-            attachment.add(new Chunk(" (" + nullToEmpty(postFile.getFileType()) + ")", bodyFont()));
-            document.add(attachment);
-        }
     }
 
     private Optional<Image> loadImage(String source) {
@@ -290,11 +238,6 @@ public class PostPdfServiceImpl implements PostPdfService {
         return post.getTags().stream()
                 .map(Tag::getName)
                 .collect(Collectors.joining(", "));
-    }
-
-    private boolean isImageFile(PostFile postFile) {
-        String fileType = postFile.getFileType();
-        return fileType != null && fileType.toLowerCase().startsWith("image/");
     }
 
     private Font bodyFont() {

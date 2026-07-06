@@ -318,33 +318,47 @@
             </c:if>
         </div>
 
-        <div id="commentsToggleWrapper" style="display: none;">
-            <h2 id="commentCountHeader" data-count="${totalComments}"> Comments (${totalComments})</h2>
-            <c:if test="${not empty userLoggedIn}">
-                <form id="commentForm" style="margin-bottom: 30px;">
-                    <input type="hidden" id="postId" name="postId" value="${post.id}" />
-                    <div class="form-group">
-                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Write a comment..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
-                    </div>
-                    <button type="submit" class="button button-primary" style="margin-top: 10px;">Post Comment</button>
-                </form>
-            </c:if>
-            
-            <c:if test="${empty userLoggedIn}">
-                <p style="color: #666;">Please <a href="${pageContext.request.contextPath}/login">Login</a> to write a comment.</p>
-            </c:if>
- 
-            <c:if test="${empty comments}">
-                <p style="color: #888;" id="noCommentsMessage">No comments yet.</p>
-            </c:if>
-            
-            <c:if test="${not empty comments}">
-                <div id="commentListContainer" class="comment-list" style="display: flex; flex-direction: column; gap: 16px;">
-                    <c:forEach var="comment" items="${comments}">
-                        <div class="comment-item" id="comment-${comment.id}" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">
-                                <strong><c:out value="${comment.user.username}" /></strong>
-                                <span>${comment.createdAt}</span>
+            <c:if test="${not empty contents}">
+                <div class="public-content-grid" aria-label="Cheat sheet sections">
+                    <c:forEach var="content" items="${contents}">
+                        <article class="public-content-card">
+                            <header class="public-content-card-header">
+                                <h2>
+                                    <c:choose>
+                                        <c:when test="${not empty content.subtitle}"><c:out value="${content.subtitle}" /></c:when>
+                                        <c:otherwise>Untitled Section</c:otherwise>
+                                    </c:choose>
+                                </h2>
+                                <span><c:out value="${content.contentType}" /></span>
+                            </header>
+
+                            <div class="public-content-card-body">
+                                <c:choose>
+                                    <c:when test="${content.contentType == 'CODE'}">
+                                        <pre class="public-code-content"><code><c:out value="${content.contentData}" /></code></pre>
+                                    </c:when>
+                                    <c:when test="${content.contentType == 'IMAGE'}">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(content.contentData, '/')}">
+                                                <img class="public-section-image" src="${pageContext.request.contextPath}${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img class="public-section-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:when>
+                                    <c:when test="${content.contentType == 'VIDEO'}">
+                                        <video class="public-section-video" controls src="${fn:escapeXml(content.contentData)}"></video>
+                                    </c:when>
+                                    <c:when test="${content.contentType == 'LINK'}">
+                                        <a class="public-section-link" href="${fn:escapeXml(content.contentData)}" target="_blank" rel="noopener noreferrer">
+                                            <c:out value="${content.contentData}" />
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <p class="public-text-content"><c:out value="${content.contentData}" /></p>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                             <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;"><c:out value="${comment.content}" /></p>
                             
@@ -380,84 +394,27 @@
         </div>
     </article>
 
-    <section class="public-content-section">
-        <c:if test="${empty contents}">
-            <section class="empty-state">
-                <h2>No content sections yet</h2>
-            </section>
-        </c:if>
+        <div class="public-back-actions">
+            <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>
+        </div>
+    </main>
 
-        <c:if test="${not empty contents}">
-            <div class="public-content-grid" aria-label="Cheat sheet sections">
-                <c:forEach var="content" items="${contents}">
-                    <article class="public-content-card">
-                        <header class="public-content-card-header">
-                            <h2>
-                                <c:choose>
-                                    <c:when test="${not empty content.subtitle}"><c:out value="${content.subtitle}" /></c:when>
-                                    <c:otherwise>Untitled Section</c:otherwise>
-                                </c:choose>
-                            </h2>
-                            <span><c:out value="${content.contentType}" /></span>
-                        </header>
-
-                        <div class="public-content-card-body">
-                            <c:choose>
-                                <c:when test="${content.contentType == 'CODE'}">
-                                    <pre class="public-code-content"><code><c:out value="${content.contentData}" /></code></pre>
-                                </c:when>
-                                <c:when test="${content.contentType == 'IMAGE'}">
-                                    <img class="public-section-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
-                                </c:when>
-                                <c:when test="${content.contentType == 'VIDEO'}">
-                                    <video class="public-section-video" controls src="${fn:escapeXml(content.contentData)}"></video>
-                                </c:when>
-                                <c:when test="${content.contentType == 'LINK'}">
-                                    <a class="public-section-link" href="${fn:escapeXml(content.contentData)}" target="_blank" rel="noopener noreferrer">
-                                        <c:out value="${content.contentData}" />
-                                    </a>
-                                </c:when>
-                                <c:when test="${content.contentType == 'TABLE'}">
-                                    <pre class="public-table-content"><c:out value="${content.contentData}" /></pre>
-                                </c:when>
-                                <c:otherwise>
-                                    <p class="public-text-content"><c:out value="${content.contentData}" /></p>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </article>
-                </c:forEach>
-            </div>
-        </c:if>
-    </section>
-
-    <c:if test="${not empty postFiles}">
-        <section class="attachment-panel">
-            <h2>Attachments</h2>
-            <ul class="attachment-list">
-                <c:forEach var="postFile" items="${postFiles}">
-                    <li>
-                        <a class="button button-secondary"
-                           href="${pageContext.request.contextPath}/posts/${post.slug}/files/${postFile.id}"
-                           target="_blank">
-                            <c:out value="${postFile.fileName}" />
-                        </a>
-                    </li>
-                </c:forEach>
-            </ul>
-        </section>
-    </c:if>
-
-    <div class="public-back-actions">
-        <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>
-    </div>
-
-    <!-- Report Modal -->
-    <div id="reportModal" class="modal-mask" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center;">
-        <div style="background: #ffffff; padding: 24px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-family: inherit;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
-                <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #0f172a;" id="reportModalTitle">Report Comment</h3>
-                <button type="button" onclick="closeReportModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #64748b; line-height: 1;">&times;</button>
+    <div id="reportModalBackdrop" class="report-modal-backdrop" onclick="closeReportModal(event)">
+        <div class="report-modal" onclick="event.stopPropagation()">
+            <h3 id="reportModalTitle">Report Content</h3>
+            <label for="reportReason">Reason</label>
+            <select id="reportReason">
+                <option value="TEXT">Inappropriate text</option>
+                <option value="CODE">Harmful code</option>
+                <option value="IMAGE">Inappropriate image</option>
+                <option value="VIDEO">Inappropriate video</option>
+                <option value="LINK">Suspicious link</option>
+            </select>
+            <label for="reportDescription">Details (optional)</label>
+            <textarea id="reportDescription" rows="4" placeholder="Describe the issue..."></textarea>
+            <div class="report-modal-actions">
+                <button type="button" class="button button-secondary" onclick="closeReportModal()">Cancel</button>
+                <button type="button" class="button btn-report" onclick="submitReport()">Submit Report</button>
             </div>
             <form id="reportForm" onsubmit="handleReportSubmit(event)">
                 <input type="hidden" id="reportTargetType" value="comment">

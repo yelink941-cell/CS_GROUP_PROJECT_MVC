@@ -3,19 +3,17 @@ package com.hibernate.controller;
 import com.hibernate.entity.Post;
 import com.hibernate.entity.User;
 import com.hibernate.entity.enums.ContentType;
+import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.entity.enums.PostVisibility;
 import com.hibernate.service.BookmarkService;
 import com.hibernate.service.CategoryService;
 import com.hibernate.service.CollectionService; 
 import com.hibernate.service.CommentService;
 import com.hibernate.service.PostContentService;
-import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.TagService;
-import com.hibernate.service.UserService;
 
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequiredArgsConstructor
@@ -42,16 +40,12 @@ public class PostController {
     private final CategoryService categoryService;
     private final TagService tagService;
     private final CollectionService collectionService; 
+
+    
     private final PostContentService postContentService;
-    private final PostFileService postFileService;
     private final PostLikeService postLikeService; 
     private final CommentService commentService;
     private final BookmarkService bookmarkService;
-    private final UserService userService;  // ✅ Merge: UserService ထည့်ပါ
-
-    // =========================================================
-    // 1. LIST POSTS (User)
-    // =========================================================
     @GetMapping
     public String listPosts(Model model, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -64,21 +58,10 @@ public class PostController {
         return "user/post/list";
     }
 
-    // =========================================================
-    // 2. SHOW CREATE FORM
-    // =========================================================
     @GetMapping("/new")
     public String showCreateForm(Model model, HttpSession session) {
         if (!isLoggedIn(session)) {
             return "redirect:/login";
-        }
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId != null) {
-            User u = userService.getUserById(userId);
-            if (u != null && u.isPostBanned()) {
-                session.setAttribute("error", "Your account is currently restricted from creating posts (" + u.getBanRemainingText() + ")");
-                return "redirect:/suspended";
-            }
         }
 
         model.addAttribute("post", new Post());
@@ -86,13 +69,9 @@ public class PostController {
         return "user/post/form";
     }
 
-    // =========================================================
-    // 3. CREATE POST
-    // =========================================================
     @PostMapping
     public String createPost(
             @RequestParam String title,
-            @RequestParam String slug,
             @RequestParam(required = false) String excerpt,
             @RequestParam Integer categoryId,
             @RequestParam(required = false) List<Integer> tagIds,
@@ -100,7 +79,7 @@ public class PostController {
             @RequestParam(value = "sectionSubtitles[]", required = false) List<String> sectionSubtitles,
             @RequestParam(value = "contentTypes[]", required = false) List<ContentType> contentTypes,
             @RequestParam(value = "contentDataList[]", required = false) List<String> contentDataList,
-            @RequestParam(value = "sortOrders[]", required = false) List<Integer> sortOrders,
+            @RequestParam(value = "contentImageFiles[]", required = false) List<MultipartFile> contentImageFiles,
             Model model,
             HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -109,28 +88,7 @@ public class PostController {
             return "redirect:/login";
         }
 
-        User dbUser = userService.getUserById(userId);
-        if (dbUser != null && dbUser.isPostBanned()) {
-            session.setAttribute("error", "Your account is currently restricted from creating posts (" + dbUser.getBanRemainingText() + ")");
-            return "redirect:/suspended";
-        }
-
-        Post post = buildPost(title, slug, excerpt, visibility);
-
-        if (postService.existsBySlug(slug)) {
-            model.addAttribute("errorMessage", "Post slug already exists.");
-            model.addAttribute("post", post);
-            model.addAttribute("selectedCategoryId", categoryId);
-            model.addAttribute("selectedTagIds", tagIds);
-            preserveSectionData(
-                    model,
-                    sectionSubtitles,
-                    contentTypes,
-                    contentDataList,
-                    sortOrders);
-            loadFormData(model);
-            return "user/post/form";
-        }
+        Post post = buildPost(title, excerpt, visibility);
 
         try {
             postService.createPost(
@@ -142,9 +100,9 @@ public class PostController {
                     sectionSubtitles,
                     contentTypes,
                     contentDataList,
-                    sortOrders);
+                    contentImageFiles);
             return "redirect:/user/posts";
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | IllegalStateException exception) {
             post.setId(null);
             model.addAttribute("errorMessage", exception.getMessage());
             model.addAttribute("post", post);
@@ -154,16 +112,12 @@ public class PostController {
                     model,
                     sectionSubtitles,
                     contentTypes,
-                    contentDataList,
-                    sortOrders);
+                    contentDataList);
             loadFormData(model);
             return "user/post/form";
         }
     }
 
-    // =========================================================
-    // 4. SHOW EDIT FORM
-    // =========================================================
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Integer id, Model model, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -173,23 +127,24 @@ public class PostController {
         }
 
         return postService.getPostById(id)
-                .filter(post -> post.getAuthor().getId().equals(userId))
+                .filter(post -> canUserManagePost(post, userId))
                 .map(post -> {
                     model.addAttribute("post", post);
+                    model.addAttribute(
+                            "selectedTagIds",
+                            post.getTags().stream()
+                                    .map(tag -> tag.getId())
+                                    .collect(Collectors.toList()));
                     loadFormData(model);
                     return "user/post/form";
                 })
                 .orElse("redirect:/user/posts");
     }
 
-    // =========================================================
-    // 5. UPDATE POST
-    // =========================================================
     @PostMapping("/update/{id}")
     public String updatePost(
             @PathVariable Integer id,
             @RequestParam String title,
-            @RequestParam String slug,
             @RequestParam(required = false) String excerpt,
             @RequestParam Integer categoryId,
             @RequestParam(required = false) List<Integer> tagIds,
@@ -202,19 +157,16 @@ public class PostController {
         }
 
         if (postService.getPostById(id)
-                .filter(existingPost -> existingPost.getAuthor().getId().equals(userId))
+                .filter(existingPost -> canUserManagePost(existingPost, userId))
                 .isEmpty()) {
             return "redirect:/user/posts";
         }
 
-        Post post = buildPost(title, slug, excerpt, visibility);
+        Post post = buildPost(title, excerpt, visibility);
         postService.updatePost(id, post, categoryId, tagIds, visibility);
         return "redirect:/user/posts";
     }
 
-    // =========================================================
-    // 6. DELETE POST
-    // =========================================================
     @GetMapping("/delete/{id}")
     public String deletePost(@PathVariable Integer id, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -224,7 +176,7 @@ public class PostController {
         }
 
         if (postService.getPostById(id)
-                .filter(post -> post.getAuthor().getId().equals(userId))
+                .filter(post -> canUserManagePost(post, userId))
                 .isEmpty()) {
             return "redirect:/user/posts";
         }
@@ -233,9 +185,7 @@ public class PostController {
         return "redirect:/user/posts";
     }
 
-    // =========================================================
-    // 7. POST DETAIL
-    // =========================================================
+    // 🎯 ဤနေရာတွင် Comment များကို ဖွင့်ပြီး မင်းရဲ့ JSP နှင့် အချက်အလက်များ ချိတ်ဆက်ပေးလိုက်ပါပြီ
     @GetMapping("/{slug}")
     public String showPostDetail(@PathVariable String slug, Model model, HttpSession session) {
         return postService.getPostBySlug(slug).map(post -> {
@@ -243,29 +193,19 @@ public class PostController {
             model.addAttribute("contents", post.getContents());
             
             Long userId = (Long) session.getAttribute("userId");
-            
-            // ✅ Default follow status to false
-            boolean isFollowingCreator = false; 
-            
             if (userId != null) {
-                if (post.getAuthor() != null) {
-                    // Calculate the real-time status straight from your database
-                    isFollowingCreator = userService.isFollowing(userId, post.getAuthor().getId());
-                }
-                
+                // 🟢 အရေးကြီး: Refresh လုပ်တိုင်း အခြေအနေကို DB ကနေ ပြန်ယူပါ
                 boolean hasLiked = postLikeService.hasUserLiked(post.getId(), userId);
                 model.addAttribute("hasUserLiked", hasLiked);
                 
                 boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, post.getId());
                 model.addAttribute("hasUserBookmarked", hasBookmarked);
                 
+                // Collections တွေကိုလည်း ဆွဲထုတ်ပေးပါ
                 model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
-                model.addAttribute("userLoggedIn", userId); 
             }
             
-            // ✅ Explicitly bind the real-time boolean flag to the view model context
-            model.addAttribute("isFollowing", isFollowingCreator);
-            
+            // Count များကိုလည်း ပို့ပေးပါ
             model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
             model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(post.getId()));
             model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
@@ -274,195 +214,21 @@ public class PostController {
         }).orElse("redirect:/user/posts");
     }
 
-    // =========================================================
-    // 8. LIKE
-    // =========================================================
-    @PostMapping("/like")
-    public ResponseEntity<Map<String, Object>> addLike(@RequestParam("postId") Integer postId, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-
-        Map<String, Object> response = new HashMap<>();
-        
-        // User က Login မဝင်ထားရင် 401 ပြန်ပို့မည်
-        if (userId == null) {
-            response.put("status", "unauthorized");
-            response.put("message", "Login ဝင်ရန် လိုအပ်ပါသည်။");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
-        
-        boolean isLikedNow = postLikeService.toggleLike(postId, userId);
-        long totalLikes = postLikeService.getLikeCount(postId);
-        
-        response.put("status", "success");
-        response.put("isLiked", isLikedNow);
-        response.put("totalLikes", totalLikes);
-        
-        return ResponseEntity.ok(response);
-    }
-
-    // =========================================================
-    // 9. ADD COMMENT
-    // =========================================================
-    @PostMapping("/comment/add")
-    public ResponseEntity<Map<String, Object>> addComment(
-            @RequestParam("postId") Integer postId, 
-            @RequestParam("commentText") String text, 
-            HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-
-        Map<String, Object> response = new HashMap<>();
-        
-        // User က Login မဝင်ထားရင် 401 ပြန်ပို့မည်
-        if (userId == null) {
-            response.put("status", "unauthorized");
-            response.put("message", "Login ဝင်ရန် လိုအပ်ပါသည်။");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
-        
-        postService.addComment(postId, userId, text);
-        response.put("status", "success");
-        response.put("totalComments", commentService.getTotalActiveComments(postId));
-        return ResponseEntity.ok(response);
-    }
-
-    // =========================================================
-    // 10. POST DETAILS (with ID)
-    // =========================================================
-    @GetMapping("/details/{id}")
-    public String getPostDetails(@PathVariable("id") Integer id, Model model, HttpSession session) {
-        Post post = postService.getPostById(id).orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        model.addAttribute("post", post);
-        model.addAttribute("contents", postContentService.getContentsByPostId(id));
-        model.addAttribute("postFiles", postFileService.getFilesByPostId(id));
-
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/login";
-        }
-        
-        if (userId != null) {
-            boolean hasLiked = postLikeService.hasUserLiked(id, userId);
-            model.addAttribute("hasUserLiked", hasLiked);
-            
-            boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, id);
-            model.addAttribute("hasUserBookmarked", hasBookmarked);
-            
-            model.addAttribute("userLoggedIn", userId); 
-        }
-        
-        model.addAttribute("likeCount", postLikeService.getLikeCount(id));
-        model.addAttribute("comments", commentService.getActiveParentComments(id));
-        model.addAttribute("totalComments", commentService.getTotalActiveComments(id));
-        model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(id));
-        
-        return "public/post/details"; 
-    }
-
-    // =========================================================
-    // 11. BOOKMARKS
-    // =========================================================
-    @GetMapping("/bookmark")
-    public String showMyBookmarks(Model model, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-
-        if (userId == null) {
-            return "redirect:/login";
-        }
-
-        model.addAttribute("posts", bookmarkService.getBookmarksByUserId(userId));
-        model.addAttribute("activeTab", "bookmarks");
-        
-        return "user/post/list"; 
-    }
-
-    // =========================================================
-    // 12. PENDING POSTS (Admin)
-    // =========================================================
-    @GetMapping("/pending")
-    public String pendingPosts(Model model, RedirectAttributes redirectAttributes) {
-        try {
-            // Get pending posts
-            List<Post> pendingPosts = postService.getPendingPosts();
-            
-            // Format date for display
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            List<Map<String, Object>> formattedPosts = pendingPosts.stream()
-                .map(post -> {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("id", post.getId());
-                    map.put("title", post.getTitle());
-                    map.put("slug", post.getSlug());
-                    map.put("category", post.getCategory());
-                    map.put("author", post.getAuthor());
-                    map.put("status", post.getStatus());
-                    map.put("createdAt", post.getCreatedAt() != null ? 
-                            post.getCreatedAt().format(formatter) : "");
-                    return map;
-                })
-                .collect(Collectors.toList());
-            
-            // Add data to model
-            model.addAttribute("posts", formattedPosts);
-            model.addAttribute("totalPending", pendingPosts.size());
-            model.addAttribute("totalPosts", postService.countAllPosts());
-            model.addAttribute("totalApproved", postService.countByStatus(com.hibernate.entity.enums.PostStatus.PUBLISHED));
-            model.addAttribute("totalRejected", postService.countByStatus(com.hibernate.entity.enums.PostStatus.REJECTED));
-            
-            return "admin/posts/pending";
-            
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", 
-                    "Error loading pending posts: " + e.getMessage());
-            return "redirect:/admin/dashboard";
-        }
-    }
-
-    // =========================================================
-    // 13. APPROVE POST (Admin)
-    // =========================================================
-    @PostMapping("/approve/{id}")
-    public String approvePost(@PathVariable Integer id, 
-                               RedirectAttributes redirectAttributes) {
-        try {
-            postService.approvePost(id);
-            redirectAttributes.addFlashAttribute("successMessage", 
-                    "Post approved successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", 
-                    "Error approving post: " + e.getMessage());
-        }
-        return "redirect:/admin/posts/pending";
-    }
-
-    // =========================================================
-    // 14. REJECT POST (Admin)
-    // =========================================================
-    @PostMapping("/reject/{id}")
-    public String rejectPost(@PathVariable Integer id, 
-                              @RequestParam("rejectionReason") String rejectionReason,
-                              RedirectAttributes redirectAttributes) {
-        try {
-            postService.rejectPost(id, rejectionReason);
-            redirectAttributes.addFlashAttribute("successMessage", 
-                    "Post rejected successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", 
-                    "Error rejecting post: " + e.getMessage());
-        }
-        return "redirect:/admin/posts/pending";
-    }
-
-    // =========================================================
-    // PRIVATE HELPER METHODS
-    // =========================================================
     private boolean isLoggedIn(HttpSession session) {
         return session.getAttribute("userId") != null;
     }
 
-    private Post buildPost(String title, String slug, String excerpt, PostVisibility visibility) {
+    private boolean canUserManagePost(Post post, Long userId) {
+        return post != null
+                && post.getAuthor() != null
+                && post.getAuthor().getId().equals(userId)
+                && post.getDeletedAt() == null
+                && !PostStatus.USER_DELETED.equals(post.getStatus());
+    }
+
+    private Post buildPost(String title, String excerpt, PostVisibility visibility) {
         Post post = new Post();
         post.setTitle(title);
-        post.setSlug(slug);
         post.setExcerpt(excerpt);
         post.setVisibility(visibility);
         return post;
@@ -477,8 +243,7 @@ public class PostController {
                 new ContentType[] {
                     ContentType.TEXT,
                     ContentType.CODE,
-                    ContentType.IMAGE,
-                    ContentType.TABLE
+                    ContentType.IMAGE
                 });
     }
 
@@ -486,11 +251,105 @@ public class PostController {
             Model model,
             List<String> sectionSubtitles,
             List<ContentType> contentTypes,
-            List<String> contentDataList,
-            List<Integer> sortOrders) {
+            List<String> contentDataList) {
         model.addAttribute("sectionSubtitles", sectionSubtitles);
         model.addAttribute("selectedContentTypes", contentTypes);
         model.addAttribute("contentDataList", contentDataList);
-        model.addAttribute("sortOrders", sortOrders);
     }
+    
+    @PostMapping("/like")
+    public ResponseEntity<Map<String, Object>> addLike(@RequestParam("postId") Integer postId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+
+       
+        Map<String, Object> response = new HashMap<>();
+        
+        if (userId != null) {
+            postLikeService.toggleLike(postId, userId); 
+            // Service တွင် သတ်မှတ်ထားသော hasUserLiked method အမည်ကို အသုံးပြုခြင်း
+            boolean isLikedNow = postLikeService.hasUserLiked(postId, userId); 
+            long totalLikes = postLikeService.getLikeCount(postId);
+            
+            response.put("status", "success");
+            response.put("isLiked", isLikedNow);
+            response.put("totalLikes", totalLikes);
+            
+            return ResponseEntity.ok(response);
+        }
+        
+        response.put("status", "unauthorized");
+        response.put("message", "Login ဝင်ရန် လိုအပ်ပါသည်။");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @PostMapping("/comment/add")
+    public ResponseEntity<Map<String, Object>> addComment(
+            @RequestParam("postId") Integer postId, 
+            @RequestParam("commentText") String text, 
+            HttpSession session) {
+    	 Long userId = (Long) session.getAttribute("userId");
+
+    	
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        if (userId != null) {
+            postService.addComment(postId, userId, text);
+            response.put("status", "success");
+            response.put("totalComments", commentService.getTotalActiveComments(postId));
+            return ResponseEntity.ok(response);
+        }
+        
+        response.put("status", "unauthorized");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    
+    @GetMapping("/details/{id}")
+    public String getPostDetails(@PathVariable("id") Integer id, Model model, HttpSession session) {
+        Post post = postService.getPostById(id).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        model.addAttribute("post", post);
+        model.addAttribute("contents", postContentService.getContentsByPostId(id));
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+        if (userId != null) {
+        	boolean hasLiked = postLikeService.hasUserLiked(id, userId); // DB ကနေ စစ်မယ်
+        	model.addAttribute("hasUserLiked", hasLiked);
+            
+            // 🟢 အမှန်ပြင်ဆင်ရမည့်နေရာ - BookmarkService အစား bookmarkService (variable name) ကို သုံးပါ
+            boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, id);
+            model.addAttribute("hasUserBookmarked", hasBookmarked);
+        }
+        
+        model.addAttribute("likeCount", postLikeService.getLikeCount(id));
+        model.addAttribute("comments", commentService.getActiveParentComments(id));
+        model.addAttribute("totalComments", commentService.getTotalActiveComments(id));
+        model.addAttribute("userLoggedIn", userId); 
+        
+        model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(id));
+        
+        return "public/post/details"; 
+    }
+    @GetMapping("/bookmark")
+    public String showMyBookmarks(Model model, HttpSession session) {
+      Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+    	
+        // Bookmarked လုပ်ထားသော Post စာရင်းများကို ထည့်ပေးခြင်း
+        model.addAttribute("posts", bookmarkService.getBookmarksByUserId(userId));
+        
+        // Tab အခြေအနေကို သတ်မှတ်ပေးခြင်း (Navbar သို့မဟုတ် sidebar တွင် Active ဖြစ်နေစေရန်)
+        model.addAttribute("activeTab", "bookmarks");
+        
+        // 🟢 သီးသန့်ဖိုင်အသစ်မသုံးတော့ဘဲ My Posts စာရင်းပြ JSP ဖိုင်ကို ပြန်သုံးခြင်း
+        return "user/post/list"; 
+    }
+    
 }
