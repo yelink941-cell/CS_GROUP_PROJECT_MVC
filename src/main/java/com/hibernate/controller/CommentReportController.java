@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/comments")
+@RequestMapping("/comments/reports")
 public class CommentReportController {
 
     private final ReportService reportService;

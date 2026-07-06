@@ -47,4 +47,5 @@ public interface PostRepository {
     List<Post> findPendingPosts();
 
     List<Post> findPublishedPublicPosts();
+    
 }

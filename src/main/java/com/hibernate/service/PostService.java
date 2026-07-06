@@ -65,9 +65,11 @@ public interface PostService {
 
     void rejectPost(Integer id, String rejectionReason);
     
-    void toggleLike(Integer postId, Long userId);
+    boolean toggleLike(Integer postId, Long userId);
     
     void addComment(Integer postId, Long userId, String text);
     
     boolean hasUserLiked(Integer postId, Long userId);
 }
+    
+

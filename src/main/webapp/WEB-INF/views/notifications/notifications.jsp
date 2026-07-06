@@ -55,23 +55,28 @@
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 16px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 20px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
         }
         .notification-card.unread {
             border-left: 4px solid #2563eb;
             background: #f8fafc;
         }
         .notification-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 700;
             color: #0f172a;
-            margin: 0 0 6px;
+            margin: 0 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .notification-message {
-            color: #475569;
-            margin: 0 0 10px;
-            line-height: 1.5;
+            color: #334155;
+            margin: 0 0 12px;
+            line-height: 1.6;
+            font-size: 14px;
         }
         .notification-meta {
             display: flex;
@@ -81,21 +86,32 @@
             color: #94a3b8;
         }
         .badge-type {
-            background: #e2e8f0;
-            color: #475569;
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
+        .badge-event { background: #d1fae5; color: #065f46; }
+        .badge-announcement { background: #e0f2fe; color: #0369a1; }
+        .badge-system { background: #fef3c7; color: #92400e; }
+        .badge-default { background: #e2e8f0; color: #475569; }
+
         .btn-read {
             background: transparent;
             border: 1px solid #cbd5e1;
             color: #475569;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-read:hover {
+            background: #e2e8f0;
+            color: #0f172a;
         }
         .empty-state {
             text-align: center;
@@ -121,8 +137,8 @@
 <main class="notifications-page">
     <div class="page-header">
         <div>
-            <h1>&#128276; Notifications</h1>
-            <p>သင့်အတွက် အရေးကြီးသော အကြောင်းကြားချက်များ</p>
+            <h1><i class="fa-solid fa-bell" style="color: #2563eb;"></i> Notifications</h1>
+            <p>Important event announcements and notifications for you</p>
         </div>
         <c:if test="${unreadCount > 0}">
             <form action="${pageContext.request.contextPath}/notifications/read-all" method="POST" style="margin:0;">
@@ -142,18 +158,22 @@
         <c:choose>
             <c:when test="${empty notifications}">
                 <div class="empty-state">
-                    <p style="font-size:18px; margin-bottom:8px;">&#128236; No notifications yet</p>
-                    <p>Admin actions သို့မဟုတ် moderation updates ရောက်လာရင် ဒီမှာ ပြပါမယ်။</p>
+                    <p style="font-size:18px; margin-bottom:8px;">📬 No notifications yet</p>
+                    <p>When admin broadcasts or moderation updates arrive, they will appear here.</p>
                 </div>
             </c:when>
             <c:otherwise>
                 <c:forEach var="n" items="${notifications}">
                     <div class="notification-card ${n.isRead ? '' : 'unread'}">
-                        <h3 class="notification-title"><c:out value="${n.title}"/></h3>
+                        <h3 class="notification-title">
+                            <c:out value="${n.title}"/>
+                        </h3>
                         <p class="notification-message"><c:out value="${n.message}"/></p>
                         <div class="notification-meta">
                             <span>
-                                <span class="badge-type"><c:out value="${n.type}"/></span>
+                                <span class="badge-type ${n.type == 'EVENT' ? 'badge-event' : (n.type == 'ANNOUNCEMENT' ? 'badge-announcement' : (n.type == 'SYSTEM' ? 'badge-system' : 'badge-default'))}">
+                                    <c:out value="${n.type}"/>
+                                </span>
                                 &nbsp;·&nbsp;
                                 <c:out value="${n.createdAt}"/>
                             </span>

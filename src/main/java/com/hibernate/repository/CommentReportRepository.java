@@ -7,6 +7,7 @@ public interface CommentReportRepository {
     void save(CommentReport report);
     CommentReport findPendingByCommentAndReporter(Integer commentId, Long reporterId);
     CommentReport findById(Integer id);
+    List<CommentReport> findPendingByCommentId(Integer commentId);
     List<CommentReport> findAllPending();
     List<CommentReport> findAllHistory();
 }

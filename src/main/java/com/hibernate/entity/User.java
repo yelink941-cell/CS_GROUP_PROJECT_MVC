@@ -58,6 +58,67 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "ban_expires_at")
+    private LocalDateTime banExpiresAt;
+
+    @Column(name = "ban_reason", columnDefinition = "TEXT")
+    private String banReason;
+
+    @Column(name = "ban_type", length = 30)
+    private String banType = "FULL";
+
+    @Column(name = "ban_duration", length = 30)
+    private String banDuration = "PERMANENT";
+
+    public String getBanDurationLabel() {
+        if ("1_WEEK".equalsIgnoreCase(this.banDuration)) return "1 Week";
+        if ("1_MONTH".equalsIgnoreCase(this.banDuration)) return "1 Month";
+        if ("1_YEAR".equalsIgnoreCase(this.banDuration)) return "1 Year";
+        return "Permanent";
+    }
+
+    public boolean isCurrentlyBanned() {
+        if (this.status == UserStatus.BANNED) {
+            if (this.banExpiresAt == null) {
+                return true; // Permanent ban
+            }
+            return LocalDateTime.now().isBefore(this.banExpiresAt);
+        }
+        return false;
+    }
+
+    public boolean isPostBanned() {
+        if (!isCurrentlyBanned()) return false;
+        return "FULL".equalsIgnoreCase(this.banType) || "POST_ONLY".equalsIgnoreCase(this.banType);
+    }
+
+    public boolean isCommentBanned() {
+        if (!isCurrentlyBanned()) return false;
+        return "FULL".equalsIgnoreCase(this.banType) || "COMMENT_ONLY".equalsIgnoreCase(this.banType);
+    }
+
+    public String getBanRemainingText() {
+        if (!isCurrentlyBanned()) {
+            return "Active";
+        }
+        String scopeLabel = "FULL".equalsIgnoreCase(this.banType) ? "Full Ban" : ("POST_ONLY".equalsIgnoreCase(this.banType) ? "Post Ban" : "Comment Ban");
+        String durLabel = getBanDurationLabel();
+        if (this.banExpiresAt == null) {
+            return "Type: " + durLabel + " (" + scopeLabel + ")";
+        }
+        java.time.Duration remaining = java.time.Duration.between(LocalDateTime.now(), this.banExpiresAt);
+        long days = remaining.toDays();
+        long hours = remaining.toHours() % 24;
+        if (days > 0) {
+            return "Type: " + durLabel + " (" + scopeLabel + ") - " + days + "d " + hours + "h remaining";
+        } else if (hours > 0) {
+            return "Type: " + durLabel + " (" + scopeLabel + ") - " + hours + "h remaining";
+        } else {
+            long mins = Math.max(1, remaining.toMinutes());
+            return "Type: " + durLabel + " (" + scopeLabel + ") - " + mins + "m remaining";
+        }
+    }
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -69,8 +130,7 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserProfile profile;
     
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private UserPreference preferences;
+    
     
     @Column(name = "reset_token", length = 100)
     private String resetToken;

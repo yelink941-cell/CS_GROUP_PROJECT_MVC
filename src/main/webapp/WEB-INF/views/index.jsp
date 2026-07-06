@@ -1,4 +1,4 @@
-﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -272,6 +272,12 @@
                             <div class="accent-label">Dashboard Active</div>
                             <h2>Welcome back, <c:out value="${sessionScope.currentUser.username}"/> &#128075;</h2>
                             <p>Explore categories, discover popular cheat sheets, and continue learning from community-approved guides.</p>
+                            <p>You can now use the top navigation bar from your dashboard to look up references and manage your private notes.</p>
+                            <div style="margin-top: 18px;">
+                                <a href="${pageContext.request.contextPath}/notes" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 14px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); transition: all 0.2s;">
+                                    📝 My Private Notes
+                                </a>
+                            </div>
                         </c:when>
                         
                         <c:otherwise>

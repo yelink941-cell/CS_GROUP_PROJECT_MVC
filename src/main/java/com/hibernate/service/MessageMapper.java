@@ -46,6 +46,18 @@ public final class MessageMapper {
             response.setReadCount(readerIds.size());
         }
 
+        if (message.getReactions() != null && !message.getReactions().isEmpty()) {
+            java.util.Map<String, List<Long>> grouped = message.getReactions().stream()
+                    .collect(Collectors.groupingBy(com.hibernate.entity.MessageReaction::getEmoji,
+                            Collectors.mapping(com.hibernate.entity.MessageReaction::getUserId, Collectors.toList())));
+
+            List<com.hibernate.dto.MessageReactionDto> reactionDtos = grouped.entrySet().stream()
+                    .map(e -> new com.hibernate.dto.MessageReactionDto(e.getKey(), e.getValue().size(), e.getValue()))
+                    .collect(Collectors.toList());
+
+            response.setReactions(reactionDtos);
+        }
+
         return response;
     }
 

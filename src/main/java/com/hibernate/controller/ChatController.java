@@ -15,6 +15,7 @@ import com.hibernate.dto.MarkReadResponse;
 import com.hibernate.dto.MessageReportRequest;
 import com.hibernate.dto.MessageRequest;
 import com.hibernate.dto.MessageResponse;
+import com.hibernate.dto.ReactionRequest;
 import com.hibernate.entity.Conversation;
 import com.hibernate.entity.Message;
 import com.hibernate.entity.User;
@@ -31,6 +32,28 @@ public class ChatController {
     						ChatEventBroadcaster broadcaster) {
         this.chatService = chatService;
         this.broadcaster = broadcaster;
+    }
+
+    @PostMapping("/messages/{messageId}/reactions")
+    public ResponseEntity<?> toggleReaction(
+            @PathVariable Long messageId,
+            @RequestBody ReactionRequest request,
+            HttpSession session) {
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+        try {
+            MessageResponse response = chatService.toggleReaction(messageId, currentUser.getId(), request.getEmoji());
+            broadcaster.broadcastReaction(response);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
     
     @GetMapping("/inbox")
@@ -210,6 +233,29 @@ public class ChatController {
             Map<String, Object> body = new HashMap<>();
             body.put("userId", userId);
             body.put("status", "blocked");
+            return ResponseEntity.ok(body);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/users/{userId}/unblock")
+    public ResponseEntity<?> unblockUser(
+            @PathVariable Long userId,
+            HttpSession session) {
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+        try {
+            chatService.unblockUser(currentUser.getId(), userId);
+            Map<String, Object> body = new HashMap<>();
+            body.put("userId", userId);
+            body.put("status", "unblocked");
             return ResponseEntity.ok(body);
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());

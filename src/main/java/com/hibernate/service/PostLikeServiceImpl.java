@@ -8,6 +8,7 @@ import com.hibernate.repository.PostRepository;
 import com.hibernate.repository.UserRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,16 +20,20 @@ public class PostLikeServiceImpl implements PostLikeService {
     private final PostLikeRepository postlikeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final SessionFactory sessionFactory;
 
     @Override
     @Transactional
-    public void toggleLike(Integer postId, Long userId) {
-        // userId မှာ Long အမျိုးအစားဖြစ်ပြီးသားမို့ .longValue() ထပ်ထည့်ရန် မလိုတော့ပါ
+    public boolean toggleLike(Integer postId, Long userId) {
         Optional<PostLike> existingLike = postlikeRepository.findByPostIdAndUserId(postId, userId);
 
         if (existingLike.isPresent()) {
             // Like ပေးပြီးသားဖြစ်နေလျှင် Unlike လုပ်သည် (Delete)
             postlikeRepository.delete(existingLike.get());
+            // Flush & clear session cache so that countByPostId returns the correct value after delete
+            sessionFactory.getCurrentSession().flush();
+            sessionFactory.getCurrentSession().clear();
+            return false; // unlike လုပ်လိုက်
         } else {
             // Like မပေးရသေးလျှင် အသစ်ထည့်သည် (Save)
             Post post = postRepository.findById(postId)
@@ -44,6 +49,7 @@ public class PostLikeServiceImpl implements PostLikeService {
             newLike.setUser(user);
             
             postlikeRepository.save(newLike);
+            return true; // like ပေးလိုက်
         }
     }
 

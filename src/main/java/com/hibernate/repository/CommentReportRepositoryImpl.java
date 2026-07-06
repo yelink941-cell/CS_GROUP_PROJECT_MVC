@@ -40,10 +40,20 @@ public class CommentReportRepositoryImpl implements CommentReportRepository {
     }
 
     @Override
+    public List<CommentReport> findPendingByCommentId(Integer commentId) {
+        return getSession()
+                .createQuery(
+                    "FROM CommentReport r JOIN FETCH r.comment c JOIN FETCH c.post JOIN FETCH c.user JOIN FETCH r.reporter WHERE r.comment.id = :commentId AND r.status = 'PENDING'",
+                    CommentReport.class)
+                .setParameter("commentId", commentId)
+                .getResultList();
+    }
+
+    @Override
     public List<CommentReport> findAllPending() {
         return getSession()
                 .createQuery(
-                    "FROM CommentReport r JOIN FETCH r.comment JOIN FETCH r.reporter WHERE r.status = 'PENDING' ORDER BY r.createdAt DESC",
+                    "FROM CommentReport r JOIN FETCH r.comment c JOIN FETCH c.post JOIN FETCH c.user JOIN FETCH r.reporter WHERE r.status = 'PENDING' ORDER BY r.createdAt DESC",
                     CommentReport.class)
                 .getResultList();
     }

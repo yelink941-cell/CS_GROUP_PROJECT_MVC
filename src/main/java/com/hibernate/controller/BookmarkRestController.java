@@ -18,13 +18,32 @@ public class BookmarkRestController {
 
     private final BookmarkService bookmarkService;
 
-    @PostMapping("/api/toggle-bookmark")
+    @PostMapping({"/api/toggle-bookmark", "/bookmark"})
     @ResponseBody
     public ResponseEntity<Map<String, Object>> toggleBookmark(
             @RequestParam("postId") Integer postId,
             HttpSession session) {
+
+        Object sessionUserId = session.getAttribute("userId");
+        Long userId = null;
+        if (sessionUserId instanceof Number) {
+            userId = ((Number) sessionUserId).longValue();
+        } else if (sessionUserId != null) {
+            userId = Long.valueOf(sessionUserId.toString());
+        }
         
-        Long userId = (Long) session.getAttribute("userId");
+        // (ယခင်ရေးထားသော Fallback Logic များ ဆက်လက်ထားရှိပါ)
+        if (userId == null) {
+            com.hibernate.entity.User sessionUser = (com.hibernate.entity.User) session.getAttribute("user");
+            if (sessionUser == null) {
+                sessionUser = (com.hibernate.entity.User) session.getAttribute("currentUser");
+            }
+            if (sessionUser != null) {
+                userId = Long.valueOf(sessionUser.getId());
+                session.setAttribute("userId", userId);
+            }
+        }
+        
         Map<String, Object> response = new HashMap<>();
         
         if (userId == null) {

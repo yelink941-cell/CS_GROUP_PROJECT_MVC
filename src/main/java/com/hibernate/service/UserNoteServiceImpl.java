@@ -38,6 +38,10 @@ public class UserNoteServiceImpl implements UserNoteService {
     @Override
     @Transactional
     public void saveNote(UserNote note, Long userId) {
+        if (note.getId() != null) {
+            updateNote(note, userId);
+            return;
+        }
         if (note.getUser() == null) {
             User user = sessionFactory.getCurrentSession().get(User.class, userId);
             note.setUser(user);
@@ -49,11 +53,29 @@ public class UserNoteServiceImpl implements UserNoteService {
 
     @Override
     @Transactional
+    public void updateNote(UserNote note, Long userId) {
+        if (note == null || note.getId() == null) {
+            throw new IllegalArgumentException("Note ID must not be null for update.");
+        }
+        UserNote existing = userNoteRepository.findById(note.getId());
+        if (existing == null || existing.getUser() == null || !existing.getUser().getId().equals(userId)) {
+            throw new SecurityException("Unauthorized: You do not own this note.");
+        }
+        existing.setTitle(note.getTitle());
+        existing.setContent(note.getContent());
+        existing.setIsPrivate(true);
+        userNoteRepository.update(existing);
+    }
+
+    @Override
+    @Transactional
     public void deleteNote(Integer id, Long userId) {
         UserNote note = userNoteRepository.findById(id);
         // Ownership check — သူတစ်ပါးရဲ့ note ကို ဖျက်လို့မရ
-        if (note != null && note.getUser().getId().equals(userId)) {
+        if (note != null && note.getUser() != null && note.getUser().getId().equals(userId)) {
             userNoteRepository.delete(note);
+        } else if (note != null) {
+            throw new SecurityException("Unauthorized: You do not own this note.");
         }
     }
 

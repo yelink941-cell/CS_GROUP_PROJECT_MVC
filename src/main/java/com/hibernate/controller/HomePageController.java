@@ -13,6 +13,11 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession; // 🎯 Session သုံးရန် Import ထည့်ပေးထားသည်
+import com.hibernate.service.RatingService;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -80,19 +85,45 @@ public class HomePageController {
                     model.addAttribute("post", post);
                  // PostContentService (စာလုံးအကြီး) နေရာတွင် postContentService (စာလုံးအသေး) ကို သုံးပါ
                     model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
-                    
-                    // 🎯 ဤလိုင်းလေးကို အသစ်တိုးပေးလိုက်ပါဗျာ (JSP ထဲ တိုက်ရိုက်သယ်ယူနိုင်ရန်)
-                    model.addAttribute("currentPostSlug", slug); 
-                    
+                    model.addAttribute("postFiles", postFileService.getFilesByPostId(post.getId()));
+
+                    model.addAttribute("currentPostSlug", slug);
+
+                    // 🟢 userId ကို session ထဲကနေ ထုတ်ယူပြီး fallback လုပ်ပေးခြင်း
+                    Long userId = (Long) session.getAttribute("userId");
+
+                    if (userId == null) {
+                        com.hibernate.entity.User sessionUser = (com.hibernate.entity.User) session.getAttribute("user");
+                        if (sessionUser == null) {
+                            sessionUser = (com.hibernate.entity.User) session.getAttribute("currentUser");
+                        }
+
+                        if (sessionUser != null) {
+                            userId = Long.valueOf(sessionUser.getId());
+                            session.setAttribute("userId", userId);
+                        }
+                    }
+
+                    // 🟢 Comments (parent + nested replies) - comment box ပေါ်ရန် လိုအပ်ပါသည်
+                    model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
+                    model.addAttribute("totalComments", commentService.getTotalActiveComments(post.getId()));
+
+                    // 🟢 Like count
+                    model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
+
+                    // 🟢 Rating data
+                    model.addAttribute("averageRating", ratingService.getAverageRating(post.getId()));
+                    model.addAttribute("totalRatings", ratingService.getRatingCount(post.getId()));
+
                     if (userId != null) {
+                        // 🟢 Logged-in user ၏ state များ - comment box / rating stars / button color အတွက်
+                        model.addAttribute("userLoggedIn", userId);
                         model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
                         model.addAttribute("hasUserLiked", postLikeService.hasUserLiked(post.getId(), userId));
                         model.addAttribute("hasUserBookmarked", bookmarkService.hasUserBookmarked(userId, post.getId()));
+                        model.addAttribute("userRating", ratingService.getUserRating(post.getId(), userId));
                     }
 
-                    model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
-                    model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
-                    
                     return "public/post/details";
                 })
                 .orElse("redirect:/posts/public");

@@ -7,6 +7,7 @@ public interface UserNoteService {
     List<UserNote> getNotesByUser(Long userId);
     UserNote getNoteById(Integer id, Long userId);
     void saveNote(UserNote note, Long userId);
+    void updateNote(UserNote note, Long userId);
     void deleteNote(Integer id, Long userId);
 
     List<UserNote> getAdminNotesForUser(Long userId);

@@ -69,6 +69,8 @@ public interface ChatService {
 
     void blockUser(Long currentUserId, Long targetUserId);
 
+    void unblockUser(Long currentUserId, Long targetUserId);
+
 
 
     MarkReadResponse markMessagesAsRead(Long conversationId, Long userId, Long upToMessageId);
@@ -83,6 +85,8 @@ public interface ChatService {
     MessageResponse toMessageResponse(Message message);
 
 
+
+    MessageResponse toggleReaction(Long messageId, Long userId, String emoji);
 
     boolean isParticipant(Long conversationId, Long userId);
 
