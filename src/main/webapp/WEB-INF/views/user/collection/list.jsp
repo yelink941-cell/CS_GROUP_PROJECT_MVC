@@ -473,6 +473,34 @@
                 font-size: 12px;
             }
         }
+            /* ===== BACK LINK ===== */
+        .back-link-wrapper {
+            margin-top: 35px;
+            margin-bottom: 24px;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            padding: 8px 16px;
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #e8edf4;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        
+        .back-link:hover {
+            color: #4f46e5;
+            transform: translateX(-4px);
+            border-color: #c7d2fe;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.10);
+        }
     </style>
 </head>
 <body class="public-list-page">
@@ -493,7 +521,11 @@
                 ➕ Create New Folder
             </button>
         </div>
-
+<div class="back-link-wrapper">
+            <a href="${pageContext.request.contextPath}/" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
         <!-- ===== FOLDERS GRID ===== -->
         <section class="folder-grid">
             <c:choose>

@@ -361,7 +361,7 @@
                         </div>
                     </c:if>
 
-                    <%-- 4. Users Section --%>
+                    <%-- 4. Users Section (Fixed to correctly route to public views) --%>
                     <c:if test="${not empty userResults}">
                         <div class="result-section">
                             <div class="section-title">👥 Users</div>
@@ -370,7 +370,8 @@
                                     <div>
                                         <c:choose>
                                             <c:when test="${not empty sessionScope.currentUser}">
-                                                <a href="${pageContext.request.contextPath}/profile?id=${u.id}" 
+                                                <%-- 🔗 Pointing to the specific public view mapping --%>
+                                                <a href="${pageContext.request.contextPath}/profile/view?id=${u.id}" 
                                                    style="color: #0f766e; font-weight: 600;">
                                                     @<c:out value="${u.username}"/>
                                                 </a>

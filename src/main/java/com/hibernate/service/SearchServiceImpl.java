@@ -75,11 +75,16 @@ public class SearchServiceImpl implements SearchService {
                 .getResultList();
         results.put("categories", categories);
 
-        // ၂။ Users ထဲမှာ လိုက်ရှာခြင်း
-        List<User> users = userRepository.searchByUsername(keyword.trim(), 0L, 10);
+        // 👤 ၂။ Users ထဲမှာ လိုက်ရှာခြင်း (FIXED: Uses flexible pattern matching on username or email)
+        String userHql = "FROM User u WHERE LOWER(u.username) LIKE :kw OR LOWER(u.email) LIKE :kw";
+        List<User> users = sessionFactory.getCurrentSession()
+                .createQuery(userHql, User.class)
+                .setParameter("kw", searchParam)
+                .setMaxResults(10)
+                .getResultList();
         results.put("users", users);
 
-        // 🎯 ၃။ Cheat Sheets (Posts) ထဲမှာ လိုက်ရှာခြင်း (Error တက်စေတဲ့ p.isPublic ဖယ်ရှားပြီးသား)
+        // 🎯 ၃။ Cheat Sheets (Posts) ထဲမှာ လိုက်ရှာခြင်း
         String postHql = "FROM Post p WHERE LOWER(p.title) LIKE :kw OR LOWER(p.excerpt) LIKE :kw";
         List<Post> posts = sessionFactory.getCurrentSession()
                 .createQuery(postHql, Post.class)
@@ -87,14 +92,13 @@ public class SearchServiceImpl implements SearchService {
                 .getResultList();
         results.put("posts", posts);
 
-     // 🎯 Find this block in SearchServiceImpl.java (around lines 89-95)
-     // Change the query string to include: JOIN FETCH c.user
-     String colHql = "FROM Collection c JOIN FETCH c.user WHERE LOWER(c.name) LIKE :kw";
-     List<?> collections = sessionFactory.getCurrentSession()
-             .createQuery(colHql)
-             .setParameter("kw", searchParam)
-             .getResultList();
-     results.put("collections", collections);
+        // 📦 ၄။ Collections ထဲမှာ လိုက်ရှာခြင်း
+        String colHql = "FROM Collection c JOIN FETCH c.user WHERE LOWER(c.name) LIKE :kw";
+        List<?> collections = sessionFactory.getCurrentSession()
+                .createQuery(colHql)
+                .setParameter("kw", searchParam)
+                .getResultList();
+        results.put("collections", collections);
 
         return results;
     }
@@ -103,34 +107,30 @@ public class SearchServiceImpl implements SearchService {
     public void deleteHistory(int historyId) {
         searchHistoryRepository.deleteById(historyId);
     }
+
     @Override
     public List<String> getSearchSuggestions(int userId, String query) {
         String searchParam = "%" + query.trim().toLowerCase() + "%";
         
-        // Get from search history
         List<String> historySuggestions = searchHistoryRepository.findByUserIdAndKeywordLike(userId, searchParam);
         
-        // Also get from categories
         List<String> categorySuggestions = sessionFactory.getCurrentSession()
                 .createQuery("SELECT LOWER(c.name) FROM Category c WHERE LOWER(c.name) LIKE :kw", String.class)
                 .setParameter("kw", searchParam)
                 .setMaxResults(5)
                 .getResultList();
         
-        // Also get from posts
         List<String> postSuggestions = sessionFactory.getCurrentSession()
                 .createQuery("SELECT LOWER(p.title) FROM Post p WHERE LOWER(p.title) LIKE :kw", String.class)
                 .setParameter("kw", searchParam)
                 .setMaxResults(5)
                 .getResultList();
         
-        // Combine and deduplicate
         List<String> allSuggestions = new java.util.ArrayList<>();
         allSuggestions.addAll(historySuggestions);
         allSuggestions.addAll(categorySuggestions);
         allSuggestions.addAll(postSuggestions);
         
-        // Remove duplicates and limit to 10
         return allSuggestions.stream()
                 .distinct()
                 .limit(10)
