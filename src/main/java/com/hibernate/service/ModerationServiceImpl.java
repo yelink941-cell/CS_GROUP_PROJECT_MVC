@@ -132,6 +132,9 @@ public class ModerationServiceImpl implements ModerationService {
 
         Post post = sessionFactory.getCurrentSession().get(Post.class, postId);
         if (post != null) {
+            post.setStatus(com.hibernate.entity.enums.PostStatus.BANNED);
+            post.setRemovalReason(reason);
+            post.setRemovedAt(LocalDateTime.now());
             post.setIsDeleted(true);
             post.setDeletedAt(LocalDateTime.now());
             sessionFactory.getCurrentSession().merge(post);
@@ -159,6 +162,44 @@ public class ModerationServiceImpl implements ModerationService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void unbanPost(Long adminId, Integer postId) {
+        User admin = getUser(adminId);
+        if (admin == null || !admin.isAdmin()) {
+            throw new SecurityException("Unauthorized: Requester must be an Admin.");
+        }
+
+        Post post = sessionFactory.getCurrentSession().get(Post.class, postId);
+        if (post != null) {
+            post.setStatus(com.hibernate.entity.enums.PostStatus.PUBLISHED);
+            post.setIsDeleted(false);
+            post.setDeletedAt(null);
+            post.setRemovedAt(null);
+            post.setRemovalReason(null);
+            sessionFactory.getCurrentSession().merge(post);
+
+            // Audit Logging
+            ModerationLog log = new ModerationLog();
+            log.setAdminId(adminId.intValue());
+            log.setPostId(postId);
+            log.setAction(ModerationAction.UNBAN);
+            log.setReason("Admin restored post status to PUBLISHED.");
+            moderationLogRepository.save(log);
+
+            if (post.getAuthor() != null) {
+                notificationService.createNotification(
+                        post.getAuthor().getId(),
+                        "POST_UNBANNED",
+                        "Post Restored 🎉",
+                        "Your post has been restored by a moderator and is now visible to the public.",
+                        "POST",
+                        postId
+                );
+            }
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void softDeleteComment(Long adminId, Integer commentId, String reason) {
         User admin = getUser(adminId);
         if (admin == null || !admin.isAdmin()) {
@@ -169,6 +210,7 @@ public class ModerationServiceImpl implements ModerationService {
         if (comment != null) {
             comment.setIsDeleted(true);
             comment.setDeletedAt(LocalDateTime.now());
+            comment.setReportReason(reason);
             sessionFactory.getCurrentSession().merge(comment);
 
             // Audit Logging
@@ -189,6 +231,32 @@ public class ModerationServiceImpl implements ModerationService {
                         commentId
                 );
             }
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void unbanComment(Long adminId, Integer commentId) {
+        User admin = getUser(adminId);
+        if (admin == null || !admin.isAdmin()) {
+            throw new SecurityException("Unauthorized: Requester must be an Admin.");
+        }
+
+        Comment comment = sessionFactory.getCurrentSession().get(Comment.class, commentId);
+        if (comment != null) {
+            comment.setIsDeleted(false);
+            comment.setDeletedAt(null);
+            comment.setIsReported(false);
+            comment.setReportReason(null);
+            sessionFactory.getCurrentSession().merge(comment);
+
+            // Audit Logging
+            ModerationLog log = new ModerationLog();
+            log.setAdminId(adminId.intValue());
+            log.setCommentId(commentId);
+            log.setAction(ModerationAction.UNBAN);
+            log.setReason("Admin restored comment visibility.");
+            moderationLogRepository.save(log);
         }
     }
 

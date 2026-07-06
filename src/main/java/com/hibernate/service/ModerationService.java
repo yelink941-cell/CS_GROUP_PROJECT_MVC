@@ -7,5 +7,7 @@ public interface ModerationService {
     void unbanUser(Long requesterAdminId, Long targetUserId);
     boolean canBanUser(User requester, User target);
     void softDeletePost(Long adminId, Integer postId, String reason);
+    void unbanPost(Long adminId, Integer postId);
     void softDeleteComment(Long adminId, Integer commentId, String reason);
+    void unbanComment(Long adminId, Integer commentId);
 }

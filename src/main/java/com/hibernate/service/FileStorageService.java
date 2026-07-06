@@ -20,16 +20,41 @@ public class FileStorageService {
     private static final Set<String> ALLOWED_VIDEO_TYPES = Set.of(
             "video/mp4", "video/webm", "video/quicktime", "video/x-msvideo"
     );
-    // Added Document MIME types (PDF and PPTX)
+    // Added Document and File MIME types (PDF, Office, Text, Archives, Audio)
     private static final Set<String> ALLOWED_DOC_TYPES = Set.of(
-            "application/pdf", 
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-powerpoint",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "text/plain",
+            "text/csv",
+            "text/markdown",
+            "application/rtf",
+            "application/zip",
+            "application/x-zip-compressed",
+            "application/x-rar-compressed",
+            "application/x-7z-compressed",
+            "application/json",
+            "application/xml",
+            "text/xml",
+            "audio/mpeg",
+            "audio/mp3",
+            "audio/wav",
+            "audio/ogg"
     );
 
     private static final Set<String> ALLOWED_IMAGE_EXT = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
     private static final Set<String> ALLOWED_VIDEO_EXT = Set.of(".mp4", ".webm", ".mov", ".avi");
-    // Added Document extensions
-    private static final Set<String> ALLOWED_DOC_EXT = Set.of(".pdf", ".pptx");
+    // Added Document & File extensions
+    private static final Set<String> ALLOWED_DOC_EXT = Set.of(
+            ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+            ".txt", ".csv", ".md", ".rtf", ".json", ".xml",
+            ".zip", ".rar", ".7z", ".tar", ".gz",
+            ".mp3", ".wav", ".ogg", ".m4a"
+    );
 
     private final Path uploadRoot;
 
@@ -47,8 +72,7 @@ public class FileStorageService {
         }
 
         if (!isAllowedFile(file)) {
-            // Updated exception message to include PDF and PPTX
-            throw new IllegalArgumentException("JPEG, PNG, GIF, WEBP, MP4, WEBM, MOV, PDF, PPTX ဖိုင်များသာ ပို့ခွင့်ရှိပါသည်။");
+            throw new IllegalArgumentException("Selected file format is not supported. Please upload Images, Videos, PDFs, Office Documents, Text/Data files, Archives, or Audio.");
         }
 
         Path conversationDir = uploadRoot.resolve(String.valueOf(conversationId));

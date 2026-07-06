@@ -118,9 +118,26 @@ public class UserController {
     // LOGIN
     // =========================================================
     @GetMapping("/login")
-    public String showLoginForm(@RequestParam(value = "error", required = false) String error, Model model) {
+    public String showLoginForm(@RequestParam(value = "error", required = false) String error,
+                                HttpServletRequest request,
+                                Model model) {
         if ("inactive".equals(error)) {
             model.addAttribute("loginError", "Your account is currently inactive. Please contact the administrator.");
+        }
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object lastEx = session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+            if (lastEx instanceof Exception) {
+                String exMsg = ((Exception) lastEx).getMessage();
+                if (exMsg != null && (exMsg.contains("banned") || exMsg.contains("suspended") || exMsg.contains("restricted"))) {
+                    model.addAttribute("banError", exMsg);
+                }
+            }
+            if (session.getAttribute("banError") != null) {
+                model.addAttribute("banError", session.getAttribute("banError"));
+                session.removeAttribute("banError");
+            }
         }
         return "login";
     }
@@ -134,6 +151,18 @@ public class UserController {
             User user = userService.findUserByEmail(identifier); 
             
             if (user != null) {
+                // LOGIC BLOCK: If user account is FULL BANNED, block access immediately
+                if (user.isCurrentlyBanned() && "FULL".equalsIgnoreCase(user.getBanType())) {
+                    String reason = (user.getBanReason() != null && !user.getBanReason().trim().isEmpty())
+                            ? user.getBanReason()
+                            : "Violation of community guidelines";
+                    String banMsg = "Your account has been banned. Reason: " + reason + " (" + user.getBanRemainingText() + ")";
+                    session.setAttribute("banError", banMsg);
+                    session.invalidate();
+                    SecurityContextHolder.clearContext();
+                    return;
+                }
+
                 // LOGIC BLOCK: If user account is marked INACTIVE, block access immediately
                 if (user.getStatus() == UserStatus.INACTIVE) {
                     session.invalidate();

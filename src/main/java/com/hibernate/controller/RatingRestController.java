@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RatingRestController {
 
     private final RatingService ratingService;
+    private final com.hibernate.repository.UserRepository userRepository;
 
     @PostMapping({"/api/toggle-rating", "/rating"})
     @ResponseBody
@@ -26,7 +27,7 @@ public class RatingRestController {
             @RequestParam("rating") Integer ratingValue,
             HttpSession session) {
         
-Object sessionUserId = session.getAttribute("userId");
+        Object sessionUserId = session.getAttribute("userId");
         Long userId = null;
         if (sessionUserId instanceof Number) {
             userId = ((Number) sessionUserId).longValue();
@@ -34,7 +35,6 @@ Object sessionUserId = session.getAttribute("userId");
             userId = Long.valueOf(sessionUserId.toString());
         }
         
-        // 🟢 ထည့်သွင်းရမည့်နေရာ: userId null ဖြစ်နေလျှင် session ထဲမှ user object ကို အမှီလိုက်ရှာပြီး ပြန်ထုတ်ပေးခြင်း
         if (userId == null) {
             User sessionUser = (User) session.getAttribute("user");
             if (sessionUser == null) {
@@ -53,6 +53,13 @@ Object sessionUserId = session.getAttribute("userId");
             response.put("status", "error");
             response.put("message", "Login လိုအပ်ပါသည်။");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        
+        User currentUser = userRepository.findById(userId).orElse(null);
+        if (currentUser != null && currentUser.isCurrentlyBanned()) {
+            response.put("status", "error");
+            response.put("message", "Your account is restricted (" + currentUser.getBanRemainingText() + ")");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
         
         // Rating တန်ဖိုး သတ်မှတ်ချက် (ဥပမာ - ၁ မှ ၅ အတွင်း)

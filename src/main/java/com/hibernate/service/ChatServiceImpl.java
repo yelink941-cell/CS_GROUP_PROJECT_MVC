@@ -153,6 +153,9 @@ public class ChatServiceImpl implements ChatService {
                 item.setLastMessagePreview(buildPreview(message));
             });
 
+            long unreadCount = seenStatusRepository.countUnreadMessages(conversation.getId(), currentUserId);
+            item.setUnreadCount(unreadCount);
+
             inbox.add(item);
         }
 
@@ -400,8 +403,7 @@ public class ChatServiceImpl implements ChatService {
         message.setConversation(conversation);
         message.setSenderId(senderId);
         message.setMessageText(caption != null && !caption.isBlank() ? caption.trim() : null);
-
-        MessageType finalType = MessageType.IMAGE;
+        MessageType finalType = null;
         List<MessageAttachment> attachmentsToSave = new ArrayList<>();
 
         // 2. Loop through files, store in Storage and create Attachment Objects
@@ -418,7 +420,11 @@ public class ChatServiceImpl implements ChatService {
 
             String contentType = file.getContentType();
             if (fileStorageService.isVideo(contentType, fileUrl)) {
-                finalType = MessageType.VIDEO;
+                if (finalType == null) finalType = MessageType.VIDEO;
+            } else if (fileStorageService.isImage(contentType, fileUrl)) {
+                if (finalType == null) finalType = MessageType.IMAGE;
+            } else {
+                if (finalType == null) finalType = MessageType.DOCUMENT;
             }
 
             // Create a 'new' Attachment Object each loop iteration
@@ -435,7 +441,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // 3. Insert Message into DB and get ID
-        message.setMessageType(finalType);
+        message.setMessageType(finalType != null ? finalType : MessageType.DOCUMENT);
         Long messageId = messageRepository.insertMessage(message);
         message.setId(messageId); // Put the obtained ID back into Message Object
 
@@ -443,8 +449,9 @@ public class ChatServiceImpl implements ChatService {
         message.setAttachments(new ArrayList<>());
         for (MessageAttachment att : attachmentsToSave) {
             att.setMessage(message); // To allow Database Foreign Key (message_id) to enter
-            attachmentRepository.insertAttachment(att); // Insert into DB
-            message.getAttachments().add(att); // Put back into List to show immediately in UI
+            Long attId = attachmentRepository.insertAttachment(att);
+            att.setId(attId);
+            message.getAttachments().add(att);
         }
 
         // 5. Update Conversation's Updated time

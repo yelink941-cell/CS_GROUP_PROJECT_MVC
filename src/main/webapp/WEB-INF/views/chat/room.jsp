@@ -655,7 +655,7 @@
         <div class="header-title-container">
             <div class="header-title" id="roomTitle">
                 <c:choose>
-                    <c:when test="${isGroup}">📁 ${conversationTitle}</c:when>
+                    <c:when test="${isGroup}"> ${conversationTitle}</c:when>
                     <c:otherwise>
                         <c:out value="${conversationTitle}" />
                         <c:if test="${partnerRole == 'ADMIN'}"><span class="badge-admin">Admin</span></c:if>
@@ -737,7 +737,7 @@
                 </div>
 
                 <div class="input-row">
-                    <input type="file" id="mediaFile" accept="image/*,video/*" multiple>
+                    <input type="file" id="mediaFile" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.md,.json,.xml,.zip,.rar,.7z" multiple>
                     <button type="button" class="icon-btn attach" id="btnAttach" title="Attach Files">📎</button>
                     <input type="text" id="messageText" placeholder="Type a message..." autocomplete="off">
                     <button type="button" class="icon-btn" id="btnSend" title="Send">➤</button>
@@ -773,6 +773,7 @@
     let contextMenuMessage = null;
 
     $(document).ready(function() {
+        $.ajaxSetup({ cache: false });
         // DEBUG: Check chatId and myUserId in console
         console.log('[DEBUG] chatId:', chatId, '| myUserId:', myUserId, '| ctx:', ctx);
         if (!chatId || chatId === '' || chatId === 'null') {
@@ -1289,9 +1290,12 @@
         var reactionsContainer = $('<div class="message-reactions" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;"></div>');
         if (msg.reactions && msg.reactions.length) {
             msg.reactions.forEach(function(r) {
-                var hasUserReacted = r.userIds && r.userIds.map(String).includes(String(myUserId));
+                var userIds = (r.userIds || []).map(String);
+                var uniqueUserIds = Array.from(new Set(userIds));
+                var count = uniqueUserIds.length > 0 ? uniqueUserIds.length : (r.count || 1);
+                var hasUserReacted = uniqueUserIds.includes(String(myUserId));
                 var badge = $('<span class="reaction-badge ' + (hasUserReacted ? 'user-reacted' : '') + '" style="display:inline-flex; align-items:center; gap:3px; background:' + (hasUserReacted ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.15)') + '; border:1px solid ' + (hasUserReacted ? '#38bdf8' : 'rgba(255, 255, 255, 0.2)') + '; border-radius:12px; padding:2px 7px; font-size:12px; cursor:pointer; user-select:none;"></span>')
-                    .html(r.emoji + ' <span style="font-size:11px; opacity:0.9;">' + r.count + '</span>')
+                    .html(r.emoji + ' <span style="font-size:11px; opacity:0.9;">' + count + '</span>')
                     .click(function(e) {
                         e.stopPropagation();
                         toggleReaction(msg.id, r.emoji);
@@ -1452,7 +1456,17 @@
                 vid.attr('src', URL.createObjectURL(file));
                 card.append(vid);
             } else {
-                card.append('<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:16px;">📄</div>');
+                let icon = '📄';
+                const name = file.name.toLowerCase();
+                if (name.endsWith('.pdf')) icon = '📕';
+                else if (name.endsWith('.doc') || name.endsWith('.docx')) icon = '📘';
+                else if (name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv')) icon = '📊';
+                else if (name.endsWith('.ppt') || name.endsWith('.pptx')) icon = '📙';
+                else if (name.endsWith('.zip') || name.endsWith('.rar') || name.endsWith('.7z')) icon = '📦';
+                else if (name.endsWith('.txt') || name.endsWith('.md')) icon = '📝';
+                else if (file.type.startsWith('audio/')) icon = '🎵';
+
+                card.append('<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4px; text-align:center; background:#f1f5f9;"><span style="font-size:20px;">' + icon + '</span><span style="font-size:9px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; font-weight:600; color:#334155;">' + escapeHtml(file.name) + '</span></div>');
             }
             container.append(card);
         });
@@ -1537,26 +1551,58 @@
             bubble.append($('<div class="bubble-text"></div>').text(msg.messageText));
         }
 
-        // Clean Collage Design for Media Files
+        // Clean Collage Design for Media Files & File Cards for Documents
         if (msg.attachments && msg.attachments.length) {
-            var mediaContainer = $('<div class="bubble-media-container" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;"></div>');
-            var itemWidth = msg.attachments.length === 1 ? '100%' : 'calc(50% - 2px)';
-            if (msg.attachments.length > 2 && msg.attachments.length % 3 === 0) {
-                itemWidth = 'calc(33.33% - 3px)';
-            }
-            
+            var mediaContainer = $('<div class="bubble-media-container" style="display:flex; flex-direction:column; gap:6px; margin-top:6px;"></div>');
+
             msg.attachments.forEach(function(att) {
                 var url = ctx + att.fileUrl;
-                var mediaWrapper = $('<div style="width: ' + itemWidth + '; min-width: 90px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-clean); background: var(--accent-gray);"></div>');
-                
-                if (att.fileType && att.fileType.indexOf('video/') === 0) {
-                    mediaWrapper.append('<video controls src="' + url + '" style="width:100%; display:block; max-height:200px; object-fit:cover;"></video>');
-                } else if (att.fileUrl && att.fileUrl.match(/\.(mp4|webm|mov|avi)$/i)) {
-                    mediaWrapper.append('<video controls src="' + url + '" style="width:100%; display:block; max-height:200px; object-fit:cover;"></video>');
+                var fileType = (att.fileType || '').toLowerCase();
+                var fileUrl = (att.fileUrl || '').toLowerCase();
+
+                var isVideo = fileType.indexOf('video/') === 0 || fileUrl.match(/\.(mp4|webm|mov|avi)$/i);
+                var isImage = fileType.indexOf('image/') === 0 || fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                var isAudio = fileType.indexOf('audio/') === 0 || fileUrl.match(/\.(mp3|wav|ogg|m4a)$/i);
+
+                if (isVideo) {
+                    var mediaWrapper = $('<div style="width:100%; max-width:320px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-clean); background: var(--accent-gray);"></div>');
+                    mediaWrapper.append('<video controls src="' + url + '" style="width:100%; display:block; max-height:220px; object-fit:cover;"></video>');
+                    mediaContainer.append(mediaWrapper);
+                } else if (isImage) {
+                    var mediaWrapper = $('<div style="width:100%; max-width:320px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-clean); background: var(--accent-gray);"></div>');
+                    mediaWrapper.append('<img src="' + url + '" alt="photo" style="width:100%; display:block; max-height:240px; object-fit:cover; cursor:pointer;" onclick="openLightbox(\'' + url + '\')"/>');
+                    mediaContainer.append(mediaWrapper);
+                } else if (isAudio) {
+                    var mediaWrapper = $('<div style="width:100%; max-width:300px; padding:6px; border-radius:8px; background:var(--accent-gray); border:1px solid var(--border-clean);"></div>');
+                    mediaWrapper.append('<audio controls src="' + url + '" style="width:100%; height:36px;"></audio>');
+                    mediaContainer.append(mediaWrapper);
                 } else {
-                    mediaWrapper.append('<img src="' + url + '" alt="photo" style="width:100%; display:block; max-height:200px; object-fit:cover;"/>');
+                    // Document / File Card Design
+                    var rawFileName = att.fileUrl ? att.fileUrl.substring(att.fileUrl.lastIndexOf('/') + 1) : 'file';
+                    if (rawFileName.indexOf('_') > -1) {
+                        rawFileName = rawFileName.substring(rawFileName.indexOf('_') + 1);
+                    }
+
+                    var icon = '📄';
+                    if (fileUrl.endsWith('.pdf')) icon = '📕';
+                    else if (fileUrl.match(/\.(doc|docx)$/i)) icon = '📘';
+                    else if (fileUrl.match(/\.(xls|xlsx|csv)$/i)) icon = '📊';
+                    else if (fileUrl.match(/\.(ppt|pptx)$/i)) icon = '📙';
+                    else if (fileUrl.match(/\.(zip|rar|7z|tar|gz)$/i)) icon = '📦';
+                    else if (fileUrl.match(/\.(txt|md|json|xml)$/i)) icon = '📝';
+
+                    var sizeText = att.fileSize ? (' • ' + Math.round(att.fileSize / 1024) + ' KB') : '';
+
+                    var bgStyle = isMe ? 'background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color:#ffffff;' : 'background: #f1f5f9; border: 1px solid #cbd5e1; color:#1e293b;';
+                    var btnStyle = isMe ? 'background: #ffffff; color: #4038ff;' : 'background: #4038ff; color: #ffffff;';
+
+                    var docCard = $('<div class="doc-attachment-card" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; ' + bgStyle + ' width:280px; max-width:100%; box-sizing:border-box;"></div>');
+                    docCard.append('<span style="font-size:26px; flex-shrink:0;">' + icon + '</span>');
+                    docCard.append('<div style="flex:1; min-width:0;"><div style="font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + escapeHtml(rawFileName) + '">' + escapeHtml(rawFileName) + '</div><div style="font-size:11px; opacity:0.8;">Document' + sizeText + '</div></div>');
+                    docCard.append('<a href="' + url + '" target="_blank" download style="padding:6px 12px; border-radius:6px; ' + btnStyle + ' text-decoration:none; font-size:12px; font-weight:600; flex-shrink:0; display:inline-flex; align-items:center;">Open ↗</a>');
+
+                    mediaContainer.append(docCard);
                 }
-                mediaContainer.append(mediaWrapper);
             });
             bubble.append(mediaContainer);
         }

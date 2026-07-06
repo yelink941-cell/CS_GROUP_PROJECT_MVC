@@ -1,6 +1,7 @@
 package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
+import com.hibernate.entity.User;
 import com.hibernate.service.BookmarkService;
 import com.hibernate.service.CategoryService;
 import com.hibernate.service.CollectionService; // 🎯 Added import for CollectionService
@@ -9,6 +10,8 @@ import com.hibernate.service.PostContentService;
 import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.PostViewService;
+import com.hibernate.service.UserService;
+
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +37,8 @@ public class HomePageController {
     private final PostLikeService postLikeService;
     private final BookmarkService bookmarkService;
     private final PostViewService postViewService;
+    private final UserService userService;
+    private final com.hibernate.repository.BlockedUserRepository blockedUserRepository;
 
     @GetMapping("/")
     public String homePage(Model model) {
@@ -75,13 +80,30 @@ public class HomePageController {
         return postService.getPostBySlug(slug)
                 .map(post -> {
                     Long userId = getViewerUserId(request);
+                    HttpSession session = request.getSession(false);
+                    User viewer = session != null ? (User) session.getAttribute("currentUser") : null;
+                    boolean isAdmin = viewer != null && viewer.isAdmin();
+                    boolean isAuthor = viewer != null && post.getAuthor() != null && viewer.getId().equals(post.getAuthor().getId());
+
+                    // If user is blocked either way by the author, hide the post
+                    if (userId != null && post.getAuthor() != null && !isAdmin) {
+                        if (blockedUserRepository.isBlockedEitherWay(userId, post.getAuthor().getId())) {
+                            return "redirect:/posts/public";
+                        }
+                    }
+
+                    // If post is deleted or banned, block normal public users, but allow admins and authors
+                    if (post.isDeleted() || post.getStatus() == com.hibernate.entity.enums.PostStatus.BANNED) {
+                        if (!isAdmin && !isAuthor) {
+                            return "redirect:/posts/public";
+                        }
+                        model.addAttribute("isBannedNotice", true);
+                    }
+
                     postViewService.recordView(post, userId, request, response);
 
                     model.addAttribute("post", post);
-                 // PostContentService (စာလုံးအကြီး) နေရာတွင် postContentService (စာလုံးအသေး) ကို သုံးပါ
                     model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
-                    
-                    // 🎯 ဤလိုင်းလေးကို အသစ်တိုးပေးလိုက်ပါဗျာ (JSP ထဲ တိုက်ရိုက်သယ်ယူနိုင်ရန်)
                     model.addAttribute("currentPostSlug", slug); 
                     
                     if (userId != null) {

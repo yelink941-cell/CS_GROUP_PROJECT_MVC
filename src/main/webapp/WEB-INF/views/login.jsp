@@ -23,6 +23,16 @@
                 <p style="margin: 0; font-size: 0.92rem; color: var(--muted);">Access your personal technical references</p>
             </div>
 
+            <c:if test="${not empty banError}">
+                <div id="authAlert" class="form-message-error" style="margin-bottom: 24px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: flex-start; gap: 10px; background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; color: #991b1b; padding: 14px 16px; border-radius: 8px;">
+                    <i class="fa-solid fa-ban" style="font-size: 1.1rem; color: #dc2626; margin-top: 2px;"></i>
+                    <div>
+                        <strong>Account Banned</strong><br/>
+                        <c:out value="${banError}" />
+                    </div>
+                </div>
+            </c:if>
+
             <c:if test="${param.error == 'inactive'}">
                 <div id="authAlert" class="form-message-error" style="margin-bottom: 24px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; background-color: #fee2e2; border-left: 4px solid #ef4444; color: #991b1b; padding: 12px 14px; border-radius: 8px;">
                     <i class="fa-solid fa-triangle-exclamation"></i> Access Denied. Your account is currently inactive.
@@ -34,7 +44,7 @@
                 </script>
             </c:if>
 
-            <c:if test="${param.error == 'true'}">
+            <c:if test="${param.error == 'true' && empty banError}">
                 <div id="authAlert" class="form-message-error" style="margin-bottom: 24px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-triangle-exclamation"></i> Invalid credentials. Please try again.
                 </div>
@@ -60,8 +70,12 @@
                     <label style="font-size: 0.88rem; font-weight: 700; color: var(--text);">Password</label>
                     <div style="position: relative; display: flex; align-items: center;">
                         <i class="fa-solid fa-lock" style="position: absolute; left: 16px; color: var(--muted); font-size: 15px;"></i>
-                        <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password"
-                               style="width: 100%; padding: 12px 16px 12px 46px; border: 1px solid var(--border); border-radius: 9px; font-size: 0.95rem; font-family: inherit; outline: none; color: var(--text); background: var(--background);">
+                        <input type="password" id="passwordInput" name="password" placeholder="••••••••" required autocomplete="current-password"
+                               style="width: 100%; padding: 12px 46px 12px 46px; border: 1px solid var(--border); border-radius: 9px; font-size: 0.95rem; font-family: inherit; outline: none; color: var(--text); background: var(--background);">
+                        <button type="button" id="togglePasswordBtn" onclick="togglePasswordVisibility()" aria-label="Toggle Password Visibility"
+                                style="position: absolute; right: 14px; background: none; border: none; cursor: pointer; color: var(--muted); padding: 4px; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: color 0.2s ease;">
+                            <i id="togglePasswordIcon" class="fa-solid fa-eye"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -80,6 +94,24 @@
     </main>
 
     <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('passwordInput');
+            const toggleIcon = document.getElementById('togglePasswordIcon');
+            if (passwordInput && toggleIcon) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                    toggleIcon.style.color = 'var(--primary)';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                    toggleIcon.style.color = 'var(--muted)';
+                }
+            }
+        }
+
         // Automatically hide alert notifications cleanly after 4 seconds
         window.addEventListener('DOMContentLoaded', () => {
             const alertBox = document.getElementById('authAlert');

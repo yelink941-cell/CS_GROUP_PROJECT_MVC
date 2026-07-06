@@ -29,13 +29,23 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("No active profile matching email: " + email);
         }
         
-        // 3. Take your Role enum (like ADMIN) and turn it into "ROLE_ADMIN" for Spring rules
+        // 3. Block login if account is FULL BANNED
+        if (user.isCurrentlyBanned() && "FULL".equalsIgnoreCase(user.getBanType())) {
+            String reason = (user.getBanReason() != null && !user.getBanReason().trim().isEmpty())
+                    ? user.getBanReason()
+                    : "Violation of community guidelines";
+            throw new org.springframework.security.authentication.LockedException(
+                    "Your account has been banned. Reason: " + reason + " (" + user.getBanRemainingText() + ")"
+            );
+        }
+
+        // 4. Take your Role enum (like ADMIN) and turn it into "ROLE_ADMIN" for Spring rules
         String roleName = "ROLE_" + user.getRole().name();
 
-        // 4. Return this wrapped object so Spring can automatically verify the BCrypt hash
+        // 5. Return wrapped UserDetails object
         return new org.springframework.security.core.userdetails.User(
             user.getEmail(), 
-            user.getPasswordHash(), // This is the BCrypt hash from your database
+            user.getPasswordHash(),
             Collections.singletonList(new SimpleGrantedAuthority(roleName))
         );
     }

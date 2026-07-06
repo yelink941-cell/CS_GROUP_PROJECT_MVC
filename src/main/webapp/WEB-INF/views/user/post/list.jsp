@@ -552,6 +552,13 @@
             </div>
         </header>
 
+        <c:if test="${not empty errorMessage}">
+            <div style="margin-bottom: 24px; font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 10px; background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; color: #991b1b; padding: 14px 18px; border-radius: 10px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);">
+                <span style="font-size: 1.1rem; color: #dc2626;">⚠️</span>
+                <span><c:out value="${errorMessage}" /></span>
+            </div>
+        </c:if>
+
         <!-- ===== EMPTY STATE ===== -->
         <c:if test="${empty posts}">
             <section class="empty-state">

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BookmarkRestController {
 
     private final BookmarkService bookmarkService;
+    private final com.hibernate.repository.UserRepository userRepository;
 
     @PostMapping({"/api/toggle-bookmark", "/bookmark"})
     @ResponseBody
@@ -32,7 +33,6 @@ public class BookmarkRestController {
             userId = Long.valueOf(sessionUserId.toString());
         }
         
-        // (ယခင်ရေးထားသော Fallback Logic များ ဆက်လက်ထားရှိပါ)
         if (userId == null) {
             com.hibernate.entity.User sessionUser = (com.hibernate.entity.User) session.getAttribute("user");
             if (sessionUser == null) {
@@ -50,6 +50,13 @@ public class BookmarkRestController {
             response.put("status", "error");
             response.put("message", "Login လိုအပ်ပါသည်။");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        
+        com.hibernate.entity.User currentUser = userRepository.findById(userId).orElse(null);
+        if (currentUser != null && currentUser.isCurrentlyBanned()) {
+            response.put("status", "error");
+            response.put("message", "Your account is restricted (" + currentUser.getBanRemainingText() + ")");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
         
         boolean isBookmarked = bookmarkService.toggleBookmark(userId, postId);
