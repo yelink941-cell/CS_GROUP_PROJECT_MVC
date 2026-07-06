@@ -557,7 +557,15 @@
         if (!previewText) {
             if (msg.messageType === 'IMAGE') previewText = '📷 Photo';
             else if (msg.messageType === 'VIDEO') previewText = '🎬 Video';
-            else if (msg.attachments && msg.attachments.length) previewText = '📷 Photo';
+            else if (msg.messageType === 'DOCUMENT') previewText = '📄 Document';
+            else if (msg.attachments && msg.attachments.length) {
+                const att = msg.attachments[0];
+                const ft = (att.fileType || '').toLowerCase();
+                const fu = (att.fileUrl || '').toLowerCase();
+                if (ft.startsWith('video/') || fu.match(/\.(mp4|webm|mov|avi)$/i)) previewText = '🎬 Video';
+                else if (ft.startsWith('image/') || fu.match(/\.(jpg|jpeg|png|gif|webp)$/i)) previewText = '📷 Photo';
+                else previewText = '📄 Document';
+            }
             else previewText = 'Message';
         }
 

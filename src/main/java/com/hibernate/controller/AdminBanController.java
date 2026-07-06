@@ -113,6 +113,22 @@ public class AdminBanController {
         return "redirect:/admin/reports?type=posts&view=queue";
     }
 
+    @PostMapping("/posts/{id}/unban")
+    public String unbanPost(@PathVariable("id") Integer postId,
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) {
+        User admin = getAuthorizedAdmin(session);
+        if (admin == null) return "redirect:/login";
+
+        try {
+            moderationService.unbanPost(admin.getId(), postId);
+            redirectAttributes.addFlashAttribute("success", "Post has been restored (Unbanned) successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to restore post: " + e.getMessage());
+        }
+        return "redirect:/admin/reports?type=posts&view=history";
+    }
+
     @PostMapping("/comments/{id}/hide")
     public String hideComment(@PathVariable("id") Integer commentId,
                               @RequestParam(value = "reason", required = false, defaultValue = "Comment policy violation") String reason,
@@ -130,5 +146,21 @@ public class AdminBanController {
             redirectAttributes.addFlashAttribute("error", "Failed to hide comment: " + e.getMessage());
         }
         return "redirect:/admin/reports?type=comments&view=queue";
+    }
+
+    @PostMapping("/comments/{id}/unban")
+    public String unbanComment(@PathVariable("id") Integer commentId,
+                               HttpSession session,
+                               RedirectAttributes redirectAttributes) {
+        User admin = getAuthorizedAdmin(session);
+        if (admin == null) return "redirect:/login";
+
+        try {
+            moderationService.unbanComment(admin.getId(), commentId);
+            redirectAttributes.addFlashAttribute("success", "Comment visibility has been restored successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to restore comment: " + e.getMessage());
+        }
+        return "redirect:/admin/reports?type=comments&view=history";
     }
 }

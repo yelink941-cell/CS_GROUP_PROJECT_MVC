@@ -77,6 +77,16 @@ public class ReportServiceImpl implements ReportService {
         report.setStatus(ReportStatus.PENDING);
 
         postReportRepository.save(report);
+
+        // Auto-delete / hide content if reported by 10 or more users
+        List<PostReport> pendingReports = postReportRepository.findPendingByPostId(postId);
+        if (pendingReports != null && pendingReports.size() >= 10) {
+            post.setStatus(com.hibernate.entity.enums.PostStatus.BANNED);
+            post.setIsDeleted(true);
+            post.setDeletedAt(java.time.LocalDateTime.now());
+            post.setRemovalReason("Auto-deleted: Received " + pendingReports.size() + " user reports (Threshold >= 10).");
+            sessionFactory.getCurrentSession().merge(post);
+        }
     }
 
     @Override
@@ -119,6 +129,15 @@ public class ReportServiceImpl implements ReportService {
         report.setStatus(ReportStatus.PENDING);
 
         commentReportRepository.save(report);
+
+        // Auto-delete / hide content if reported by 10 or more users
+        List<CommentReport> pendingReports = commentReportRepository.findPendingByCommentId(commentId);
+        if (pendingReports != null && pendingReports.size() >= 10) {
+            comment.setIsDeleted(true);
+            comment.setDeletedAt(java.time.LocalDateTime.now());
+            comment.setReportReason("Auto-deleted: Received " + pendingReports.size() + " user reports (Threshold >= 10).");
+            sessionFactory.getCurrentSession().merge(comment);
+        }
     }
 
     @Override
@@ -151,15 +170,9 @@ public class ReportServiceImpl implements ReportService {
 
             Post post = report.getPost();
             if (post != null) {
+                // Soft delete / ban ONLY the target post
                 moderationService.softDeletePost(adminId, post.getId(),
                         "Resolved report " + reportId + ": " + reason);
-
-                User author = post.getAuthor();
-                User admin = getUser(adminId);
-                if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
-                    moderationService.banUser(adminId, author.getId(),
-                            "Banned due to resolved post report " + reportId + ": " + reason, "1_WEEK", "POST_ONLY");
-                }
             }
         }
     }
@@ -174,16 +187,8 @@ public class ReportServiceImpl implements ReportService {
 
             Comment comment = report.getComment();
             if (comment != null) {
-                // Soft delete comment
+                // Soft delete / ban ONLY the target comment
                 moderationService.softDeleteComment(adminId, comment.getId(), "Resolved report " + reportId + ": " + reason);
-
-                // Ban author when allowed (skip admins unless super admin is resolving)
-                User author = comment.getUser();
-                User admin = getUser(adminId);
-                if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
-                    moderationService.banUser(adminId, author.getId(),
-                            "Banned due to resolved comment report " + reportId + ": " + reason, "PERMANENT", "FULL");
-                }
             }
         }
     }
@@ -218,17 +223,9 @@ public class ReportServiceImpl implements ReportService {
 
         Post post = pendingList.get(0).getPost();
         if (post != null) {
+            // Soft delete / ban ONLY the target post (does not affect author's account or author's other posts)
             moderationService.softDeletePost(adminId, post.getId(),
                     "Resolved all pending reports (" + pendingList.size() + "): " + reason);
-
-            User author = post.getAuthor();
-            User admin = getUser(adminId);
-            if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
-                moderationService.banUser(adminId, author.getId(),
-                        "Banned due to resolved post reports (" + pendingList.size() + "): " + reason,
-                        duration != null ? duration : "1_WEEK",
-                        banType != null ? banType : "POST_ONLY");
-            }
         }
     }
 
@@ -262,17 +259,9 @@ public class ReportServiceImpl implements ReportService {
 
         Comment comment = pendingList.get(0).getComment();
         if (comment != null) {
+            // Soft delete / ban ONLY the target comment
             moderationService.softDeleteComment(adminId, comment.getId(),
                     "Resolved all pending reports (" + pendingList.size() + "): " + reason);
-
-            User author = comment.getUser();
-            User admin = getUser(adminId);
-            if (author != null && admin != null && moderationService.canBanUser(admin, author)) {
-                moderationService.banUser(adminId, author.getId(),
-                        "Banned due to resolved comment reports (" + pendingList.size() + "): " + reason,
-                        duration != null ? duration : "1_WEEK",
-                        banType != null ? banType : "COMMENT_ONLY");
-            }
         }
     }
 

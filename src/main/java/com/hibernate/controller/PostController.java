@@ -46,6 +46,8 @@ public class PostController {
     private final PostLikeService postLikeService; 
     private final CommentService commentService;
     private final BookmarkService bookmarkService;
+    private final com.hibernate.repository.UserRepository userRepository;
+
     @GetMapping
     public String listPosts(Model model, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -59,9 +61,22 @@ public class PostController {
     }
 
     @GetMapping("/new")
-    public String showCreateForm(Model model, HttpSession session) {
+    public String showCreateForm(Model model, HttpSession session, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         if (!isLoggedIn(session)) {
             return "redirect:/login";
+        }
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId != null) {
+            User currentUser = userRepository.findById(userId).orElse(null);
+            if (currentUser != null && currentUser.isPostBanned()) {
+                String reason = (currentUser.getBanReason() != null && !currentUser.getBanReason().trim().isEmpty())
+                        ? currentUser.getBanReason()
+                        : "Violation of community guidelines";
+                String banMsg = "Your account is restricted from posting cheat sheets. Reason: " + reason + " (" + currentUser.getBanRemainingText() + ")";
+                redirectAttributes.addFlashAttribute("errorMessage", banMsg);
+                return "redirect:/user/posts";
+            }
         }
 
         model.addAttribute("post", new Post());
@@ -86,6 +101,22 @@ public class PostController {
 
         if (userId == null) {
             return "redirect:/login";
+        }
+
+        User currentUser = userRepository.findById(userId).orElse(null);
+        if (currentUser != null && currentUser.isPostBanned()) {
+            String reason = (currentUser.getBanReason() != null && !currentUser.getBanReason().trim().isEmpty())
+                    ? currentUser.getBanReason()
+                    : "Violation of community guidelines";
+            String banMsg = "Your account has been restricted from creating posts. Reason: " + reason + " (" + currentUser.getBanRemainingText() + ")";
+            Post post = buildPost(title, excerpt, visibility);
+            model.addAttribute("errorMessage", banMsg);
+            model.addAttribute("post", post);
+            model.addAttribute("selectedCategoryId", categoryId);
+            model.addAttribute("selectedTagIds", tagIds);
+            preserveSectionData(model, sectionSubtitles, contentTypes, contentDataList);
+            loadFormData(model);
+            return "user/post/form";
         }
 
         Post post = buildPost(title, excerpt, visibility);
@@ -119,11 +150,21 @@ public class PostController {
     }
 
     @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Integer id, Model model, HttpSession session) {
+    public String showEditForm(@PathVariable Integer id, Model model, HttpSession session, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         Long userId = (Long) session.getAttribute("userId");
 
         if (userId == null) {
             return "redirect:/login";
+        }
+
+        User currentUser = userRepository.findById(userId).orElse(null);
+        if (currentUser != null && currentUser.isPostBanned()) {
+            String reason = (currentUser.getBanReason() != null && !currentUser.getBanReason().trim().isEmpty())
+                    ? currentUser.getBanReason()
+                    : "Violation of community guidelines";
+            String banMsg = "Your account is restricted from editing posts. Reason: " + reason + " (" + currentUser.getBanRemainingText() + ")";
+            redirectAttributes.addFlashAttribute("errorMessage", banMsg);
+            return "redirect:/user/posts";
         }
 
         return postService.getPostById(id)
@@ -149,11 +190,22 @@ public class PostController {
             @RequestParam Integer categoryId,
             @RequestParam(required = false) List<Integer> tagIds,
             @RequestParam PostVisibility visibility,
-            HttpSession session) {
+            HttpSession session,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         Long userId = (Long) session.getAttribute("userId");
 
         if (userId == null) {
             return "redirect:/login";
+        }
+
+        User currentUser = userRepository.findById(userId).orElse(null);
+        if (currentUser != null && currentUser.isPostBanned()) {
+            String reason = (currentUser.getBanReason() != null && !currentUser.getBanReason().trim().isEmpty())
+                    ? currentUser.getBanReason()
+                    : "Violation of community guidelines";
+            String banMsg = "Your account is restricted from updating posts. Reason: " + reason + " (" + currentUser.getBanRemainingText() + ")";
+            redirectAttributes.addFlashAttribute("errorMessage", banMsg);
+            return "redirect:/user/posts";
         }
 
         if (postService.getPostById(id)
@@ -308,18 +360,30 @@ public class PostController {
     @GetMapping("/details/{id}")
     public String getPostDetails(@PathVariable("id") Integer id, Model model, HttpSession session) {
         Post post = postService.getPostById(id).orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        model.addAttribute("post", post);
-        model.addAttribute("contents", postContentService.getContentsByPostId(id));
-
+        
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/login";
         }
+
+        User viewer = userRepository.findById(userId).orElse(null);
+        boolean isAdmin = viewer != null && viewer.isAdmin();
+        boolean isAuthor = viewer != null && post.getAuthor() != null && viewer.getId().equals(post.getAuthor().getId());
+
+        if ((post.isDeleted() || post.getStatus() == com.hibernate.entity.enums.PostStatus.BANNED)) {
+            if (!isAdmin && !isAuthor) {
+                return "redirect:/user/posts";
+            }
+            model.addAttribute("isBannedNotice", true);
+        }
+
+        model.addAttribute("post", post);
+        model.addAttribute("contents", postContentService.getContentsByPostId(id));
+
         if (userId != null) {
-        	boolean hasLiked = postLikeService.hasUserLiked(id, userId); // DB ကနေ စစ်မယ်
-        	model.addAttribute("hasUserLiked", hasLiked);
+            boolean hasLiked = postLikeService.hasUserLiked(id, userId);
+            model.addAttribute("hasUserLiked", hasLiked);
             
-            // 🟢 အမှန်ပြင်ဆင်ရမည့်နေရာ - BookmarkService အစား bookmarkService (variable name) ကို သုံးပါ
             boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, id);
             model.addAttribute("hasUserBookmarked", hasBookmarked);
         }

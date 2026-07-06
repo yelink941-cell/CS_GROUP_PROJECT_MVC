@@ -70,6 +70,7 @@ public final class MessageMapper {
             switch (message.getMessageType()) {
                 case IMAGE: return "📷 Photo";
                 case VIDEO: return "🎬 Video";
+                case DOCUMENT: return "📄 Document";
                 default: break;
             }
         }

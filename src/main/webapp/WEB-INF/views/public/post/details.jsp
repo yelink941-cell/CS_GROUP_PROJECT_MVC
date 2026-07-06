@@ -266,6 +266,19 @@
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
 
 <main class="page-container">
+    <c:if test="${isBannedNotice}">
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-left: 5px solid #ef4444; color: #991b1b; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.4rem; color: #dc2626;"></i>
+                <div>
+                    <strong style="font-size: 1rem; display: block; color: #7f1d1d;">Banned Cheat Sheet (Admin Moderation View)</strong>
+                    <span style="font-size: 0.88rem; color: #991b1b;">This cheat sheet is currently <strong>BANNED / Hidden</strong> from public users. Reason: <c:out value="${post.removalReason}" default="Moderation Policy Violation" /></span>
+                </div>
+            </div>
+            <span style="background: #ef4444; color: white; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">ADMIN VIEW ONLY</span>
+        </div>
+    </c:if>
+
     <article class="detail-card">
         <h1><c:out value="${post.title}" /></h1>
 

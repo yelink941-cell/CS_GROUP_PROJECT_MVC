@@ -67,6 +67,13 @@ public class LikeRestController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
+        User currentUser = userRepository.findById(userId).orElse(null);
+        if (currentUser != null && currentUser.isCurrentlyBanned()) {
+            response.put("status", "error");
+            response.put("message", "Your account is restricted (" + currentUser.getBanRemainingText() + ")");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        }
+
         // Service layer မှာ @Transactional + flush/clear ပါ၊ return value က isLiked
         boolean isLiked = postLikeService.toggleLike(postId, userId);
         long totalLikes = postLikeService.getLikeCount(postId);

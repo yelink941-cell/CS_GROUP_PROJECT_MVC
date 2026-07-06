@@ -120,6 +120,10 @@ public class Post {
     @Transient
     private boolean followedByCurrentUser;
 
+    public boolean isDeleted() {
+        return Boolean.TRUE.equals(this.isDeleted) || this.deletedAt != null || this.status == PostStatus.BANNED;
+    }
+
     public boolean isFollowedByCurrentUser() {
         return followedByCurrentUser;
     }
