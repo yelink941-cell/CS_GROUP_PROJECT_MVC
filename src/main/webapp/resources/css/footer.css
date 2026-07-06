@@ -1,0 +1,292 @@
+/* ============================================
+   FOOTER - DARK THEME (POPULAR.JSP STYLE)
+   ============================================ */
+
+.site-footer {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    background: #0f172a; /* Dark slate background */
+    padding: 56px 20px 24px;
+    margin-top: 50px;
+    border-top: 3px solid #4f46e5;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 48px;
+    padding: 0 20px;
+}
+
+/* ===== BRAND ===== */
+.footer-brand h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 12px 0;
+    background: linear-gradient(135deg, #818cf8, #a78bfa, #c4b5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+}
+
+.footer-brand p {
+    font-size: 14px;
+    color: #94a3b8;
+    line-height: 1.8;
+    margin: 0;
+    max-width: 420px;
+}
+
+/* ===== LINKS ===== */
+.footer-links h3,
+.footer-social h3 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    margin: 0 0 16px 0;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.footer-links h3::after,
+.footer-social h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background: linear-gradient(90deg, #4f46e5, #818cf8);
+    border-radius: 2px;
+}
+
+.footer-links nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-links nav a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-links nav a:hover {
+    color: #a78bfa;
+    transform: translateX(6px);
+    text-shadow: 0 0 20px rgba(167, 139, 250, 0.15);
+}
+
+/* ===== SOCIAL ICONS ===== */
+.footer-social .social-icons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.footer-social .social-icons a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 18px;
+}
+
+.footer-social .social-icons a:hover {
+    background: #4f46e5;
+    color: white;
+    border-color: #4f46e5;
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.35);
+}
+
+.footer-social .social-icons a:nth-child(2):hover {
+    background: #1da1f2;
+    border-color: #1da1f2;
+}
+
+.footer-social .social-icons a:nth-child(3):hover {
+    background: #0a66c2;
+    border-color: #0a66c2;
+}
+
+.footer-social .social-icons a:nth-child(4):hover {
+    background: #ff0000;
+    border-color: #ff0000;
+}
+
+/* ===== BOTTOM BAR ===== */
+.footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 20px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.footer-bottom small {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.footer-bottom .footer-legal {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.footer-bottom .footer-legal a {
+    font-size: 13px;
+    color: #64748b;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.footer-bottom .footer-legal a:hover {
+    color: #a78bfa;
+    text-decoration: underline;
+}
+
+.footer-bottom .footer-legal a i {
+    font-size: 12px;
+}
+
+/* ===== SCROLL TO TOP BUTTON (Footer နဲ့ဆိုင်တဲ့) ===== */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 48px;
+    height: 48px;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
+    transition: all 0.3s ease;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+}
+
+.scroll-top-btn.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-top-btn:hover {
+    background: #4338ca;
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 28px rgba(79, 70, 229, 0.45);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .footer-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        padding: 0 10px;
+    }
+    
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
+    
+    .footer-brand p {
+        max-width: 100%;
+    }
+    
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+    
+    .footer-bottom .footer-legal {
+        justify-content: center;
+    }
+    
+    .scroll-top-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 42px;
+        height: 42px;
+        font-size: 17px;
+    }
+}
+
+@media (max-width: 480px) {
+    .site-footer {
+        padding: 32px 14px 16px;
+    }
+    
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .footer-brand h2 {
+        font-size: 20px;
+    }
+    
+    .footer-brand p {
+        font-size: 13px;
+    }
+    
+    .footer-social .social-icons a {
+        width: 38px;
+        height: 38px;
+        font-size: 15px;
+    }
+    
+    .footer-bottom .footer-legal {
+        gap: 12px;
+    }
+    
+    .footer-bottom .footer-legal a {
+        font-size: 12px;
+    }
+    
+    .scroll-top-btn {
+        bottom: 16px;
+        right: 16px;
+        width: 38px;
+        height: 38px;
+        font-size: 15px;
+    }
+}
