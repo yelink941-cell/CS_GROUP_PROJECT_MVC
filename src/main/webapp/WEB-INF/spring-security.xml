@@ -16,7 +16,29 @@
         <security:intercept-url pattern="/verify-otp" access="permitAll" />
         <security:intercept-url pattern="/reset-password" access="permitAll" />
         <security:intercept-url pattern="/suspended" access="permitAll" />
+        <security:intercept-url pattern="/doSearch" access="permitAll" />
+        <security:intercept-url pattern="/search/suggestions" method="GET" access="permitAll" />
+
+        <security:intercept-url pattern="/home" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/public" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/public/details" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/categories" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/categories/*" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/tags" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/tags/*" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/popular" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/trending" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/new" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/posts/*" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/categories/*" method="GET" access="permitAll" />
+        <security:intercept-url pattern="/category/*/posts" method="GET" access="permitAll" />
+
         <security:intercept-url pattern="/admin/**" access="hasAnyRole('ADMIN', 'SUPER_ADMIN')" />
+        <security:intercept-url pattern="/user/**" access="isAuthenticated()" />
+        <security:intercept-url pattern="/notes/**" access="isAuthenticated()" />
+        <security:intercept-url pattern="/chat/**" access="isAuthenticated()" />
+        <security:intercept-url pattern="/comments/**" access="isAuthenticated()" />
+        <security:intercept-url pattern="/api/**" access="isAuthenticated()" />
         <security:intercept-url pattern="/**" access="isAuthenticated()" />
 
 

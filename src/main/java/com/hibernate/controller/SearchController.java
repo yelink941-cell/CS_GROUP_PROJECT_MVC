@@ -25,23 +25,21 @@ public class SearchController {
     // 🔎 Search Action - Full search (for form submit)
     @PostMapping("/doSearch")
     public String doSearch(@RequestParam("keyword") String keyword, HttpSession session, Model model) {
-        Object loggedInUser = session.getAttribute("currentUser");
+        Object loggedInUser = getSessionUser(session);
         boolean isUserLoggedIn = false;
-        Long userId = 1L;
+        List<SearchHistory> searchHistory = java.util.Collections.emptyList();
 
         if (loggedInUser != null) {
             isUserLoggedIn = true; 
             User userEntity = (User) loggedInUser;
-            userId = userEntity.getId();
+            Long userId = userEntity.getId();
             searchService.saveSearchQuery(userId.intValue(), keyword);
+            searchHistory = searchService.getSearchHistoryByUserId(userId.intValue());
         }
 
         // Get search results
         Map<String, List<?>> allResults = searchService.searchEverything(keyword);
-        
-        // Get search history (for related searches)
-        List<SearchHistory> searchHistory = searchService.getSearchHistoryByUserId(userId.intValue());
-        
+
         model.addAttribute("categoryResults", allResults.get("categories"));
         model.addAttribute("userResults", allResults.get("users"));
         model.addAttribute("postResults", allResults.get("posts"));
@@ -65,15 +63,17 @@ public class SearchController {
             return response;
         }
         
-        Object loggedInUser = session.getAttribute("currentUser");
-        Long userId = 1L;
+        Object loggedInUser = getSessionUser(session);
+        Long userId = null;
         
         if (loggedInUser != null) {
             User userEntity = (User) loggedInUser;
             userId = userEntity.getId();
         }
         
-        List<String> suggestions = searchService.getSearchSuggestions(userId.intValue(), query.trim());
+        List<String> suggestions = userId == null
+                ? searchService.getPublicSearchSuggestions(query.trim())
+                : searchService.getSearchSuggestions(userId.intValue(), query.trim());
         
         response.put("suggestions", suggestions);
         response.put("query", query);
@@ -108,5 +108,13 @@ public class SearchController {
     @GetMapping("/doSearch")
     public String getSearch(@RequestParam("keyword") String keyword, HttpSession session, Model model) {
         return doSearch(keyword, session, model);
+    }
+
+    private Object getSessionUser(HttpSession session) {
+        Object loggedInUser = session.getAttribute("currentUser");
+        if (loggedInUser == null) {
+            loggedInUser = session.getAttribute("user");
+        }
+        return loggedInUser;
     }
 }

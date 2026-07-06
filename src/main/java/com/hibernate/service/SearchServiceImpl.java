@@ -14,6 +14,8 @@ import com.hibernate.entity.SearchHistory;
 import com.hibernate.entity.User;
 import com.hibernate.entity.Category;
 import com.hibernate.entity.Post;
+import com.hibernate.entity.enums.PostStatus;
+import com.hibernate.entity.enums.PostVisibility;
 import com.hibernate.repository.SearchHistoryRepository;
 import com.hibernate.repository.UserRepository;
 
@@ -85,10 +87,16 @@ public class SearchServiceImpl implements SearchService {
         results.put("users", users);
 
         // 🎯 ၃။ Cheat Sheets (Posts) ထဲမှာ လိုက်ရှာခြင်း
-        String postHql = "FROM Post p WHERE LOWER(p.title) LIKE :kw OR LOWER(p.excerpt) LIKE :kw";
+        String postHql = "FROM Post p "
+                + "WHERE (LOWER(p.title) LIKE :kw OR LOWER(p.excerpt) LIKE :kw) "
+                + "AND p.status = :status "
+                + "AND p.visibility = :visibility "
+                + "AND p.deletedAt IS NULL";
         List<Post> posts = sessionFactory.getCurrentSession()
                 .createQuery(postHql, Post.class)
                 .setParameter("kw", searchParam)
+                .setParameter("status", PostStatus.PUBLISHED)
+                .setParameter("visibility", PostVisibility.PUBLIC)
                 .getResultList();
         results.put("posts", posts);
 
@@ -120,11 +128,7 @@ public class SearchServiceImpl implements SearchService {
                 .setMaxResults(5)
                 .getResultList();
         
-        List<String> postSuggestions = sessionFactory.getCurrentSession()
-                .createQuery("SELECT LOWER(p.title) FROM Post p WHERE LOWER(p.title) LIKE :kw", String.class)
-                .setParameter("kw", searchParam)
-                .setMaxResults(5)
-                .getResultList();
+        List<String> postSuggestions = getPublicPostSuggestions(searchParam);
         
         List<String> allSuggestions = new java.util.ArrayList<>();
         allSuggestions.addAll(historySuggestions);
@@ -135,5 +139,43 @@ public class SearchServiceImpl implements SearchService {
                 .distinct()
                 .limit(10)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getPublicSearchSuggestions(String query) {
+        String searchParam = "%" + query.trim().toLowerCase() + "%";
+
+        List<String> categorySuggestions = sessionFactory.getCurrentSession()
+                .createQuery("SELECT LOWER(c.name) FROM Category c WHERE LOWER(c.name) LIKE :kw", String.class)
+                .setParameter("kw", searchParam)
+                .setMaxResults(5)
+                .getResultList();
+
+        List<String> postSuggestions = getPublicPostSuggestions(searchParam);
+
+        List<String> allSuggestions = new java.util.ArrayList<>();
+        allSuggestions.addAll(categorySuggestions);
+        allSuggestions.addAll(postSuggestions);
+
+        return allSuggestions.stream()
+                .distinct()
+                .limit(10)
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getPublicPostSuggestions(String searchParam) {
+        return sessionFactory.getCurrentSession()
+                .createQuery(
+                        "SELECT LOWER(p.title) FROM Post p "
+                                + "WHERE LOWER(p.title) LIKE :kw "
+                                + "AND p.status = :status "
+                                + "AND p.visibility = :visibility "
+                                + "AND p.deletedAt IS NULL",
+                        String.class)
+                .setParameter("kw", searchParam)
+                .setParameter("status", PostStatus.PUBLISHED)
+                .setParameter("visibility", PostVisibility.PUBLIC)
+                .setMaxResults(5)
+                .getResultList();
     }
 }
