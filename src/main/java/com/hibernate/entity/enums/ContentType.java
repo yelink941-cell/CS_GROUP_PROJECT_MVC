@@ -1,5 +1,5 @@
 package com.hibernate.entity.enums;
 
 public enum ContentType {
-    TEXT, CODE, IMAGE, TABLE, VIDEO, LINK
+    TEXT, CODE, IMAGE, VIDEO, LINK
 }

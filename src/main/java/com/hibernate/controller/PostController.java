@@ -3,13 +3,13 @@ package com.hibernate.controller;
 import com.hibernate.entity.Post;
 import com.hibernate.entity.User;
 import com.hibernate.entity.enums.ContentType;
+import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.entity.enums.PostVisibility;
 import com.hibernate.service.BookmarkService;
 import com.hibernate.service.CategoryService;
 import com.hibernate.service.CollectionService; 
 import com.hibernate.service.CommentService;
 import com.hibernate.service.PostContentService;
-import com.hibernate.service.PostFileService;
 import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.TagService;
@@ -18,6 +18,7 @@ import com.hibernate.service.UserService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequiredArgsConstructor
@@ -42,7 +44,6 @@ public class PostController {
 
     
     private final PostContentService postContentService;
-    private final PostFileService postFileService;
     private final PostLikeService postLikeService; 
     private final CommentService commentService;
     private final BookmarkService bookmarkService;
@@ -81,7 +82,6 @@ public class PostController {
     @PostMapping
     public String createPost(
             @RequestParam String title,
-            @RequestParam String slug,
             @RequestParam(required = false) String excerpt,
             @RequestParam Integer categoryId,
             @RequestParam(required = false) List<Integer> tagIds,
@@ -89,7 +89,7 @@ public class PostController {
             @RequestParam(value = "sectionSubtitles[]", required = false) List<String> sectionSubtitles,
             @RequestParam(value = "contentTypes[]", required = false) List<ContentType> contentTypes,
             @RequestParam(value = "contentDataList[]", required = false) List<String> contentDataList,
-            @RequestParam(value = "sortOrders[]", required = false) List<Integer> sortOrders,
+            @RequestParam(value = "contentImageFiles[]", required = false) List<MultipartFile> contentImageFiles,
             Model model,
             HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -98,6 +98,7 @@ public class PostController {
             return "redirect:/login";
         }
 
+        Post post = buildPost(title, excerpt, visibility);
         User dbUser = userService.getUserById(userId);
         if (dbUser != null && dbUser.isPostBanned()) {
             session.setAttribute("error", "Your account is currently restricted from creating posts (" + dbUser.getBanRemainingText() + ")");
@@ -131,9 +132,9 @@ public class PostController {
                     sectionSubtitles,
                     contentTypes,
                     contentDataList,
-                    sortOrders);
+                    contentImageFiles);
             return "redirect:/user/posts";
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | IllegalStateException exception) {
             post.setId(null);
             model.addAttribute("errorMessage", exception.getMessage());
             model.addAttribute("post", post);
@@ -143,8 +144,7 @@ public class PostController {
                     model,
                     sectionSubtitles,
                     contentTypes,
-                    contentDataList,
-                    sortOrders);
+                    contentDataList);
             loadFormData(model);
             return "user/post/form";
         }
@@ -159,9 +159,14 @@ public class PostController {
         }
 
         return postService.getPostById(id)
-                .filter(post -> post.getAuthor().getId().equals(userId))
+                .filter(post -> canUserManagePost(post, userId))
                 .map(post -> {
                     model.addAttribute("post", post);
+                    model.addAttribute(
+                            "selectedTagIds",
+                            post.getTags().stream()
+                                    .map(tag -> tag.getId())
+                                    .collect(Collectors.toList()));
                     loadFormData(model);
                     return "user/post/form";
                 })
@@ -172,7 +177,6 @@ public class PostController {
     public String updatePost(
             @PathVariable Integer id,
             @RequestParam String title,
-            @RequestParam String slug,
             @RequestParam(required = false) String excerpt,
             @RequestParam Integer categoryId,
             @RequestParam(required = false) List<Integer> tagIds,
@@ -185,12 +189,12 @@ public class PostController {
         }
 
         if (postService.getPostById(id)
-                .filter(existingPost -> existingPost.getAuthor().getId().equals(userId))
+                .filter(existingPost -> canUserManagePost(existingPost, userId))
                 .isEmpty()) {
             return "redirect:/user/posts";
         }
 
-        Post post = buildPost(title, slug, excerpt, visibility);
+        Post post = buildPost(title, excerpt, visibility);
         postService.updatePost(id, post, categoryId, tagIds, visibility);
         return "redirect:/user/posts";
     }
@@ -204,7 +208,7 @@ public class PostController {
         }
 
         if (postService.getPostById(id)
-                .filter(post -> post.getAuthor().getId().equals(userId))
+                .filter(post -> canUserManagePost(post, userId))
                 .isEmpty()) {
             return "redirect:/user/posts";
         }
@@ -258,10 +262,17 @@ public class PostController {
         return session.getAttribute("userId") != null;
     }
 
-    private Post buildPost(String title, String slug, String excerpt, PostVisibility visibility) {
+    private boolean canUserManagePost(Post post, Long userId) {
+        return post != null
+                && post.getAuthor() != null
+                && post.getAuthor().getId().equals(userId)
+                && post.getDeletedAt() == null
+                && !PostStatus.USER_DELETED.equals(post.getStatus());
+    }
+
+    private Post buildPost(String title, String excerpt, PostVisibility visibility) {
         Post post = new Post();
         post.setTitle(title);
-        post.setSlug(slug);
         post.setExcerpt(excerpt);
         post.setVisibility(visibility);
         return post;
@@ -276,8 +287,7 @@ public class PostController {
                 new ContentType[] {
                     ContentType.TEXT,
                     ContentType.CODE,
-                    ContentType.IMAGE,
-                    ContentType.TABLE
+                    ContentType.IMAGE
                 });
     }
 
@@ -285,12 +295,10 @@ public class PostController {
             Model model,
             List<String> sectionSubtitles,
             List<ContentType> contentTypes,
-            List<String> contentDataList,
-            List<Integer> sortOrders) {
+            List<String> contentDataList) {
         model.addAttribute("sectionSubtitles", sectionSubtitles);
         model.addAttribute("selectedContentTypes", contentTypes);
         model.addAttribute("contentDataList", contentDataList);
-        model.addAttribute("sortOrders", sortOrders);
     }
     
     @PostMapping("/like")
@@ -344,7 +352,6 @@ public class PostController {
         Post post = postService.getPostById(id).orElseThrow(() -> new IllegalArgumentException("Post not found"));
         model.addAttribute("post", post);
         model.addAttribute("contents", postContentService.getContentsByPostId(id));
-        model.addAttribute("postFiles", postFileService.getFilesByPostId(id));
 
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {

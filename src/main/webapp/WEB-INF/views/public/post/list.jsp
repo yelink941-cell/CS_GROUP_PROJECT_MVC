@@ -87,7 +87,7 @@
                                 </c:if>
                             </div>
 
-                            <a class="read-link" href="${detailsUrl}">Read cheat sheet <span>→</span></a>
+                            <a class="read-link" href="${detailsUrl}">Read More <span>→</span></a>
                         </div>
                     </article>
                 </c:forEach>

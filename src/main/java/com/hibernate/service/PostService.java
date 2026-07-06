@@ -7,6 +7,7 @@ import com.hibernate.entity.enums.PostVisibility;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface PostService {
     Post createPost(
@@ -18,7 +19,7 @@ public interface PostService {
             List<String> sectionSubtitles,
             List<ContentType> contentTypes,
             List<String> contentDataList,
-            List<Integer> sortOrders);
+            List<MultipartFile> contentImageFiles);
 
     Post updatePost(Integer id, Post post, Integer categoryId, List<Integer> tagIds, PostVisibility visibility);
 
@@ -42,7 +43,13 @@ public interface PostService {
 
     List<Post> getPopularPublishedPublicPosts();
 
+    List<Post> getPopularPublishedPublicPosts(int limit);
+
+    List<Post> getTrendingPublishedPublicPosts(int limit, int days);
+
     List<Post> getNewestPublishedPublicPosts();
+
+    List<Post> getNewestPublishedPublicPosts(int limit);
 
     List<Object[]> getPublishedPublicPostCountsByCategory();
 
@@ -63,5 +70,6 @@ public interface PostService {
     void addComment(Integer postId, Long userId, String text);
     
     boolean hasUserLiked(Integer postId, Long userId);
-    
 }
+    
+

@@ -130,8 +130,7 @@
     border-top: 1px solid var(--border);
 }
 
-.tag-list,
-.attachment-list {
+.tag-list {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -152,19 +151,6 @@
 .detail-sections,
 .public-content-section {
     margin-top: 34px;
-}
-
-.attachment-panel {
-    margin-top: 30px;
-    padding: 24px;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    background: var(--surface);
-    box-shadow: var(--shadow);
-}
-
-.attachment-panel h2 {
-    margin-top: 0;
 }
 
 .public-content-card {

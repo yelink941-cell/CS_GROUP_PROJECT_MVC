@@ -18,7 +18,7 @@
         <header class="page-heading">
             <div>
                 <h1><c:out value="${post.title}" /></h1>
-                <p>Build this cheat sheet with ordered text, code, image, table, video, or link sections.</p>
+                <p>Build this cheat sheet with text, code, and uploaded image sections.</p>
             </div>
             <a class="button" href="${pageContext.request.contextPath}/user/posts/${post.id}/contents/new">Add Section</a>
         </header>
@@ -50,7 +50,6 @@
                                     </c:choose>
                                 </h2>
                             </div>
-                            <span class="sort-order">Order: <c:out value="${content.sortOrder}" /></span>
                         </div>
 
                         <div class="content-preview">
@@ -59,7 +58,14 @@
                                     <pre><code><c:out value="${content.contentData}" /></code></pre>
                                 </c:when>
                                 <c:when test="${content.contentType == 'IMAGE'}">
-                                    <img class="content-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(content.contentData, '/')}">
+                                            <img class="content-image" src="${pageContext.request.contextPath}${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img class="content-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                        </c:otherwise>
+                                    </c:choose>
                                 </c:when>
                                 <c:when test="${content.contentType == 'VIDEO'}">
                                     <video class="content-video" controls src="${fn:escapeXml(content.contentData)}"></video>
@@ -68,9 +74,6 @@
                                     <a href="${fn:escapeXml(content.contentData)}" target="_blank" rel="noopener noreferrer">
                                         <c:out value="${content.contentData}" />
                                     </a>
-                                </c:when>
-                                <c:when test="${content.contentType == 'TABLE'}">
-                                    <pre class="table-content"><c:out value="${content.contentData}" /></pre>
                                 </c:when>
                                 <c:otherwise>
                                     <div class="text-content"><c:out value="${content.contentData}" /></div>
