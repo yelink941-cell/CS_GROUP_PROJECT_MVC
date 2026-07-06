@@ -12,6 +12,8 @@ public interface PostRepository {
 
     void delete(Integer id);
 
+    void deletePermanently(Integer id);
+
     Optional<Post> findById(Integer id);
 
     List<Post> findAll();
@@ -30,6 +32,12 @@ public interface PostRepository {
 
     List<Post> findPopularPublishedPublicPosts();
 
+    List<Post> findPopularPublishedPublicPosts(int limit);
+
+    List<Post> findTrendingPublishedPublicPosts(int limit, java.time.LocalDateTime since);
+
+    List<Post> findNewestPublishedPublicPosts(int limit);
+
     List<Object[]> countPublishedPublicPostsByCategory();
 
     List<Object[]> countPublishedPublicPostsByTag();
@@ -40,4 +48,6 @@ public interface PostRepository {
 
     List<Post> findPublishedPublicPosts();
     
+    long count(); // စုစုပေါင်း Post အရေအတွက်
+    long countByStatus(PostStatus status); // Pending Post အရေအတွက်အတွက်
 }

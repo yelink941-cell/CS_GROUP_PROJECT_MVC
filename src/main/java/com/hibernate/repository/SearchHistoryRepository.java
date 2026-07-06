@@ -10,4 +10,5 @@ public interface SearchHistoryRepository {
     
     // 🎯 NEW: User ID ရော Keyword ပါ ကိုက်ညီတဲ့ Record ရှိမရှိ ရှာဖွေပေးမည့် Method
     SearchHistory findByUserIdAndKeyword(int userId, String keyword);
+    List<String> findByUserIdAndKeywordLike(int userId, String keywordPattern);
 }

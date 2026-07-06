@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%-- <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <style>
@@ -20,4 +20,4 @@
         <li class="admin-menu-item"><a href="${pageContext.request.contextPath}/admin/posts/pending">Pending Posts</a></li>
         <li class="admin-menu-item"><a href="${pageContext.request.contextPath}/logout" class="btn-admin-logout">Logout</a></li>
     </ul>
-</nav>
+</nav> --%>

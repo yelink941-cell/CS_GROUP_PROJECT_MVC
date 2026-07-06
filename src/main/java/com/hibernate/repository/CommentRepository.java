@@ -17,4 +17,5 @@ public interface CommentRepository {
     Optional<Comment> findById(Integer id);
 
 	List<Comment> findByPostIdAndParentIsNullAndDeletedAtIsNull(Integer postId);
+	long count();
 }

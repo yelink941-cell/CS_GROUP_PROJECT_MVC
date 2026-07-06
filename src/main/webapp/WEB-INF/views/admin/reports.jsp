@@ -13,17 +13,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin - Report Logs & Moderation</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/admin.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { display: flex; min-height: 100vh; background-color: #f8fafc; color: #1e293b; }
-        .sidebar { width: 260px; background-color: #1e293b; color: #fff; display: flex; flex-direction: column; position: fixed; height: 100vh; }
-        .sidebar-brand { padding: 24px; font-size: 20px; font-weight: bold; background-color: #0f172a; text-align: center; color: #38bdf8; }
-        .sidebar-menu { list-style: none; flex-grow: 1; padding: 20px 0; }
-        .sidebar-item { margin: 4px 15px; }
-        .sidebar-link { display: flex; align-items: center; padding: 12px 16px; color: #cbd5e1; text-decoration: none; border-radius: 6px; font-size: 15px; transition: all 0.2s; }
-        .sidebar-link:hover { background-color: #334155; color: #fff; }
-        .sidebar-link.active { background-color: #0284c7; color: #fff; font-weight: 600; }
+       
         .main-workspace { margin-left: 260px; flex-grow: 1; display: flex; flex-direction: column; }
         .top-navbar { height: 70px; background-color: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .nav-title { font-size: 18px; font-weight: 600; color: #475569; }
@@ -142,40 +137,41 @@
 %>
 
     <aside class="sidebar">
-        <div class="sidebar-brand">CheatSheet Admin Panel &#128081;</div>
+        <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link">
-                    <span>&#128202; Core Dashboard</span>
+                <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link ">
+                    <span>📊 Core Dashboard</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/categories" class="sidebar-link">
-                    <span>&#128451; Category Management</span>
+                    <span>📁 Category Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
+                    <span>🏷️ Tags Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
-                    <span>&#128221; Post Management</span>
+                    <span>📄 Post Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
-                    <span>&#9203; Pending Posts</span>
+                    <span>⏳ Pending Posts</span>
                 </a>
             </li>
-            <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/comments" class="sidebar-link">
-                    <span>&#128172; Comment Management</span>
-                </a>
-            </li>
+           
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link">
-                    <span>&#128101; User Directory</span>
+                    <span>👥 User Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
-                <a href="${pageContext.request.contextPath}/admin/announcements" class="sidebar-link">
+                <a href="${pageContext.request.contextPath}/admin/announcements" class="sidebar-link ">
                     <span>&#128364; Event Announcements</span>
                 </a>
             </li>
@@ -186,11 +182,12 @@
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link active">
-                    <span>&#128680; Report Logs & Moderation</span>
+                    <span>📊 Report Logs</span>
                 </a>
             </li>
         </ul>
     </aside>
+
 
     <div class="main-workspace">
         <header class="top-navbar">

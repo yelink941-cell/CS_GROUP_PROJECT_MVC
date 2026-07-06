@@ -36,8 +36,78 @@ public class PostRepositoryImpl implements PostRepository {
     public void delete(Integer id) {
         findById(id).ifPresent(post -> {
             post.setDeletedAt(LocalDateTime.now());
+            post.setIsDeleted(true);
+            post.setStatus(PostStatus.USER_DELETED);
             getCurrentSession().update(post);
         });
+    }
+
+    @Override
+    public void deletePermanently(Integer id) {
+        Session session = getCurrentSession();
+
+        session.createQuery(
+                        "DELETE FROM CommentReport commentReport "
+                                + "WHERE commentReport.comment.id IN ("
+                                + "SELECT comment.id FROM Comment comment WHERE comment.post.id = :postId)")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createQuery("UPDATE Comment comment SET comment.parent = NULL WHERE comment.post.id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createQuery("DELETE FROM Comment comment WHERE comment.post.id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createQuery("DELETE FROM PostView postView WHERE postView.post.id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createQuery("DELETE FROM PostLike postLike WHERE postLike.post.id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createQuery("DELETE FROM Bookmark bookmark WHERE bookmark.post.id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createQuery("DELETE FROM Rating rating WHERE rating.post.id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createQuery("DELETE FROM PostReport postReport WHERE postReport.post.id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createQuery("DELETE FROM PostDownload postDownload WHERE postDownload.post.id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createQuery("DELETE FROM PostContent postContent WHERE postContent.post.id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createNativeQuery("DELETE FROM collection_posts WHERE post_id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createNativeQuery("DELETE FROM post_tags WHERE post_id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createNativeQuery("DELETE FROM reports WHERE post_id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createNativeQuery("DELETE FROM moderation_logs WHERE post_id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
+
+        session.createNativeQuery("DELETE FROM posts WHERE id = :postId")
+                .setParameter("postId", id)
+                .executeUpdate();
     }
 
     @Override
@@ -62,7 +132,8 @@ public class PostRepositoryImpl implements PostRepository {
                 .createQuery(
                         "SELECT p FROM Post p "
                                 + "LEFT JOIN FETCH p.category "
-                                + "WHERE p.deletedAt IS NULL",
+                                + "WHERE p.deletedAt IS NULL "
+                                + "ORDER BY p.createdAt DESC",
                         Post.class)
                 .getResultList();
     }
@@ -189,6 +260,65 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public List<Post> findPopularPublishedPublicPosts(int limit) {
+        return getCurrentSession()
+                .createQuery(
+                        "SELECT DISTINCT p FROM Post p "
+                                + "LEFT JOIN FETCH p.author "
+                                + "LEFT JOIN FETCH p.category "
+                                + "LEFT JOIN FETCH p.tags "
+                                + "WHERE p.status = :status "
+                                + "AND p.visibility = :visibility "
+                                + "AND p.deletedAt IS NULL "
+                                + "ORDER BY COALESCE(p.viewCount, 0) DESC, p.createdAt DESC",
+                        Post.class)
+                .setParameter("status", PostStatus.PUBLISHED)
+                .setParameter("visibility", PostVisibility.PUBLIC)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    @Override
+    public List<Post> findTrendingPublishedPublicPosts(int limit, LocalDateTime since) {
+        return getCurrentSession()
+                .createQuery(
+                        "SELECT DISTINCT p FROM Post p "
+                                + "LEFT JOIN FETCH p.author "
+                                + "LEFT JOIN FETCH p.category "
+                                + "LEFT JOIN FETCH p.tags "
+                                + "WHERE p.status = :status "
+                                + "AND p.visibility = :visibility "
+                                + "AND p.deletedAt IS NULL "
+                                + "AND p.createdAt >= :since "
+                                + "ORDER BY COALESCE(p.viewCount, 0) DESC, p.createdAt DESC",
+                        Post.class)
+                .setParameter("status", PostStatus.PUBLISHED)
+                .setParameter("visibility", PostVisibility.PUBLIC)
+                .setParameter("since", since)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    @Override
+    public List<Post> findNewestPublishedPublicPosts(int limit) {
+        return getCurrentSession()
+                .createQuery(
+                        "SELECT DISTINCT p FROM Post p "
+                                + "LEFT JOIN FETCH p.author "
+                                + "LEFT JOIN FETCH p.category "
+                                + "LEFT JOIN FETCH p.tags "
+                                + "WHERE p.status = :status "
+                                + "AND p.visibility = :visibility "
+                                + "AND p.deletedAt IS NULL "
+                                + "ORDER BY p.createdAt DESC",
+                        Post.class)
+                .setParameter("status", PostStatus.PUBLISHED)
+                .setParameter("visibility", PostVisibility.PUBLIC)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    @Override
     public List<Object[]> countPublishedPublicPostsByCategory() {
         return getCurrentSession()
                 .createQuery(
@@ -267,5 +397,19 @@ public class PostRepositoryImpl implements PostRepository {
                 .setParameter("status", PostStatus.PUBLISHED)
                 .setParameter("visibility", PostVisibility.PUBLIC)
                 .getResultList();
+    }
+    @Override
+    public long count() {
+        return getCurrentSession()
+                .createQuery("SELECT COUNT(p) FROM Post p WHERE p.deletedAt IS NULL", Long.class)
+                .getSingleResult();
+    }
+
+    @Override
+    public long countByStatus(PostStatus status) {
+        return getCurrentSession()
+                .createQuery("SELECT COUNT(p) FROM Post p WHERE p.status = :status AND p.deletedAt IS NULL", Long.class)
+                .setParameter("status", status)
+                .getSingleResult();
     }
 }

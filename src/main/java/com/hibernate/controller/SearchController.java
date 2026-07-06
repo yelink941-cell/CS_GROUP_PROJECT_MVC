@@ -2,6 +2,7 @@ package com.hibernate.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.hibernate.entity.SearchHistory;
 import com.hibernate.entity.User;
 import com.hibernate.service.SearchService;
@@ -19,28 +22,31 @@ public class SearchController {
     @Autowired
     private SearchService searchService;
 
-    // 🔎 Search Action
+    // 🔎 Search Action - Full search (for form submit)
     @PostMapping("/doSearch")
     public String doSearch(@RequestParam("keyword") String keyword, HttpSession session, Model model) {
         Object loggedInUser = session.getAttribute("currentUser");
         boolean isUserLoggedIn = false;
+        Long userId = 1L;
 
-        // 🎯 User Login ဝင်ထားခြင်း ရှိ/မရှိ စစ်ဆေးပြီး သမိုင်းမှတ်တမ်း သိမ်းဆည်းခြင်း Logic
         if (loggedInUser != null) {
             isUserLoggedIn = true; 
             User userEntity = (User) loggedInUser;
-            int userId = userEntity.getId().intValue(); // Long ကို int သို့ပြောင်းလဲခြင်း
-            searchService.saveSearchQuery(userId, keyword);
+            userId = userEntity.getId();
+            searchService.saveSearchQuery(userId.intValue(), keyword);
         }
 
-        // 🎯 အလုံးစုံ ရှာဖွေမှုရလဒ်များကို ဆွဲထုတ်ခြင်း (Posts, Collections, Categories, Users)
+        // Get search results
         Map<String, List<?>> allResults = searchService.searchEverything(keyword);
         
-        // JSP ဘက်သို့ Attribute များ စနစ်တကျ ပါးပေးခြင်း
+        // Get search history (for related searches)
+        List<SearchHistory> searchHistory = searchService.getSearchHistoryByUserId(userId.intValue());
+        
         model.addAttribute("categoryResults", allResults.get("categories"));
         model.addAttribute("userResults", allResults.get("users"));
         model.addAttribute("postResults", allResults.get("posts"));
-        model.addAttribute("collectionResults", allResults.get("collections")); // 📁 Collections (Folders)
+        model.addAttribute("collectionResults", allResults.get("collections"));
+        model.addAttribute("searchHistory", searchHistory);
         model.addAttribute("searchedKeyword", keyword);
         model.addAttribute("isSearching", true); 
         model.addAttribute("isLoggedIn", isUserLoggedIn);
@@ -48,34 +54,59 @@ public class SearchController {
         return "index"; 
     }
 
-    // 🕒 History Action (အနီရောင်လိုင်း အမှားပြင်ဆင်ပြီးသား နေရာ)
-    @GetMapping("/history")
-    public String showHistoryPage(HttpSession session, Model model) {
-        Object loggedInUser = session.getAttribute("currentUser");
+    // ✅ AJAX - Live Search Suggestions
+    @GetMapping("/search/suggestions")
+    @ResponseBody
+    public Map<String, Object> getSuggestions(@RequestParam("q") String query, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
         
-        // 🎯 Type Mismatch အမှားကို ဖြေရှင်းရန် userId ကို Long ဖြင့် ကြေညာထားပါသည်
-        Long userId;
-
-        if (loggedInUser == null) {
-            // Guest User အတွက် အလိုအလျောက် ID = 1L (Long) သတ်မှတ်ခြင်း
-            userId = 1L; 
-        } else {
-            // Login ဝင်ထားလျှင် User Entity ထဲက Long ID ကို တိုက်ရိုက်ဆွဲယူခြင်း
-            User userEntity = (User) loggedInUser;
-            userId = userEntity.getId(); 
+        if (query == null || query.trim().length() < 1) {
+            response.put("suggestions", List.of());
+            return response;
         }
-
-        // 🎯 Service ဘက်က int လက်ခံထားသောကြောင့် ပို့ခါနီးမှ .intValue() ပြောင်းပြီး လှမ်းခေါ်ခြင်း
-        List<SearchHistory> historyList = searchService.getSearchHistoryByUserId(userId.intValue());
-        model.addAttribute("searchHistory", historyList);
         
-        return "history"; 
+        Object loggedInUser = session.getAttribute("currentUser");
+        Long userId = 1L;
+        
+        if (loggedInUser != null) {
+            User userEntity = (User) loggedInUser;
+            userId = userEntity.getId();
+        }
+        
+        List<String> suggestions = searchService.getSearchSuggestions(userId.intValue(), query.trim());
+        
+        response.put("suggestions", suggestions);
+        response.put("query", query);
+        
+        return response;
     }
 
-    // 🗑️ Delete Action
+    // 🗑️ Delete Search History - ✅ STAY ON SAME PAGE
     @GetMapping("/history/delete")
-    public String deleteHistory(@RequestParam("id") int historyId) {
-        searchService.deleteHistory(historyId);
-        return "redirect:/history"; 
+    public String deleteHistory(@RequestParam("id") int historyId, 
+                                @RequestParam(value = "keyword", required = false) String keyword,
+                                RedirectAttributes redirectAttributes,
+                                HttpSession session,
+                                Model model) {
+        try {
+            searchService.deleteHistory(historyId);
+            redirectAttributes.addFlashAttribute("successMessage", "Search history deleted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting history: " + e.getMessage());
+        }
+        
+        // ✅ If keyword is provided, stay on search results page
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return "redirect:/doSearch?keyword=" + keyword;
+        }
+        
+        // Otherwise redirect to home
+        return "redirect:/";
+    }
+    
+    // 🔎 GET method for search (for redirect after delete)
+    @GetMapping("/doSearch")
+    public String getSearch(@RequestParam("keyword") String keyword, HttpSession session, Model model) {
+        return doSearch(keyword, session, model);
     }
 }

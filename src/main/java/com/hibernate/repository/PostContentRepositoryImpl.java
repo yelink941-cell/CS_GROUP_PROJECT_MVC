@@ -50,7 +50,7 @@ public class PostContentRepositoryImpl implements PostContentRepository {
                 .createQuery(
                         "from PostContent pc "
                                 + "where pc.post.id = :postId "
-                                + "order by pc.sortOrder asc, pc.id asc",
+                                + "order by pc.id asc",
                         PostContent.class)
                 .setParameter("postId", postId)
                 .getResultList();

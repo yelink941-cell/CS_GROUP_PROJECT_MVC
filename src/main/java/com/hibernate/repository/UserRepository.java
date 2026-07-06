@@ -25,6 +25,8 @@ public interface UserRepository {
     Optional<User> findByUsername(String username);
     Optional<User> findById(Long id);
     List<User> searchByUsername(String keyword, Long excludeUserId, int limit);
+    long count();
+
 
     Optional<String> findFullNameByUserId(Long userId);
 }

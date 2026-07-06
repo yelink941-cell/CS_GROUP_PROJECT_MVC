@@ -47,4 +47,16 @@ public class SearchHistoryRepositoryImpl implements SearchHistoryRepository {
             sessionFactory.getCurrentSession().delete(history);
         }
     }
+    @Override
+    public List<String> findByUserIdAndKeywordLike(int userId, String keywordPattern) {
+        String hql = "SELECT sh.keyword FROM SearchHistory sh " +
+                     "WHERE sh.user.id = :uid AND LOWER(sh.keyword) LIKE :kw " +
+                     "GROUP BY sh.keyword ORDER BY MAX(sh.searchedAt) DESC";
+        return sessionFactory.getCurrentSession()
+                .createQuery(hql, String.class)
+                .setParameter("uid", (long) userId)
+                .setParameter("kw", keywordPattern)
+                .setMaxResults(10)
+                .getResultList();
+    }
 }

@@ -15,17 +15,37 @@ import com.hibernate.repository.PostContentRepository;
 import com.hibernate.repository.PostRepository;
 import com.hibernate.repository.TagRepository;
 import com.hibernate.repository.UserRepository;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class PostServiceImpl implements PostService {
+    private static final long MAX_SECTION_IMAGE_SIZE = 5L * 1024 * 1024;
+    private static final Map<String, String> ALLOWED_SECTION_IMAGE_TYPES = Map.of(
+            "png", "image/png",
+            "jpg", "image/jpeg",
+            "jpeg", "image/jpeg",
+            "webp", "image/webp");
+
     private final PostRepository postRepository;
     private final PostContentRepository postContentRepository;
     private final CategoryRepository categoryRepository;
@@ -44,12 +64,13 @@ public class PostServiceImpl implements PostService {
             List<String> sectionSubtitles,
             List<ContentType> contentTypes,
             List<String> contentDataList,
-            List<Integer> sortOrders) {
+            List<MultipartFile> contentImageFiles) {
         post.setAuthor(getUser(userId));
         post.setCategory(getCategory(categoryId));
         post.setTags(getTags(tagIds));
         post.setVisibility(visibility);
         post.setStatus(getStatusForVisibility(visibility));
+        post.setSlug(generateUniqueSlug(post.getTitle()));
         post.setRejectionReason(null);
         Post savedPost = postRepository.save(post);
         savePostContents(
@@ -57,7 +78,7 @@ public class PostServiceImpl implements PostService {
                 sectionSubtitles,
                 contentTypes,
                 contentDataList,
-                sortOrders);
+                contentImageFiles);
         return savedPost;
     }
 
@@ -72,7 +93,6 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new IllegalArgumentException("Post not found."));
 
         existingPost.setTitle(post.getTitle());
-        existingPost.setSlug(post.getSlug());
         existingPost.setExcerpt(post.getExcerpt());
         existingPost.setVisibility(visibility);
         existingPost.setStatus(getStatusForVisibility(visibility));
@@ -134,8 +154,23 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<Post> getPopularPublishedPublicPosts(int limit) {
+        return postRepository.findPopularPublishedPublicPosts(limit);
+    }
+
+    @Override
+    public List<Post> getTrendingPublishedPublicPosts(int limit, int days) {
+        return postRepository.findTrendingPublishedPublicPosts(limit, LocalDateTime.now().minusDays(days));
+    }
+
+    @Override
     public List<Post> getNewestPublishedPublicPosts() {
         return postRepository.findPublishedPublicPosts();
+    }
+
+    @Override
+    public List<Post> getNewestPublishedPublicPosts(int limit) {
+        return postRepository.findNewestPublishedPublicPosts(limit);
     }
 
     @Override
@@ -207,17 +242,51 @@ public class PostServiceImpl implements PostService {
     private List<Tag> getTags(List<Integer> tagIds) {
         List<Tag> tags = new ArrayList<>();
 
-        if (tagIds == null) {
+        if (tagIds == null || tagIds.isEmpty()) {
             return tags;
         }
 
-        for (Integer tagId : tagIds) {
+        Set<Integer> uniqueTagIds = new LinkedHashSet<>(tagIds);
+
+        for (Integer tagId : uniqueTagIds) {
+            if (tagId == null) {
+                continue;
+            }
+
             Tag tag = tagRepository.findById(tagId)
-                    .orElseThrow(() -> new IllegalArgumentException("Tag not found."));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid tag selected."));
             tags.add(tag);
         }
 
         return tags;
+    }
+
+    private String generateUniqueSlug(String title) {
+        String baseSlug = slugify(title);
+        String uniqueSlug = baseSlug;
+        int suffix = 2;
+
+        while (postRepository.existsBySlug(uniqueSlug)) {
+            uniqueSlug = baseSlug + "-" + suffix;
+            suffix++;
+        }
+
+        return uniqueSlug;
+    }
+
+    private String slugify(String title) {
+        if (title == null) {
+            return "post";
+        }
+
+        String slug = title
+                .toLowerCase(Locale.ENGLISH)
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-")
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "");
+
+        return slug.isBlank() ? "post" : slug;
     }
 
     private void savePostContents(
@@ -225,31 +294,62 @@ public class PostServiceImpl implements PostService {
             List<String> sectionSubtitles,
             List<ContentType> contentTypes,
             List<String> contentDataList,
-            List<Integer> sortOrders) {
-        if (contentDataList == null || contentDataList.isEmpty()) {
+            List<MultipartFile> contentImageFiles) {
+        int sectionCount = getMaxSize(sectionSubtitles, contentTypes, contentDataList, contentImageFiles);
+        if (sectionCount == 0) {
             return;
         }
 
-        for (int index = 0; index < contentDataList.size(); index++) {
-            String contentData = contentDataList.get(index);
+        for (int index = 0; index < sectionCount; index++) {
+            ContentType contentType = getContentType(contentTypes, index);
+            String contentData = getValue(contentDataList, index);
             String subtitle = getValue(sectionSubtitles, index);
+            MultipartFile imageFile = getValue(contentImageFiles, index);
 
-            if (isBlank(contentData) && isBlank(subtitle)) {
-                continue;
+            if (ContentType.IMAGE.equals(contentType)) {
+                if ((imageFile == null || imageFile.isEmpty()) && isBlank(subtitle)) {
+                    continue;
+                }
+
+                contentData = storeSectionImage(post.getId(), imageFile);
+            } else {
+                if (isBlank(contentData) && isBlank(subtitle)) {
+                    continue;
+                }
+
+                if (isBlank(contentData)) {
+                    throw new IllegalArgumentException("Content data is required for every section.");
+                }
+
+                contentData = contentData.trim();
             }
 
+            validateSupportedContentType(contentType);
+
             if (isBlank(contentData)) {
-                throw new IllegalArgumentException("Content data is required for every section.");
+                continue;
             }
 
             PostContent postContent = new PostContent();
             postContent.setPost(post);
             postContent.setSubtitle(isBlank(subtitle) ? null : subtitle.trim());
-            postContent.setContentType(getContentType(contentTypes, index));
+            postContent.setContentType(contentType);
             postContent.setContentData(contentData);
-            postContent.setSortOrder(getSortOrder(sortOrders, index));
             postContentRepository.save(postContent);
         }
+    }
+
+    @SafeVarargs
+    private final int getMaxSize(List<?>... lists) {
+        int maxSize = 0;
+
+        for (List<?> list : lists) {
+            if (list != null && list.size() > maxSize) {
+                maxSize = list.size();
+            }
+        }
+
+        return maxSize;
     }
 
     private <T> T getValue(List<T> values, int index) {
@@ -265,9 +365,131 @@ public class PostServiceImpl implements PostService {
         return contentType == null ? ContentType.TEXT : contentType;
     }
 
-    private Integer getSortOrder(List<Integer> sortOrders, int index) {
-        Integer sortOrder = getValue(sortOrders, index);
-        return sortOrder == null ? index + 1 : sortOrder;
+    private void validateSupportedContentType(ContentType contentType) {
+        if (!ContentType.TEXT.equals(contentType)
+                && !ContentType.CODE.equals(contentType)
+                && !ContentType.IMAGE.equals(contentType)) {
+            throw new IllegalArgumentException("Only TEXT, CODE, and IMAGE sections are allowed.");
+        }
+    }
+
+    private String storeSectionImage(Integer postId, MultipartFile imageFile) {
+        try {
+            validateSectionImage(imageFile);
+
+            String originalFileName = sanitizeFileName(imageFile.getOriginalFilename());
+            String extension = getExtension(originalFileName);
+            String storedFileName = UUID.randomUUID() + "." + extension;
+            Path uploadDirectory = getSectionUploadDirectory(postId);
+            Path targetFile = uploadDirectory.resolve(storedFileName).normalize();
+
+            if (!targetFile.startsWith(uploadDirectory)) {
+                throw new IllegalArgumentException("Invalid image file name.");
+            }
+
+            Files.createDirectories(uploadDirectory);
+            Files.copy(imageFile.getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+
+            return "/uploads/posts/" + postId + "/sections/" + storedFileName;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Unable to upload section image.");
+        }
+    }
+
+    private void validateSectionImage(MultipartFile imageFile) throws IOException {
+        if (imageFile == null || imageFile.isEmpty()) {
+            throw new IllegalArgumentException("Please upload an image file for IMAGE sections.");
+        }
+
+        if (imageFile.getSize() > MAX_SECTION_IMAGE_SIZE) {
+            throw new IllegalArgumentException("Image size must not exceed 5MB.");
+        }
+
+        String fileName = sanitizeFileName(imageFile.getOriginalFilename());
+        String extension = getExtension(fileName);
+        String expectedContentType = ALLOWED_SECTION_IMAGE_TYPES.get(extension);
+
+        if (expectedContentType == null) {
+            throw new IllegalArgumentException("Only JPG, JPEG, PNG, and WEBP images are allowed.");
+        }
+
+        String contentType = imageFile.getContentType();
+        if (contentType == null || !expectedContentType.equalsIgnoreCase(contentType)) {
+            throw new IllegalArgumentException("The uploaded image content does not match its extension.");
+        }
+
+        if (!hasValidImageSignature(imageFile, extension)) {
+            throw new IllegalArgumentException("The uploaded image content is invalid.");
+        }
+    }
+
+    private String sanitizeFileName(String originalFileName) {
+        if (originalFileName == null || originalFileName.isBlank()) {
+            throw new IllegalArgumentException("Invalid image file name.");
+        }
+
+        String fileName = Paths.get(originalFileName).getFileName().toString();
+        if (fileName.length() > 255) {
+            throw new IllegalArgumentException("Image file name must not exceed 255 characters.");
+        }
+
+        return fileName;
+    }
+
+    private String getExtension(String fileName) {
+        int extensionIndex = fileName.lastIndexOf('.');
+        if (extensionIndex < 0 || extensionIndex == fileName.length() - 1) {
+            return "";
+        }
+
+        return fileName.substring(extensionIndex + 1).toLowerCase(Locale.ROOT);
+    }
+
+    private boolean hasValidImageSignature(MultipartFile imageFile, String extension) throws IOException {
+        byte[] header = new byte[12];
+        int bytesRead;
+
+        try (InputStream inputStream = imageFile.getInputStream()) {
+            bytesRead = inputStream.read(header);
+        }
+
+        if ("png".equals(extension)) {
+            byte[] pngSignature = {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+            if (bytesRead < pngSignature.length) {
+                return false;
+            }
+
+            for (int index = 0; index < pngSignature.length; index++) {
+                if (header[index] != pngSignature[index]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        if ("webp".equals(extension)) {
+            return bytesRead >= 12
+                    && header[0] == 'R'
+                    && header[1] == 'I'
+                    && header[2] == 'F'
+                    && header[3] == 'F'
+                    && header[8] == 'W'
+                    && header[9] == 'E'
+                    && header[10] == 'B'
+                    && header[11] == 'P';
+        }
+
+        return bytesRead >= 3
+                && header[0] == (byte) 0xFF
+                && header[1] == (byte) 0xD8
+                && header[2] == (byte) 0xFF;
+    }
+
+    private Path getSectionUploadDirectory(Integer postId) {
+        return Paths.get(System.getProperty("user.home"), "cheatsheet-uploads", "posts", postId.toString(), "sections")
+                .toAbsolutePath()
+                .normalize();
     }
 
     private boolean isBlank(String value) {
@@ -304,4 +526,29 @@ public class PostServiceImpl implements PostService {
         return postLikeService.hasUserLiked(postId, userId);
     }
     
+ // PostServiceImpl.java တွင် ထည့်ရန်
+    @Override
+    public long countAllPosts() {
+        return postRepository.count();
+    }
+
+    @Override
+    public long countPendingPosts() {
+        return postRepository.countByStatus(PostStatus.PENDING); // Repository မှာ ဒီ method ရှိဖို့လိုပါတယ်
+    }
+    @Override
+    public List<Post> getApprovedPosts() {
+        return postRepository.findByStatus(PostStatus.PUBLISHED);
+    }
+    @Override
+    public List<Post> getRejectedPosts() {
+        return postRepository.findByStatus(PostStatus.REJECTED);
+    }
+
+    @Override
+    public long countByStatus(PostStatus status) {
+        return postRepository.countByStatus(status);
+    }
+
+
 }

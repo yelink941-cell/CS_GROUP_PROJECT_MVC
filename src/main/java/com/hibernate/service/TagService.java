@@ -16,4 +16,7 @@ public interface TagService {
     List<Tag> getAllTags();
 
     boolean existsByName(String name);
+    double getAverageTagsPerPost();
+    String getMostUsedTagName();
+    List<Tag> getAllTagsWithPostCount();
 }

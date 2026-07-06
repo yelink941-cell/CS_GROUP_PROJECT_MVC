@@ -88,10 +88,28 @@ public class UserRepositoryImpl implements UserRepository {
 	@Override
 	public List<User> searchByUsername(String keyword, Long excludeUserId, int limit) {
 		return getSession()
-				.createQuery("from User u where u.deletedAt is null " + "and u.id <> :excludeId "
-						+ "and lower(u.username) like lower(:keyword) " + "order by u.username asc", User.class)
-				.setParameter("excludeId", excludeUserId).setParameter("keyword", "%" + keyword + "%")
-				.setMaxResults(limit).getResultList();
+				.createQuery("select distinct u from User u left join u.profile p "
+						+ "where u.deletedAt is null "
+						+ "and u.id <> :excludeId "
+						+ "and (lower(u.username) like lower(:keyword) "
+						+ "or lower(p.fullName) like lower(:keyword)) "
+						+ "order by u.username asc", User.class)
+				.setParameter("excludeId", excludeUserId)
+				.setParameter("keyword", "%" + keyword + "%")
+				.setMaxResults(limit)
+				.getResultList();
+	}
+
+	@Override
+	public long count() {
+		try {
+			Long count = getSession()
+					.createQuery("SELECT COUNT(u) FROM User u WHERE u.deletedAt IS NULL", Long.class)
+					.uniqueResult();
+			return count != null ? count : 0;
+		} catch (Exception e) {
+			return 0;
+		}
 	}
 
 	@Override

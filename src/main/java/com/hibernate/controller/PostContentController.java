@@ -2,6 +2,7 @@ package com.hibernate.controller;
 
 import com.hibernate.entity.PostContent;
 import com.hibernate.entity.enums.ContentType;
+import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.service.PostContentService;
 import com.hibernate.service.PostService;
 import javax.servlet.http.HttpSession;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -57,8 +59,8 @@ public class PostContentController {
             @PathVariable Integer postId,
             @RequestParam(required = false) String subtitle,
             @RequestParam ContentType contentType,
-            @RequestParam String contentData,
-            @RequestParam(required = false, defaultValue = "0") Integer sortOrder,
+            @RequestParam(required = false) String contentData,
+            @RequestParam(required = false) MultipartFile imageFile,
             HttpSession session,
             Model model) {
         String accessRedirect = getAccessRedirect(postId, session);
@@ -66,11 +68,11 @@ public class PostContentController {
             return accessRedirect;
         }
 
-        PostContent postContent = buildContent(subtitle, contentType, contentData, sortOrder);
+        PostContent postContent = buildContent(subtitle, contentType, contentData);
         try {
-            postContentService.addContent(postId, postContent);
+            postContentService.addContent(postId, postContent, imageFile);
             return "redirect:/user/posts/" + postId + "/contents";
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | IllegalStateException exception) {
             model.addAttribute("errorMessage", exception.getMessage());
             loadForm(model, postId, postContent);
             return "user/post/content-form";
@@ -102,8 +104,8 @@ public class PostContentController {
             @PathVariable Integer contentId,
             @RequestParam(required = false) String subtitle,
             @RequestParam ContentType contentType,
-            @RequestParam String contentData,
-            @RequestParam(required = false, defaultValue = "0") Integer sortOrder,
+            @RequestParam(required = false) String contentData,
+            @RequestParam(required = false) MultipartFile imageFile,
             HttpSession session,
             Model model) {
         String accessRedirect = getAccessRedirect(postId, session);
@@ -111,12 +113,12 @@ public class PostContentController {
             return accessRedirect;
         }
 
-        PostContent postContent = buildContent(subtitle, contentType, contentData, sortOrder);
+        PostContent postContent = buildContent(subtitle, contentType, contentData);
         postContent.setId(contentId);
         try {
-            postContentService.updateContent(postId, contentId, postContent);
+            postContentService.updateContent(postId, contentId, postContent, imageFile);
             return "redirect:/user/posts/" + postId + "/contents";
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | IllegalStateException exception) {
             model.addAttribute("errorMessage", exception.getMessage());
             loadForm(model, postId, postContent);
             return "user/post/content-form";
@@ -153,25 +155,36 @@ public class PostContentController {
             return "redirect:/user/posts";
         }
 
+        if (postService.getPostById(postId)
+                .filter(post -> post.getDeletedAt() == null)
+                .filter(post -> !PostStatus.USER_DELETED.equals(post.getStatus()))
+                .isEmpty()) {
+            return "redirect:/user/posts";
+        }
+
         return null;
     }
 
     private PostContent buildContent(
             String subtitle,
             ContentType contentType,
-            String contentData,
-            Integer sortOrder) {
+            String contentData) {
         PostContent postContent = new PostContent();
         postContent.setSubtitle(subtitle);
         postContent.setContentType(contentType);
         postContent.setContentData(contentData);
-        postContent.setSortOrder(sortOrder);
         return postContent;
     }
 
     private void loadForm(Model model, Integer postId, PostContent postContent) {
         model.addAttribute("postId", postId);
         model.addAttribute("postContent", postContent);
-        model.addAttribute("contentTypes", ContentType.values());
+        model.addAttribute(
+                "contentTypes",
+                new ContentType[] {
+                    ContentType.TEXT,
+                    ContentType.CODE,
+                    ContentType.IMAGE
+                });
     }
 }

@@ -16,4 +16,7 @@ public interface TagRepository {
     List<Tag> findAll();
 
     boolean existsByName(String name);
+    double findAverageTagsPerPost();
+    String findMostUsedTagName();
+    List<Tag> findAllWithPostCount();
 }

@@ -55,4 +55,61 @@ public class TagRepositoryImpl implements TagRepository {
 
         return count != null && count > 0;
     }
+    // ✅ ဒီ method တွေကို ထည့်ပါ
+    @Override
+    public double findAverageTagsPerPost() {
+        try {
+            // Get total posts count
+            Long totalPosts = getCurrentSession()
+                    .createQuery("SELECT COUNT(p) FROM Post p WHERE p.deletedAt IS NULL", Long.class)
+                    .uniqueResult();
+            
+            if (totalPosts == null || totalPosts == 0) {
+                return 0.0;
+            }
+            
+            // Get total tag-post relationships
+            Long totalTagPosts = getCurrentSession()
+                    .createQuery("SELECT COUNT(tp) FROM TagPost tp", Long.class)
+                    .uniqueResult();
+            
+            if (totalTagPosts == null || totalTagPosts == 0) {
+                return 0.0;
+            }
+            
+            return (double) totalTagPosts / totalPosts;
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+    @Override
+    public String findMostUsedTagName() {
+        try {
+            Object[] result = getCurrentSession()
+                    .createQuery(
+                        "SELECT t.name, COUNT(tp) as count FROM Tag t " +
+                        "LEFT JOIN t.posts tp " +
+                        "GROUP BY t.id, t.name " +
+                        "ORDER BY COUNT(tp) DESC", 
+                        Object[].class)
+                    .setMaxResults(1)
+                    .uniqueResult();
+            
+            if (result != null && result.length > 0) {
+                return (String) result[0];
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    @Override
+    public List<Tag> findAllWithPostCount() {
+        return getCurrentSession()
+                .createQuery(
+                    "SELECT DISTINCT t FROM Tag t " +
+                    "LEFT JOIN FETCH t.posts", 
+                    Tag.class)
+                .getResultList();
+    }
 }

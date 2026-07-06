@@ -16,4 +16,5 @@ public interface CategoryService {
     List<Category> getAllCategories();
 
     boolean existsByName(String name);
+    long getTotalPostsInCategories();
 }

@@ -13,5 +13,5 @@ public interface CommentService {
  // CommentService.java တွင် ထည့်ရန်
     int getTotalActiveParentComments(Integer postId);
 	void deleteComment(Integer id);
-	
+	  long countAllComments();
 }

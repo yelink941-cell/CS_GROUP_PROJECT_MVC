@@ -1,6 +1,7 @@
 package com.hibernate.controller;
 
 import com.hibernate.entity.Post;
+import com.hibernate.entity.enums.PostStatus;
 import com.hibernate.service.PostService;
 import com.hibernate.service.PostViewService;
 import javax.servlet.http.HttpSession;
@@ -30,6 +31,7 @@ public class UserPostViewController {
 
         Post post = postService.getPostById(postId)
                 .filter(existingPost -> existingPost.getDeletedAt() == null)
+                .filter(existingPost -> !PostStatus.USER_DELETED.equals(existingPost.getStatus()))
                 .orElse(null);
 
         if (post == null || !userId.equals(post.getAuthor().getId())) {

@@ -13,18 +13,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ── Color palette (inspired by the Public Library screenshot) ── */
         :root {
-            --bg:        #f8fafc; /* Changed to match the main notes page */
-            --surface:   #ffffff;
-            --surface2:  #f8fafc;
-            --border:    #e2e8f0;
-            --accent:    #6366f1;
-            --accent2:   #4f46e5;
-            --accent-glow: rgba(99, 102, 241, 0.15);
-            --text:      #0f172a;
-            --muted:     #64748b;
+            --bg:        #f1f5f9;          /* soft gray-blue like the library background */
+            --surface:   #ffffff;           /* crisp white cards */
+            --surface2:  #f8fafc;           /* subtle input background */
+            --border:    #e2e8f0;           /* light borders */
+            --accent:    #0ea5e9;           /* bright sky blue (matches the "Read cheat sheet →" feel) */
+            --accent2:   #0284c7;           /* deeper blue for hover/glow */
+            --accent-glow: rgba(14, 165, 233, 0.20);
+            --text:      #0f172a;           /* dark slate */
+            --muted:     #475569;           /* muted text */
             --red:       #ef4444;
-            --radius:    16px; /* Slightly rounder edges */
+            --radius:    16px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -65,7 +66,7 @@
             margin-bottom: 32px;
         }
         .form-header h1 {
-            font-size: 32px; /* Matched the larger title size */
+            font-size: 32px;
             font-weight: 800;
             letter-spacing: -0.03em;
             color: var(--text);
@@ -80,9 +81,9 @@
         .form-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 20px; /* Matched updated modal roundness */
+            border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.03); /* Softer shadow */
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.03);
         }
 
         /* ── Private badge ──────────────────────── */
@@ -90,9 +91,9 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #eeeffe;
-            border: 1px solid #c7d2fe;
-            color: var(--accent2);
+            background: #e0f2fe;          /* light blue tint */
+            border: 1px solid #b8e2f8;
+            color: #0369a1;               /* deep blue */
             font-size: 12px;
             font-weight: 600;
             padding: 6px 14px;
@@ -174,7 +175,7 @@
         }
         .btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
         }
         .btn-save:active { transform: translateY(0); }
 
