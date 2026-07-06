@@ -90,4 +90,24 @@ public class MessageSeenStatusRepositoryImpl implements MessageSeenStatusReposit
                 .uniqueResult();
         return count != null ? count : 0L;
     }
+
+    @Override
+    public long countTotalUnreadMessages(Long userId) {
+        if (userId == null) return 0L;
+        Long count = getSession().createQuery(
+                "SELECT COUNT(m.id) FROM Message m " +
+                "WHERE m.senderId <> :userId " +
+                "AND m.deletedAt IS NULL " +
+                "AND m.conversation.id IN (" +
+                "  SELECT cp.conversation.id FROM ConversationParticipant cp " +
+                "  WHERE cp.userId = :userId AND (cp.hiddenAt IS NULL OR m.createdAt > cp.hiddenAt)" +
+                ") " +
+                "AND NOT EXISTS (" +
+                "  SELECT 1 FROM MessageSeenStatus s " +
+                "  WHERE s.message.id = m.id AND s.userId = :userId" +
+                ")", Long.class)
+                .setParameter("userId", userId)
+                .uniqueResult();
+        return count != null ? count : 0L;
+    }
 }

@@ -14,4 +14,6 @@ public interface MessageSeenStatusRepository {
     int markConversationReadUpTo(Long conversationId, Long userId, Long upToMessageId);
 
     long countUnreadMessages(Long conversationId, Long userId);
+
+    long countTotalUnreadMessages(Long userId);
 }

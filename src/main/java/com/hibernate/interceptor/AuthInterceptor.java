@@ -12,6 +12,27 @@ public class AuthInterceptor implements HandlerInterceptor {
     @org.springframework.beans.factory.annotation.Autowired
     private com.hibernate.service.UserService userService;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.hibernate.repository.MessageSeenStatusRepository seenStatusRepository;
+
+    @Override
+    public void postHandle(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Object handler,
+            org.springframework.web.servlet.ModelAndView modelAndView) throws Exception {
+        
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object userIdObj = session.getAttribute("userId");
+            if (userIdObj instanceof Number) {
+                Long userId = ((Number) userIdObj).longValue();
+                long totalUnread = seenStatusRepository.countTotalUnreadMessages(userId);
+                request.setAttribute("totalUnreadChatCount", totalUnread);
+            }
+        }
+    }
+
     @Override
     public boolean preHandle(
             HttpServletRequest request,

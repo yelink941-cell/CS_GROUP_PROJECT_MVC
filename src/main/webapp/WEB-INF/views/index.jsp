@@ -148,10 +148,29 @@
             box-shadow: 0 6px 20px rgba(64, 56, 255, 0.4);
             transition: all 0.2s ease;
             z-index: 999;
+            position: relative;
         }
         .chat-fab:hover {
             transform: scale(1.1) translateY(-3px);
             background: #312bc4;
+        }
+        .chat-fab-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.45);
+            padding: 0 4px;
         }
 
         /* ============================================
@@ -627,7 +646,17 @@
     </footer>
 
     <c:if test="${not empty sessionScope.currentUser}">
-        <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages">💬</a>
+        <a href="${pageContext.request.contextPath}/chat" class="chat-fab" title="Messages" style="position:fixed; bottom:30px; right:30px;">
+            💬
+            <c:if test="${totalUnreadChatCount > 0}">
+                <span class="chat-fab-badge">
+                    <c:choose>
+                        <c:when test="${totalUnreadChatCount > 99}">99+</c:when>
+                        <c:otherwise>${totalUnreadChatCount}</c:otherwise>
+                    </c:choose>
+                </span>
+            </c:if>
+        </a>
     </c:if>
 
 </body>
