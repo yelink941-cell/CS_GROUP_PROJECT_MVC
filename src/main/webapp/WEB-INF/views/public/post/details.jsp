@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta name="_csrf" content="${_csrf.token}"/>
+    <meta name="_csrf" content="${_csrf.token}"/>
     <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,49 +14,74 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-detail.css">
 
 <style>
-.public-content-grid{
-    display:grid !important;
-    grid-template-columns:repeat(auto-fit,minmax(320px,1fr)) !important;
-    gap:24px !important;
-    margin-top:30px !important;
+/* ====================================================
+   Post Details Enhanced Styling
+   ==================================================== */
+.public-content-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+    gap: 24px !important;
+    margin-top: 30px !important;
 }
 
-.public-content-card{
-    background:#f3f1ff !important;
-    border-radius:12px !important;
-    overflow:hidden !important;
-    box-shadow:0 12px 26px rgba(37,28,180,.12) !important;
+.public-content-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 25px rgba(30, 41, 59, 0.06) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-.public-content-card-header{
-    background:#4038ff !important;
-    color:white !important;
-    padding:14px 18px !important;
+.public-content-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 14px 30px rgba(30, 41, 59, 0.1) !important;
 }
 
-.public-content-card-header h2{
-    color:white !important;
-    margin:0 !important;
-    font-size:20px !important;
+.public-content-card-header {
+    background: linear-gradient(135deg, #4038ff 0%, #6366f1 100%) !important;
+    color: white !important;
+    padding: 14px 18px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
 }
 
-.public-content-card-body{
-    background:#f7f6ff !important;
-    padding:18px !important;
-    line-height:1.7 !important;
+.public-content-card-header h2 {
+    color: white !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
 }
 
-.public-code-content{
-    background:#111827 !important;
-    color:#e5e7eb !important;
-    padding:16px !important;
-    border-radius:10px !important;
-    white-space:pre-wrap !important;
-    overflow-x:auto !important;
+.public-content-card-header span {
+    font-size: 11px !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    padding: 3px 8px !important;
+    border-radius: 999px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
 }
 
-.public-back-actions{
-    margin-top:35px !important;
+.public-content-card-body {
+    background: #f8fafc !important;
+    padding: 18px !important;
+    line-height: 1.7 !important;
+}
+
+.public-code-content {
+    background: #0f172a !important;
+    color: #e2e8f0 !important;
+    padding: 16px !important;
+    border-radius: 10px !important;
+    white-space: pre-wrap !important;
+    overflow-x: auto !important;
+    font-family: Consolas, Monaco, 'Andale Mono', monospace !important;
+    font-size: 0.9rem !important;
+}
+
+.public-back-actions {
+    margin-top: 35px !important;
 }
 
 /* 📁 Collection Selector Styling */
@@ -100,8 +125,6 @@
 .btn-add-collection:hover {
     background: #312bc4;
 }
-
-/* If post is already in folder - disabled button style */
 .btn-add-collection:disabled {
     background-color: #94a3b8 !important; 
     color: #f1f5f9 !important;
@@ -117,16 +140,29 @@
     padding: 0;
     text-decoration: underline;
     font-size: 13px;
+    font-weight: 500;
 }
 
-/* Like button style classes */
+/* Like & Bookmark button style classes */
 .liked-btn {
-    background-color: #007bff !important;
+    background-color: #4038ff !important;
     color: white !important;
-    border: 1px solid #007bff !important;
+    border: 1px solid #4038ff !important;
 }
 
 .unliked-btn {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #cccccc !important;
+}
+
+.bookmarked-btn {
+    background-color: #f59e0b !important;
+    color: #ffffff !important;
+    border: 1px solid #f59e0b !important;
+}
+
+.unbookmarked-btn {
     background-color: #ffffff !important;
     color: #333333 !important;
     border: 1px solid #cccccc !important;
@@ -141,6 +177,7 @@
     margin-bottom: 20px;
     border-bottom: 1px solid #eee;
     padding-bottom: 15px;
+    flex-wrap: wrap;
 }
 .star-rating {
     direction: rtl;
@@ -159,29 +196,71 @@
 .star-rating label:hover,
 .star-rating label:hover ~ label,
 .star-rating input:checked ~ label {
-    color: #ffc107; /* gold color */
+    color: #ffc107;
 }
 .average-rating-box {
-    font-size: 15px;
-    background: #fff3cd;
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: 1px solid #ffeeba;
-}
-/* Bookmark button style classes */
-.bookmarked-btn {
-    background-color: #ffc107 !important;
-    color: #333333 !important;
-    border: 1px solid #ffc107 !important;
+    font-size: 14px;
+    background: #fffbe6;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #ffe58f;
+    color: #d48806;
 }
 
-.unbookmarked-btn {
-    background-color: #ffffff !important;
-    color: #333333 !important;
-    border: 1px solid #cccccc !important;
+/* Action Section Button Styling */
+.action-bar {
+    margin-bottom: 25px; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    flex-wrap: wrap; 
+    border-bottom: 1px solid #eee; 
+    padding-bottom: 15px;
 }
+.action-bar .button {
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* Report Modal Backdrop & Card */
+.report-modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.report-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px 28px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.visibility-badge, .status-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.visibility-public { background: #dbeafe; color: #1e40af; }
+.visibility-private { background: #f3f4f6; color: #4b5563; }
+.status-published { background: #dcfce7; color: #166534; }
 </style>
-    
 </head>
 <body>
     <jsp:include page="/WEB-INF/views/fragments/site-navigation.jsp" />
@@ -193,11 +272,18 @@
         <div class="post-meta">
             <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
             <span><strong>Author:</strong> <c:out value="${post.author.username}" /></span>
+            <c:if test="${not empty post.createdAt}">
+                <span><strong>Created:</strong> <c:out value="${post.createdAt}" /></span>
+            </c:if>
         </div>
 
-        <div class="badge-row" style="margin-top: 18px;">
-            <span class="visibility-badge visibility-public">PUBLIC</span>
-            <span class="status-badge status-published">PUBLISHED</span>
+        <div class="badge-row" style="margin-top: 14px; display: flex; gap: 8px;">
+            <span class="visibility-badge ${post.visibility == 'PUBLIC' ? 'visibility-public' : 'visibility-private'}">
+                <c:out value="${post.visibility}" />
+            </span>
+            <span class="status-badge status-published">
+                <c:out value="${post.status}" />
+            </span>
         </div>
 
         <c:if test="${not empty post.tags}">
@@ -215,6 +301,7 @@
             </c:choose>
         </div>
 
+        <%-- Collection Box (Logged In User) --%>
         <c:if test="${not empty sessionScope.userId}">
             <div class="collection-box">
                 <form action="${pageContext.request.contextPath}/user/collections/add-post" method="post" class="collection-form">
@@ -241,9 +328,10 @@
             </div>
         </c:if>
 
+        <%-- Rating Section --%>
         <div class="rating-section">
             <c:choose>
-                <c:when test="${not empty userLoggedIn}">
+                <c:when test="${not empty userLoggedIn || not empty sessionScope.userId}">
                     <div class="star-rating">
                         <input type="radio" id="star5" name="rating" value="5" onclick="submitRating(${post.id}, 5)" ${userRating == 5 ? 'checked' : ''}><label for="star5" title="5 stars">★</label>
                         <input type="radio" id="star4" name="rating" value="4" onclick="submitRating(${post.id}, 4)" ${userRating == 4 ? 'checked' : ''}><label for="star4" title="4 stars">★</label>
@@ -264,28 +352,34 @@
             </c:choose>
 
             <div class="average-rating-box">
-                <strong>⭐ AverageRating:</strong> <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>/5 
-                (<span id="totalRatingCount">${totalRatings}</span> ratings)
+                <strong>⭐ Average:</strong> <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>/5 
+                (<span id="totalRatingCount">${not empty totalRatings ? totalRatings : 0}</span> ratings)
             </div>
         </div>
         
-        <div class="like-section" style="margin-bottom: 25px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+        <%-- Interactive Action Bar --%>
+        <div class="action-bar">
             <c:choose>
                 <c:when test="${not empty sessionScope.userId}">
                     <button type="button" onclick="toggleLikePost(${post.id}, this)" class="button ${hasUserLiked ? 'liked-btn' : 'unliked-btn'}" style="display: inline-flex; align-items: center; gap: 8px;">
-                        <span id="likeIcon-${post.id}" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <span id="likeIcon-${post.id}">
                             <c:choose>
                                 <c:when test="${hasUserLiked}">👍 Unlike</c:when>
-                                <c:otherwise>👍🏻 Like</c:otherwise>
+                                <c:otherwise>👍 Like</c:otherwise>
                             </c:choose>
                         </span>
                     </button>
-                    <span style="font-size: 16px;"><strong>Likes:</strong> <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span></span>
+                    <span style="font-size: 14px; font-weight: 600; color: #475569;">
+                        Likes: <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span>
+                    </span>
                 </c:when>
                 <c:otherwise>
                     <button type="button" onclick="alert('Please login to like this post.'); window.location.href='${pageContext.request.contextPath}/login';" class="button unliked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
-                        👍🏻 Like
+                        👍 Like
                     </button>
+                    <span style="font-size: 14px; font-weight: 600; color: #475569;">
+                        Likes: <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span>
+                    </span>
                 </c:otherwise>
             </c:choose>
             
@@ -308,8 +402,14 @@
             </c:choose>
 
             <button type="button" id="commentCountBtn" class="button button-secondary" onclick="toggleCommentsSection()">
-                💬 Comments (${not empty totalComments ? totalComments : 0})
+                💬 Comments (${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)})
             </button>
+
+            <c:if test="${post.status != 'USER_DELETED' && empty post.deletedAt}">
+                <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/${post.slug}/download-pdf" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                    📄 Download PDF
+                </a>
+            </c:if>
 
             <c:if test="${sessionScope.userId != post.author.id}">
                 <button type="button" onclick="openReportModal('post', ${post.id})" class="button button-secondary" style="display: inline-flex; align-items: center; gap: 8px; color: #dc2626; border-color: #fca5a5;">
@@ -318,131 +418,168 @@
             </c:if>
         </div>
 
-            <c:if test="${not empty contents}">
-                <div class="public-content-grid" aria-label="Cheat sheet sections">
-                    <c:forEach var="content" items="${contents}">
-                        <article class="public-content-card">
-                            <header class="public-content-card-header">
-                                <h2>
-                                    <c:choose>
-                                        <c:when test="${not empty content.subtitle}"><c:out value="${content.subtitle}" /></c:when>
-                                        <c:otherwise>Untitled Section</c:otherwise>
-                                    </c:choose>
-                                </h2>
-                                <span><c:out value="${content.contentType}" /></span>
-                            </header>
-
-                            <div class="public-content-card-body">
+        <%-- Post Content Grid --%>
+        <c:if test="${not empty contents}">
+            <div class="public-content-grid" aria-label="Cheat sheet sections">
+                <c:forEach var="content" items="${contents}">
+                    <article class="public-content-card">
+                        <header class="public-content-card-header">
+                            <h2>
                                 <c:choose>
-                                    <c:when test="${content.contentType == 'CODE'}">
-                                        <pre class="public-code-content"><code><c:out value="${content.contentData}" /></code></pre>
-                                    </c:when>
-                                    <c:when test="${content.contentType == 'IMAGE'}">
-                                        <c:choose>
-                                            <c:when test="${fn:startsWith(content.contentData, '/')}">
-                                                <img class="public-section-image" src="${pageContext.request.contextPath}${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <img class="public-section-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </c:when>
-                                    <c:when test="${content.contentType == 'VIDEO'}">
-                                        <video class="public-section-video" controls src="${fn:escapeXml(content.contentData)}"></video>
-                                    </c:when>
-                                    <c:when test="${content.contentType == 'LINK'}">
-                                        <a class="public-section-link" href="${fn:escapeXml(content.contentData)}" target="_blank" rel="noopener noreferrer">
-                                            <c:out value="${content.contentData}" />
-                                        </a>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <p class="public-text-content"><c:out value="${content.contentData}" /></p>
-                                    </c:otherwise>
+                                    <c:when test="${not empty content.subtitle}"><c:out value="${content.subtitle}" /></c:when>
+                                    <c:otherwise>Untitled Section</c:otherwise>
                                 </c:choose>
-                            </div>
-                            <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;"><c:out value="${comment.content}" /></p>
-                            
-                            <div style="display: flex; gap: 12px; margin-bottom: 8px;">
-                                <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
-                                <c:if test="${sessionScope.userId == comment.user.id}">
-                                    <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
-                                </c:if>
-                                <button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal('comment', ${comment.id})">Report</button>
-                            </div>
+                            </h2>
+                            <span><c:out value="${content.contentType}" /></span>
+                        </header>
 
-                            <%-- Main Comment Reply Form --%>
-                            <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
-                                <form onsubmit="submitReply(event, 'c-${comment.id}', ${comment.id}, ${post.id})">
-                                    <textarea id="replyText-c-${comment.id}" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
-                                    <br>
-                                    <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Post Reply</button>
-                                </form>
-                            </div>
-
-                            <div id="replyListContainer-${comment.id}">
-                                <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
-                                    <c:if test="${not empty comment.replies}">
-                                        <c:set var="replyList" value="${comment.replies}" scope="request"/>
-                                        <jsp:include page="reply-recurse.jsp" />
-                                    </c:if>
-                                </ul>
-                            </div>
+                        <div class="public-content-card-body">
+                            <c:choose>
+                                <c:when test="${content.contentType == 'CODE'}">
+                                    <pre class="public-code-content"><code><c:out value="${content.contentData}" /></code></pre>
+                                </c:when>
+                                <c:when test="${content.contentType == 'IMAGE'}">
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(content.contentData, '/')}">
+                                            <img class="public-section-image" src="${pageContext.request.contextPath}${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img class="public-section-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:when>
+                                <c:when test="${content.contentType == 'VIDEO'}">
+                                    <video class="public-section-video" controls src="${fn:escapeXml(content.contentData)}"></video>
+                                </c:when>
+                                <c:when test="${content.contentType == 'LINK'}">
+                                    <a class="public-section-link" href="${fn:escapeXml(content.contentData)}" target="_blank" rel="noopener noreferrer">
+                                        <c:out value="${content.contentData}" />
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <p class="public-text-content"><c:out value="${content.contentData}" /></p>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
-                    </c:forEach>
-                </div>
-            </c:if>
-        </div>
+                    </article>
+                </c:forEach>
+            </div>
+        </c:if>
+
+        <%-- Comments Section --%>
+        <section id="commentsToggleWrapper" class="comments-section" style="display: none; margin-top: 35px; padding-top: 25px; border-top: 1px solid #e2e8f0;">
+            <h2 id="commentCountHeader" data-count="${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)}" style="font-size: 20px; color: #1e293b; margin-bottom: 20px;">
+                💬 Comments (${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)})
+            </h2>
+
+            <%-- Comment Input Form --%>
+            <c:choose>
+                <c:when test="${not empty sessionScope.userId}">
+                    <form id="commentForm" style="margin-bottom: 25px;">
+                        <input type="hidden" id="postId" name="postId" value="${post.id}">
+                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Write a comment..." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
+                        <button type="submit" class="button button-primary" style="margin-top: 10px; padding: 10px 20px; background: #4038ff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Post Comment</button>
+                    </form>
+                </c:when>
+                <c:otherwise>
+                    <div style="padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 25px; color: #64748b; font-size: 14px;">
+                        Please <a href="${pageContext.request.contextPath}/login" style="color: #4038ff; font-weight: 600;">login</a> to leave a comment.
+                    </div>
+                </c:otherwise>
+            </c:choose>
+
+            <%-- Comment List --%>
+            <c:choose>
+                <c:when test="${not empty comments}">
+                    <div id="commentListContainer" class="comment-list" style="display: flex; flex-direction: column; gap: 16px;">
+                        <c:forEach var="comment" items="${comments}">
+                            <div class="comment-item" id="comment-${comment.id}" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">
+                                    <strong><c:out value="${comment.user.username}" /></strong>
+                                    <span><c:out value="${comment.createdAt}" /></span>
+                                </div>
+                                <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;"><c:out value="${comment.content}" /></p>
+
+                                <div style="display: flex; gap: 12px; margin-bottom: 8px;">
+                                    <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+                                    <c:if test="${sessionScope.userId == comment.user.id}">
+                                        <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
+                                    </c:if>
+                                    <button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal('comment', ${comment.id})">Report</button>
+                                </div>
+
+                                <%-- Main Comment Reply Form --%>
+                                <c:if test="${not empty sessionScope.userId}">
+                                    <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
+                                        <form onsubmit="submitReply(event, 'c-${comment.id}', ${comment.id}, ${post.id})">
+                                            <textarea id="replyText-c-${comment.id}" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>
+                                            <br>
+                                            <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 4px 10px; margin-top: 4px; cursor: pointer;">Post Reply</button>
+                                        </form>
+                                    </div>
+                                </c:if>
+
+                                <div id="replyListContainer-${comment.id}">
+                                    <ul style="margin-left: 20px; padding-left: 0; list-style-type: none;" id="replySubListContainer-${comment.id}">
+                                        <c:if test="${not empty comment.replies}">
+                                            <c:set var="replyList" value="${comment.replies}" scope="request"/>
+                                            <jsp:include page="reply-recurse.jsp" />
+                                        </c:if>
+                                    </ul>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <p id="noCommentsMessage" style="color: #888;">No comments yet.</p>
+                </c:otherwise>
+            </c:choose>
+        </section>
+
     </article>
 
-        <div class="public-back-actions">
-            <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>
-        </div>
-    </main>
-
-    <div id="reportModalBackdrop" class="report-modal-backdrop" onclick="closeReportModal(event)">
-        <div class="report-modal" onclick="event.stopPropagation()">
-            <h3 id="reportModalTitle">Report Content</h3>
-            <label for="reportReason">Reason</label>
-            <select id="reportReason">
-                <option value="TEXT">Inappropriate text</option>
-                <option value="CODE">Harmful code</option>
-                <option value="IMAGE">Inappropriate image</option>
-                <option value="VIDEO">Inappropriate video</option>
-                <option value="LINK">Suspicious link</option>
-            </select>
-            <label for="reportDescription">Details (optional)</label>
-            <textarea id="reportDescription" rows="4" placeholder="Describe the issue..."></textarea>
-            <div class="report-modal-actions">
-                <button type="button" class="button button-secondary" onclick="closeReportModal()">Cancel</button>
-                <button type="button" class="button btn-report" onclick="submitReport()">Submit Report</button>
-            </div>
-            <form id="reportForm" onsubmit="handleReportSubmit(event)">
-                <input type="hidden" id="reportTargetType" value="comment">
-                <input type="hidden" id="reportTargetId" value="">
-                <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Reason</label>
-                    <select id="reportReason" required style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; background-color: #fff;">
-                        <option value="TEXT">Inappropriate Text</option>
-                        <option value="LINK">Spam / Dangerous Link</option>
-                        <option value="OTHER">Other</option>
-                    </select>
-                </div>
-                <div style="margin-bottom: 18px;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Description (Optional)</label>
-                    <textarea id="reportDescription" rows="3" placeholder="Provide additional details..." style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; resize: vertical; box-sizing: border-box;"></textarea>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button type="button" onclick="closeReportModal()" class="button button-secondary" style="padding: 8px 16px;">Cancel</button>
-                    <button type="submit" class="button" style="background-color: #dc2626; color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">Submit Report</button>
-                </div>
-            </form>
-        </div>
+    <div class="public-back-actions">
+        <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>
     </div>
 </main>
 
-    <script>
+<%-- Report Modal Container --%>
+<div id="reportModal" class="report-modal-backdrop" onclick="closeReportModal()">
+    <div class="report-modal" onclick="event.stopPropagation()">
+        <h3 id="reportModalTitle" style="margin-top: 0; font-size: 18px; color: #1e293b;">Report Content</h3>
+        <form id="reportForm" onsubmit="handleReportSubmit(event)">
+            <input type="hidden" id="reportTargetType" value="post">
+            <input type="hidden" id="reportTargetId" value="">
+            
+            <div style="margin-bottom: 14px;">
+                <label for="reportReason" style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Reason</label>
+                <select id="reportReason" required style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; background-color: #fff;">
+                    <option value="TEXT">Inappropriate Text</option>
+                    <option value="CODE">Harmful / Malicious Code</option>
+                    <option value="IMAGE">Inappropriate Image</option>
+                    <option value="VIDEO">Inappropriate Video</option>
+                    <option value="LINK">Spam / Dangerous Link</option>
+                    <option value="OTHER">Other</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 18px;">
+                <label for="reportDescription" style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Description (Optional)</label>
+                <textarea id="reportDescription" rows="3" placeholder="Provide additional details..." style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; resize: vertical; box-sizing: border-box;"></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeReportModal()" class="button button-secondary" style="padding: 8px 16px; border-radius: 6px; cursor: pointer;">Cancel</button>
+                <button type="submit" class="button" style="background-color: #dc2626; color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">Submit Report</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
 /* =========================
-   🔐 CSRF HELPER (NEW)
+   🔐 CSRF HELPER
 ========================= */
 function getCsrfHeaders(contentType = 'application/json') {
     const csrfHeaderMeta = document.querySelector("meta[name='_csrf_header']");
@@ -474,8 +611,7 @@ function getCleanUrl(path) {
 }
 
 /* =========================
-   🔗 URL HASH HELPER (No-reload)
-   Updates URL hash for action tracking without reload or jump
+   🔗 URL HASH HELPER
 ========================= */
 function updateUrlHash(hash) {
     try {
@@ -494,7 +630,6 @@ function showCommentsSection() {
 
 /* =========================
    🔡 HTML ESCAPE HELPER
-   Prevents XSS when rendering user inputs
 ========================= */
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -513,7 +648,7 @@ function updateCommentCount(newCount) {
     const header = document.getElementById('commentCountHeader');
     if (header) {
         header.setAttribute('data-count', newCount);
-        header.innerText = ' Comments (' + newCount + ')';
+        header.innerText = '💬 Comments (' + newCount + ')';
     }
     const btn = document.getElementById('commentCountBtn');
     if (btn) {
@@ -545,7 +680,7 @@ function checkFolderStatus() {
 }
 
 /* =========================
-   💬 COMMENT SUBMIT (event delegation - form is inside hidden div)
+   💬 COMMENT SUBMIT
 ========================= */
 let commentFormListenerAttached = false;
 function attachCommentFormListener() {
@@ -553,114 +688,113 @@ function attachCommentFormListener() {
     const commentForm = document.getElementById('commentForm');
     if (!commentForm) return;
     commentFormListenerAttached = true;
-commentForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-	
-    const postId = document.querySelector('#postId').value;
-    const commentText = document.getElementById('commentText').value;
 
-    fetch(getCleanUrl('/comments/add'), {
-        method: 'POST',
-        headers: getCsrfHeaders('application/x-www-form-urlencoded'),
-        body: 'postId=' + postId + '&commentText=' + encodeURIComponent(commentText)
-    })
-    .then(r => {
-        return r.text().then(text => {
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                data = { status: 'error', message: text };
-            }
-            return { ok: r.ok, status: r.status, data: data };
-        });
-    })
-    .then(res => {
-        if (!res.ok) {
-            if (res.status === 401) {
-                window.location.href = '${pageContext.request.contextPath}/login';
+    commentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const postId = document.querySelector('#postId').value;
+        const commentText = document.getElementById('commentText').value;
+
+        fetch(getCleanUrl('/comments/add'), {
+            method: 'POST',
+            headers: getCsrfHeaders('application/x-www-form-urlencoded'),
+            body: 'postId=' + postId + '&commentText=' + encodeURIComponent(commentText)
+        })
+        .then(r => {
+            return r.text().then(text => {
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    data = { status: 'error', message: text };
+                }
+                return { ok: r.ok, status: r.status, data: data };
+            });
+        })
+        .then(res => {
+            if (!res.ok) {
+                if (res.status === 401) {
+                    window.location.href = '${pageContext.request.contextPath}/login';
+                    return;
+                }
+                alert(res.data.message || 'Comment error (' + res.status + ')');
                 return;
             }
-            alert(res.data.message || 'Comment error (' + res.status + ')');
-            return;
-        }
-        const data = res.data;
-        if (data.status === 'success') {
-            const commentText = document.getElementById('commentText');
-            commentText.value = '';
+            const data = res.data;
+            if (data.status === 'success') {
+                const commentTextInput = document.getElementById('commentText');
+                if (commentTextInput) commentTextInput.value = '';
 
-            let container = document.getElementById('commentListContainer');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'commentListContainer';
-                container.className = 'comment-list';
-                container.style.cssText = 'display: flex; flex-direction: column; gap: 16px;';
-                document.getElementById('commentsToggleWrapper').appendChild(container);
+                let container = document.getElementById('commentListContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'commentListContainer';
+                    container.className = 'comment-list';
+                    container.style.cssText = 'display: flex; flex-direction: column; gap: 16px;';
+                    document.getElementById('commentsToggleWrapper').appendChild(container);
+                }
+
+                const noCommentsMsg = document.getElementById('noCommentsMessage');
+                if (noCommentsMsg) {
+                    noCommentsMsg.remove();
+                }
+
+                const newComment = document.createElement('div');
+                newComment.className = 'comment-item';
+                newComment.id = 'comment-' + data.commentId;
+                newComment.style.cssText = 'border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;';
+
+                const safeUser = escapeHtml(data.username);
+                const safeContent = escapeHtml(data.content);
+                const safeDate = escapeHtml(data.createdAt);
+
+                newComment.innerHTML =
+                    '<div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">' +
+                        '<strong>' + safeUser + '</strong>' +
+                        '<span>' + safeDate + '</span>' +
+                    '</div>' +
+                    '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
+                    '<div style="display: flex; gap: 12px; margin-bottom: 8px;">' +
+                        '<button type="button" class="button-link" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">Reply</button>' +
+                        '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.commentId + ')">Delete</button>' +
+                        '<button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal(\'comment\', ' + data.commentId + ')">Report</button>' +
+                    '</div>' +
+                    '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
+                        '<form onsubmit="submitReply(event, \'c-' + data.commentId + '\', ' + data.commentId + ', ' + postId + ')">' +
+                            '<textarea id="replyText-c-' + data.commentId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>' +
+                            '<br>' +
+                            '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 4px 10px; margin-top: 4px; cursor: pointer;">Post Reply</button>' +
+                        '</form>' +
+                    '</div>' +
+                    '<div id="replyListContainer-' + data.commentId + '"></div>';
+
+                container.appendChild(newComment);
+
+                const header = document.getElementById('commentCountHeader');
+                if (header) {
+                    const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
+                    updateCommentCount(newCount);
+                }
+
+                showCommentsSection();
+                updateUrlHash('comment');
+            } else {
+                alert('Comment error: ' + (data.message || ''));
             }
-
-            const noCommentsMsg = document.getElementById('noCommentsMessage');
-            if (noCommentsMsg) {
-                noCommentsMsg.remove();
+        })
+        .catch(err => {
+            console.error('Comment request failed:', err);
+            if (err.message && err.message.includes('401')) {
+                window.location.href = '${pageContext.request.contextPath}/login';
+            } else {
+                alert('Comment error: ' + (err.message || 'Failed to post comment. Please try again.'));
             }
-
-            const newComment = document.createElement('div');
-            newComment.className = 'comment-item';
-            newComment.id = 'comment-' + data.commentId;
-            newComment.style.cssText = 'border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;';
-
-            const safeUser = escapeHtml(data.username);
-            const safeContent = escapeHtml(data.content);
-            const safeDate = escapeHtml(data.createdAt);
-
-            newComment.innerHTML =
-                '<div style="display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 6px;">' +
-                    '<strong>' + safeUser + '</strong>' +
-                    '<span>' + safeDate + '</span>' +
-                '</div>' +
-                '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
-                '<div style="display: flex; gap: 12px; margin-bottom: 8px;">' +
-                    '<button type="button" class="button-link" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">Reply</button>' +
-                    '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.commentId + ')">Delete</button>' +
-                    '<button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal(\'comment\', ' + data.commentId + ')">Report</button>' +
-                '</div>' +
-                '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
-                    '<form onsubmit="submitReply(event, \'c-' + data.commentId + '\', ' + data.commentId + ', ' + postId + ')">' +
-                        '<textarea id="replyText-c-' + data.commentId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
-                        '<br>' +
-                        '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Post Reply</button>' +
-                    '</form>' +
-                '</div>' +
-                '<div id="replyListContainer-' + data.commentId + '"></div>';
-
-            container.appendChild(newComment);
-
-            const header = document.getElementById('commentCountHeader');
-            if (header) {
-                const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
-                updateCommentCount(newCount);
-            }
-
-            showCommentsSection();
-
-            updateUrlHash('comment');
-        } else {
-            alert('Comment error: ' + (data.message || ''));
-        }
-    })
-    .catch(err => {
-        console.error('Comment request failed:', err);
-        if (err.message && err.message.includes('401')) {
-            window.location.href = '${pageContext.request.contextPath}/login';
-        } else {
-            alert('Comment error: ' + (err.message || 'Failed to post comment. Please try again.'));
-        }
+        });
     });
-});
 }
 
 /* =========================
-   🔁 REPLY TOGGLE (FIXED BUG)
+   🔁 REPLY TOGGLE
 ========================= */
 function toggleReplyForm(commentId) {
     const replyForm = document.getElementById('replyFormContainer-' + commentId);
@@ -676,7 +810,7 @@ function toggleReplyForm(commentId) {
 }
 
 /* =========================
-   🔁 SUBMIT REPLY (FIXED)
+   🔁 SUBMIT REPLY
 ========================= */
 function submitReply(e, commentId, parentId, postId) {
     e.preventDefault();
@@ -726,8 +860,7 @@ function submitReply(e, commentId, parentId, postId) {
             return;
         }
 
-	        const replyInput = document.getElementById('replyText-' + commentId);
-	        if (replyInput) replyInput.value = '';
+        if (replyInput) replyInput.value = '';
 
         const realParentId = data.parentId || parentId;
         let subList = document.getElementById('replySubListContainer-' + realParentId);
@@ -764,36 +897,29 @@ function submitReply(e, commentId, parentId, postId) {
         replyEl.id = 'reply-item-' + data.replyId;
         replyEl.style.cssText = 'list-style: none; margin-bottom: 12px;';
         replyEl.innerHTML =
-            '<!-- Header -->' +
             '<div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px;">' +
                 '<strong>' + safeUser + '</strong>' +
                 '<span>' + safeDate + '</span>' +
             '</div>' +
-            '<!-- Content -->' +
             '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
-            '<!-- Actions -->' +
             '<div class="comment-actions" style="display: flex; gap: 12px; margin-bottom: 8px;">' +
                 '<button type="button" class="button-link" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">Reply</button>' +
                 '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.replyId + ')">Delete</button>' +
                 '<button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal(\'comment\', ' + data.replyId + ')">Report</button>' +
             '</div>' +
-            '<!-- Reply Form -->' +
             '<div id="replyFormContainer-r-' + data.replyId + '" style="display: none; margin-top: 8px; margin-left: 20px;">' +
                 '<form onsubmit="submitReply(event, \'r-' + data.replyId + '\', ' + data.replyId + ', ' + postId + ')">' +
-                    '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;"></textarea>' +
-                    '<button type="submit" class="button button-secondary" style="font-size: 12px; padding: 4px 10px; margin-top: 4px;">Submit Reply</button>' +
+                    '<textarea id="replyText-r-' + data.replyId + '" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>' +
+                    '<button type="submit" class="button button-secondary" style="font-size: 11px; padding: 4px 10px; margin-top: 4px; cursor: pointer;">Submit Reply</button>' +
                 '</form>' +
             '</div>' +
-            '<!-- Nested Replies Container -->' +
             '<ul id="replySubListContainer-' + data.replyId + '" style="margin-left: 20px; padding-left: 0; list-style: none;"></ul>';
 
         subList.appendChild(replyEl);
 
-        // 🟢 reply form ပိတ်ရန်
         const replyForm = document.getElementById('replyFormContainer-' + commentId);
         if (replyForm) replyForm.style.display = 'none';
 
-        // 🟢 Comment count တိုး
         const header = document.getElementById('commentCountHeader');
         if (header) {
             const newCount = parseInt(header.getAttribute('data-count') || '0') + 1;
@@ -810,10 +936,10 @@ function submitReply(e, commentId, parentId, postId) {
 }
 
 /* =========================
-   🗑 DELETE COMMENT (No-reload)
+   🗑 DELETE COMMENT
 ========================= */
 function deleteComment(commentId) {
-    if (!confirm('Delete?')) return;
+    if (!confirm('Are you sure you want to delete this comment?')) return;
 
     fetch(getCleanUrl('/comments/delete/') + commentId, {
         method: 'POST',
@@ -829,21 +955,17 @@ function deleteComment(commentId) {
             return;
         }
 
-        // 🟢 No-reload: main comment ဖြစ်စေ, reply ဖြစ်စေ DOM မှ တိုက်ရိုက်ဖယ်
         let deletedCount = 0;
         const mainEl = document.getElementById('comment-' + commentId);
         const replyEl = document.getElementById('reply-item-' + commentId);
         if (mainEl) {
-            // Count self + all nested replies
             deletedCount = 1 + mainEl.querySelectorAll('[id^="reply-item-"]').length;
             mainEl.remove();
         } else if (replyEl) {
-            // Count self + all nested replies
             deletedCount = 1 + replyEl.querySelectorAll('[id^="reply-item-"]').length;
             replyEl.remove();
         }
 
-        // ကွန်မန့်အားလုံးဖျက်ပြီးပါက "ကွန်မန့် မရှိသေးပါ။" ပြန်ပြမည်
         const container = document.getElementById('commentListContainer');
         if (container && container.children.length === 0) {
             container.remove();
@@ -852,12 +974,11 @@ function deleteComment(commentId) {
                 msg = document.createElement('p');
                 msg.style.color = '#888';
                 msg.id = 'noCommentsMessage';
-                msg.innerText = 'ကွန်မန့် မရှိသေးပါ။';
+                msg.innerText = 'No comments yet.';
                 document.getElementById('commentsToggleWrapper').appendChild(msg);
             }
         }
 
-        // 🟢 Comment count လျှော့
         const header = document.getElementById('commentCountHeader');
         if (header) {
             let newCount = parseInt(header.getAttribute('data-count') || '0') - deletedCount;
@@ -879,11 +1000,7 @@ function deleteComment(commentId) {
    👍 LIKE
 ========================= */
 function toggleLikePost(postId, btn) {
-    console.log("toggleLikePost called, postId:", postId);
-
     var url = getCleanUrl('/api/toggle-like');
-    console.log("Fetching URL:", url);
-    console.log("CSRF headers:", JSON.stringify(getCsrfHeaders('application/x-www-form-urlencoded')));
 
     fetch(url, {
         method: 'POST',
@@ -891,20 +1008,15 @@ function toggleLikePost(postId, btn) {
         body: 'postId=' + postId
     })
     .then(function(r) {
-        console.log("HTTP Status =", r.status, r.statusText);
         if (!r.ok) {
             return r.text().then(function(txt) {
-                console.log("Error body:", txt);
                 throw new Error('HTTP ' + r.status + ': ' + txt);
             });
         }
         return r.json();
     })
     .then(function(data) {
-        console.log("Response data =", JSON.stringify(data));
-
         if (data.status === 'success') {
-
             var countEl = document.getElementById('likeCount-' + postId);
             if (countEl) countEl.innerText = data.totalLikes;
 
@@ -914,14 +1026,13 @@ function toggleLikePost(postId, btn) {
                 icon.innerHTML = "👍 Unlike";
                 btn.className = "button liked-btn";
             } else {
-                icon.innerHTML = "👍🏻 Like";
+                icon.innerHTML = "👍 Like";
                 btn.className = "button unliked-btn";
             }
 
             updateUrlHash('like');
         } else {
-            console.warn("Server returned non-success:", data);
-            alert('Like မအောင်မြင်ပါ: ' + (data.message || 'Unknown error'));
+            alert('Like error: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(function(err) {
@@ -929,7 +1040,7 @@ function toggleLikePost(postId, btn) {
         if (err.message && err.message.includes('401')) {
             window.location.href = '${pageContext.request.contextPath}/login';
         } else {
-            alert('Like ပြုလုပ်၍မရပါ။ Error: ' + err.message);
+            alert('Could not complete like action.');
         }
     });
 }
@@ -938,7 +1049,6 @@ function toggleLikePost(postId, btn) {
    ⭐ RATING
 ========================= */
 function submitRating(postId, rating) {
-    console.log("submitRating called, postId:", postId, "rating:", rating);
     fetch(getCleanUrl('/api/toggle-rating'), {
         method: 'POST',
         headers: getCsrfHeaders('application/x-www-form-urlencoded'),
@@ -951,11 +1061,10 @@ function submitRating(postId, rating) {
         return r.json();
     })
     .then(data => {
-        if(data.status === 'success'){
+        if (data.status === 'success'){
             document.getElementById("avgRatingValue").innerText = data.averageRating;
             document.getElementById("totalRatingCount").innerText = data.totalRatings;
 
-            // 🟢 toggle off (rating ပြန်ဖျက်) ဖြစ်သွားလျှင် star selection reset
             const starInputs = document.querySelectorAll('.star-rating input[name="rating"]');
             starInputs.forEach(function (input) {
                 if (!data.hasRated) {
@@ -975,20 +1084,18 @@ function submitRating(postId, rating) {
         if (err.message && err.message.includes('401')) {
             window.location.href = '${pageContext.request.contextPath}/login';
         } else {
-            alert('Rating ပြုလုပ်၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။');
+            alert('Failed to submit rating.');
         }
     });
 }
 
 /* =========================
-   🔖 BOOKMARK (FIXED LOGIN CHECK)
+   🔖 BOOKMARK
 ========================= */
 function toggleBookmark(postId, btn) {
-    console.log("toggleBookmark called, postId:", postId);
-	const isLoggedIn = "${sessionScope.userId != null}" === "true";
+    const isLoggedIn = "${sessionScope.userId != null}" === "true";
 
     if (!isLoggedIn) {
-        console.log("toggleBookmark: user not logged in, redirecting to login");
         window.location.href = '${pageContext.request.contextPath}/login';
         return;
     }
@@ -1023,7 +1130,7 @@ function toggleBookmark(postId, btn) {
         if (err.message && err.message.includes('401')) {
             window.location.href = '${pageContext.request.contextPath}/login';
         } else {
-            alert('Bookmark ပြုလုပ်၍မရပါ။ ပြန်လည်စမ်းကြည့်ပါ။');
+            alert('Failed to update bookmark status.');
         }
     });
 }
@@ -1038,10 +1145,10 @@ function toggleCommentsSection() {
     el.style.display = willShow ? 'block' : 'none';
     if (willShow) {
         updateUrlHash('comment');
-        // Attach comment form listener when section becomes visible
         attachCommentFormListener();
     }
 }
+
 if (window.location.hash === '#comment' || window.location.hash === '#reply') {
     showCommentsSection();
     attachCommentFormListener();
@@ -1053,7 +1160,7 @@ if (window.location.hash === '#comment' || window.location.hash === '#reply') {
 function openReportModal(targetType, targetId) {
     const isLoggedIn = "${sessionScope.userId != null}" === "true";
     if (!isLoggedIn) {
-        alert('Report ပြုလုပ်ရန် Login ဝင်ရန် လိုအပ်ပါသည်။');
+        alert('Please login to submit a report.');
         window.location.href = '${pageContext.request.contextPath}/login';
         return;
     }
