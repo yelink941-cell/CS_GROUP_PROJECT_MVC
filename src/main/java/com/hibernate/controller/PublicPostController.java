@@ -33,6 +33,7 @@ public class PublicPostController {
     private final TagService tagService;
     private final CollectionService collectionService; // 🎯 Injected CollectionService
     private final PostContentService postContentService;
+    private final PostViewService postViewService;
     private final UserService userService;
     private final com.hibernate.repository.BlockedUserRepository blockedUserRepository;
 
