@@ -9,4 +9,6 @@ public interface BlockedUserRepository {
     boolean isBlocked(Long userId, Long blockedUserId);
 
     boolean isBlockedEitherWay(Long userId, Long otherUserId);
+
+    java.util.List<Long> getBlockedAndBlockerUserIds(Long userId);
 }

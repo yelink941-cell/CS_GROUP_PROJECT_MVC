@@ -172,6 +172,22 @@
         /* Badges */
         .badge-admin { background: #ff9800; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
         .badge-user { background: #111111; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
+        .unread-badge {
+            background: #00c853;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0, 200, 83, 0.35);
+            flex-shrink: 0;
+            margin-right: 4px;
+        }
         .empty { text-align: center; color: #667781; padding: 80px 24px; }
         
         .fab-group { display: inline-block; background: rgba(255,255,255,.2); padding: 7px 12px; border-radius: 16px; font-size: 13px; text-decoration: none; color: #fff; font-weight: 500; white-space: nowrap; }
@@ -253,6 +269,14 @@
                     <c:if test="${not empty item.lastMessageAt}">
                         <span class="chat-time">${item.lastMessageAt.toString().substring(11,16)}</span>
                     </c:if>
+                    <c:if test="${item.unreadCount > 0}">
+                        <span class="unread-badge">
+                            <c:choose>
+                                <c:when test="${item.unreadCount > 99}">99+</c:when>
+                                <c:otherwise>${item.unreadCount}</c:otherwise>
+                            </c:choose>
+                        </span>
+                    </c:if>
                     <button type="button" class="chat-menu-btn" title="More options" aria-label="More options">&#8942;</button>
                 </div>
             </div>
@@ -280,6 +304,7 @@
     let reconnectTimer = null;
 
     $(document).ready(function() {
+        $.ajaxSetup({ cache: false });
         connectWebSocket();
 
         $(document).on('click', '.chat-menu-btn', function(e) {
@@ -577,6 +602,21 @@
             } else {
                 timeSpan.text(timeStr);
             }
+
+            // Real-time unread badge update
+            const myUserId = '${sessionScope.userId}';
+            if (myUserId && String(msg.senderId) !== String(myUserId)) {
+                let badge = row.find('.unread-badge');
+                let count = parseInt(badge.text() || '0', 10);
+                if (isNaN(count)) count = 0;
+                count++;
+                if (badge.length === 0) {
+                    row.find('.chat-row-side').find('.chat-menu-btn').before('<span class="unread-badge">' + count + '</span>');
+                } else {
+                    badge.text(count > 99 ? '99+' : count).css('display', 'inline-flex');
+                }
+            }
+
             // Move row to the top of chatList
             $('#chatList').prepend(row);
         } else {

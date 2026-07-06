@@ -73,4 +73,21 @@ public class MessageSeenStatusRepositoryImpl implements MessageSeenStatusReposit
         }
         return unreadMessageIds.size();
     }
+
+    @Override
+    public long countUnreadMessages(Long conversationId, Long userId) {
+        Long count = getSession().createQuery(
+                "SELECT COUNT(m.id) FROM Message m " +
+                "WHERE m.conversation.id = :conversationId " +
+                "AND m.senderId <> :userId " +
+                "AND m.deletedAt IS NULL " +
+                "AND NOT EXISTS (" +
+                "  SELECT 1 FROM MessageSeenStatus s " +
+                "  WHERE s.message.id = m.id AND s.userId = :userId" +
+                ")", Long.class)
+                .setParameter("conversationId", conversationId)
+                .setParameter("userId", userId)
+                .uniqueResult();
+        return count != null ? count : 0L;
+    }
 }

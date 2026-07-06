@@ -19,5 +19,7 @@ public interface SearchService {
     List<SearchHistory> getSearchHistoryByUserId(int userId);
     // ✅ New method for suggestions
     List<String> getSearchSuggestions(int userId, String query);
+
+    List<String> getPublicSearchSuggestions(String query);
     
 }

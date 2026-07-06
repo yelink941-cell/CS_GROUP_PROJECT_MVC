@@ -14,252 +14,891 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/post-detail.css">
 
 <style>
-/* ====================================================
-   Post Details Enhanced Styling
-   ==================================================== */
-.public-content-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
-    gap: 24px !important;
-    margin-top: 30px !important;
+:root {
+    --primary: #4038ff;
+    --secondary: #6366f1;
+    --bg: #f8fafc;
+    --text: #111827;
+    --muted: #64748b;
+    --border: #e5e7eb;
+    --soft-border: #eef2f7;
+    --code: #111827;
+    --white: #ffffff;
 }
 
-.public-content-card {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 14px !important;
-    overflow: hidden !important;
-    box-shadow: 0 10px 25px rgba(30, 41, 59, 0.06) !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+body {
+    margin: 0;
+    background: var(--bg) !important;
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
 }
 
-.public-content-card:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 0 14px 30px rgba(30, 41, 59, 0.1) !important;
+.page-container {
+    max-width: 1350px !important;
+    margin: 0 auto !important;
+    padding: 28px 20px 40px !important;
 }
 
-.public-content-card-header {
-    background: linear-gradient(135deg, #4038ff 0%, #6366f1 100%) !important;
-    color: white !important;
-    padding: 14px 18px !important;
+.detail-card {
+    background: var(--white) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05) !important;
+    padding: 24px !important;
+    margin-bottom: 18px !important;
+}
+
+.detail-card h1 {
+    margin: 0 0 14px !important;
+    color: var(--text) !important;
+    font-size: 36px !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+}
+
+.post-meta {
     display: flex !important;
-    justify-content: space-between !important;
+    flex-wrap: wrap;
     align-items: center !important;
+    gap: 10px 18px !important;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 14px;
 }
 
-.public-content-card-header h2 {
-    color: white !important;
-    margin: 0 !important;
-    font-size: 18px !important;
+.post-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.post-meta strong {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.post-meta a {
+    color: var(--primary) !important;
+    text-decoration: none !important;
     font-weight: 700 !important;
 }
 
-.public-content-card-header span {
-    font-size: 11px !important;
-    background: rgba(255, 255, 255, 0.2) !important;
-    padding: 3px 8px !important;
+.post-meta a:hover {
+    text-decoration: underline !important;
+}
+
+.post-meta form {
+    margin: 0 !important;
+}
+
+.post-meta button {
     border-radius: 999px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.post-meta button:hover {
+    transform: translateY(-2px);
+}
+
+.badge-row {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px !important;
+    margin: 12px 0 !important;
+}
+
+.visibility-badge,
+.status-badge,
+.tag-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px !important;
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.visibility-public {
+    background: #eef2ff !important;
+    color: var(--primary) !important;
+}
+
+.visibility-private {
+    background: #f3f4f6 !important;
+    color: #4b5563 !important;
+}
+
+.status-published {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+}
+
+.tag-list {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 0 !important;
+    padding: 0 !important;
+    list-style: none;
+}
+
+.tag-pill {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid var(--border);
+}
+
+.detail-excerpt {
+    margin-top: 18px !important;
+    padding-top: 18px;
+    border-top: 1px solid var(--soft-border);
+    color: #334155 !important;
+    font-size: 15px;
+    line-height: 1.75;
+}
+
+.public-content-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+    margin-top: 22px !important;
+}
+
+.public-content-card {
+    background: var(--white) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.public-content-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07) !important;
+}
+
+.public-content-card-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    background: #ffffff !important;
+    color: var(--text) !important;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px !important;
+}
+
+.public-content-card-header h2 {
+    margin: 0 !important;
+    color: var(--text) !important;
+    font-size: 20px !important;
+    line-height: 1.3;
+    font-weight: 800 !important;
+}
+
+.public-content-card-header span {
+    flex: 0 0 auto;
+    padding: 4px 8px !important;
+    border-radius: 999px !important;
+    background: #eef2ff !important;
+    color: var(--primary) !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.04em !important;
 }
 
 .public-content-card-body {
-    background: #f8fafc !important;
-    padding: 18px !important;
+    background: var(--white) !important;
+    padding: 16px !important;
+    color: #334155;
+    font-size: 15px;
     line-height: 1.7 !important;
 }
 
+.public-text-content {
+    margin: 0;
+    white-space: pre-line;
+}
+
 .public-code-content {
-    background: #0f172a !important;
-    color: #e2e8f0 !important;
-    padding: 16px !important;
+    position: relative;
+    background: var(--code) !important;
+    color: #e5e7eb !important;
     border-radius: 10px !important;
-    white-space: pre-wrap !important;
+    padding: 16px !important;
+    margin: 0;
+    font-size: 14px !important;
+    line-height: 1.65;
+    white-space: pre !important;
     overflow-x: auto !important;
-    font-family: Consolas, Monaco, 'Andale Mono', monospace !important;
-    font-size: 0.9rem !important;
+    font-family: Consolas, "Courier New", monospace !important;
 }
 
-.public-back-actions {
-    margin-top: 35px !important;
+.public-code-content::before {
+    content: "Copy";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #1f2937;
+    color: #cbd5e1;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
 }
 
-/* 📁 Collection Selector Styling */
-.collection-box {
-    margin-top: 24px; 
-    padding-top: 20px; 
-    border-top: 1px dashed #e2e8f0;
+.public-code-content code {
+    color: #e5e7eb;
+    font-family: Consolas, "Courier New", monospace;
 }
+
+.public-section-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.public-section-video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    background: var(--code);
+}
+
+.public-section-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 13px;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #ffffff !important;
+    text-decoration: none;
+    font-weight: 700;
+    transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.public-section-link:hover {
+    transform: translateY(-2px);
+    background: var(--secondary);
+}
+
+.collection-box,
+.rating-section,
+.action-bar {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+.detail-card .collection-box {
+    margin-top: 20px !important;
+}
+
+.collection-form,
+.rating-section,
+.action-bar {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+}
+
 .collection-form {
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    flex-wrap: wrap;
+    padding: 14px !important;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #ffffff;
 }
+
 .collection-label {
-    font-size: 14px; 
-    font-weight: 600; 
-    color: #4b5563;
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
 }
+
 .collection-select {
-    padding: 10px 16px; 
-    border: 1px solid #d1d5db; 
-    border-radius: 10px; 
-    background-color: #ffffff; 
-    color: #374151; 
-    font-size: 14px; 
-    min-width: 220px; 
-    outline: none; 
+    min-width: 190px;
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+.rating-section,
+.action-bar {
+    margin-top: 10px !important;
+    padding: 14px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.star-rating {
+    direction: rtl;
+    display: inline-flex;
+    font-size: 20px;
+    unicode-bidi: bidi-override;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    color: #cbd5e1;
     cursor: pointer;
+    transition: color 0.18s ease;
 }
-.btn-add-collection {
-    background: #4038ff; 
-    color: white; 
-    border: none; 
-    padding: 10px 20px; 
-    border-radius: 10px; 
-    font-weight: 600; 
-    cursor: pointer; 
-    transition: background 0.2s, background-color 0.2s;
+
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: #f59e0b;
 }
-.btn-add-collection:hover {
-    background: #312bc4;
+
+.average-rating-box {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-weight: 700;
 }
-.btn-add-collection:disabled {
-    background-color: #94a3b8 !important; 
-    color: #f1f5f9 !important;
-    cursor: not-allowed; 
-    transform: none !important;
+
+.button,
+.btn,
+.btn-add-collection,
+.action-bar button,
+.collection-form button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 38px;
+    border-radius: 8px !important;
+    border: 1px solid transparent;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.button:hover,
+.btn:hover,
+.btn-add-collection:hover,
+.action-bar button:hover,
+.collection-form button:hover {
+    transform: translateY(-2px);
+}
+
+.button,
+.btn-add-collection,
+.collection-form button {
+    background: var(--primary) !important;
+    color: #ffffff !important;
+}
+
+.button:hover,
+.btn-add-collection:hover,
+.collection-form button:hover {
+    background: var(--secondary) !important;
+}
+
+.button-secondary {
+    background: #eef2ff !important;
+    color: var(--primary) !important;
+    border-color: #dbe4ff !important;
+}
+
+.liked-btn {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+}
+
+.unliked-btn,
+.unbookmarked-btn {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid var(--border) !important;
+}
+
+.bookmarked-btn,
+.btn-warning {
+    background: #eef2ff !important;
+    color: var(--primary) !important;
+    border: 1px solid #dbe4ff !important;
+}
+
+.btn-outline-warning {
+    background: #ffffff !important;
+    color: var(--primary) !important;
+    border: 1px solid #dbe4ff !important;
+}
+
+.btn-report {
+    background: #fff1f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecdd3 !important;
+}
+
+.btn-report:hover {
+    background: #ffe4e6 !important;
 }
 
 .button-link {
     background: none;
     border: none;
-    color: #4038ff;
+    color: var(--primary);
     cursor: pointer;
     padding: 0;
     text-decoration: underline;
     font-size: 13px;
-    font-weight: 500;
-}
-
-/* Like & Bookmark button style classes */
-.liked-btn {
-    background-color: #4038ff !important;
-    color: white !important;
-    border: 1px solid #4038ff !important;
-}
-
-.unliked-btn {
-    background-color: #ffffff !important;
-    color: #333333 !important;
-    border: 1px solid #cccccc !important;
-}
-
-.bookmarked-btn {
-    background-color: #f59e0b !important;
-    color: #ffffff !important;
-    border: 1px solid #f59e0b !important;
-}
-
-.unbookmarked-btn {
-    background-color: #ffffff !important;
-    color: #333333 !important;
-    border: 1px solid #cccccc !important;
-}
-
-/* Rating Section Styles */
-.rating-section {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
-    flex-wrap: wrap;
-}
-.star-rating {
-    direction: rtl;
-    display: inline-flex;
-    font-size: 24px;
-    unicode-bidi: bidi-override;
-}
-.star-rating input {
-    display: none;
-}
-.star-rating label {
-    color: #ccc;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-.star-rating label:hover,
-.star-rating label:hover ~ label,
-.star-rating input:checked ~ label {
-    color: #ffc107;
-}
-.average-rating-box {
-    font-size: 14px;
-    background: #fffbe6;
-    padding: 6px 14px;
-    border-radius: 8px;
-    border: 1px solid #ffe58f;
-    color: #d48806;
-}
-
-/* Action Section Button Styling */
-.action-bar {
-    margin-bottom: 25px; 
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    flex-wrap: wrap; 
-    border-bottom: 1px solid #eee; 
-    padding-bottom: 15px;
-}
-.action-bar .button {
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 14px;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
-/* Report Modal Backdrop & Card */
+#commentsToggleWrapper {
+    margin-top: 18px !important;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+    padding: 16px !important;
+}
+
+#commentCountHeader {
+    margin: 0 0 14px !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: var(--text) !important;
+}
+
+.comment-form-box,
+#commentForm {
+    margin: 0 0 16px !important;
+}
+
+#commentText,
+textarea[id^="replyText-"] {
+    width: 100% !important;
+    padding: 12px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    resize: vertical !important;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.comment-item,
+[id^="comment-"],
+[id^="reply-item-"] {
+    border-color: var(--soft-border) !important;
+}
+
+.public-back-actions {
+    margin-top: 18px !important;
+    text-align: center;
+}
+
 .report-modal-backdrop {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(4px);
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
     z-index: 9999;
     align-items: center;
     justify-content: center;
+    padding: 20px;
 }
 
 .report-modal {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 24px 28px;
-    width: 90%;
-    max-width: 480px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-radius: 10px;
+    padding: 20px;
+    width: min(420px, 92vw);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+    border: 1px solid var(--border);
 }
 
-.visibility-badge, .status-badge {
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
+.report-modal select,
+.report-modal textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
 }
-.visibility-public { background: #dbeafe; color: #1e40af; }
-.visibility-private { background: #f3f4f6; color: #4b5563; }
-.status-published { background: #dcfce7; color: #166534; }
+
+.report-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+@media (max-width: 1024px) {
+    .public-content-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 680px) {
+    .page-container {
+        padding: 18px 12px 30px !important;
+    }
+
+    .detail-card {
+        padding: 18px !important;
+    }
+
+    .detail-card h1 {
+        font-size: 30px !important;
+    }
+
+    .public-content-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .collection-form,
+    .rating-section,
+    .action-bar {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    .collection-select,
+    .collection-form .button,
+    .collection-form button,
+    .action-bar .button,
+    .action-bar button {
+        width: 100%;
+    }
+}
+/* Screenshot-inspired compact Cheatography-like detail UI */
+body {
+    background: #fbf8f8 !important;
+    color: #3f3f37;
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+.page-container {
+    max-width: 1450px !important;
+    padding: 0 50px 40px !important;
+}
+
+.detail-card {
+    width: 100% !important;
+    max-width: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.detail-card h1 {
+    margin: 0 0 14px !important;
+    color: #4a4a40 !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 42px !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.02em;
+    font-weight: 700 !important;
+}
+
+.detail-title-author {
+    font-size: 30px;
+    font-weight: 400;
+    color: #4a4a40;
+}
+
+.detail-title-author-name {
+    color: #f47b33;
+    border-bottom: 1px dotted #f47b33;
+}
+
+.post-meta {
+    margin: 0 0 6px !important;
+    padding: 0 !important;
+    color: #6b665d !important;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+.post-meta span {
+    color: #6b665d !important;
+    letter-spacing: 0 !important;
+}
+
+.post-meta strong {
+    color: #4a4a40 !important;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+.badge-row,
+.tag-list {
+    margin-top: 8px !important;
+}
+
+.visibility-badge,
+.status-badge,
+.tag-pill {
+    border-radius: 4px !important;
+    padding: 4px 8px !important;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 11px !important;
+}
+
+.detail-excerpt {
+    width: 100% !important;
+    max-width: 960px !important;
+    margin: 10px 0 0 !important;
+    padding: 0 0 10px !important;
+    border-top: 0 !important;
+    border-bottom: 1px dotted #ded7d2;
+    color: #4f4f46 !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 18px !important;
+    line-height: 1.45 !important;
+    text-align: left !important;
+}
+
+.public-content-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    align-items: start;
+    gap: 28px 26px !important;
+    margin-top: 14px !important;
+}
+
+.public-content-card {
+    min-width: 0 !important;
+    width: 100% !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+
+.public-content-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.public-content-card-header {
+    display: block !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 16px 10px !important;
+}
+
+.public-content-card-header h2 {
+    color: #b00000 !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 21px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+
+.public-content-card-header span {
+    display: none !important;
+}
+
+.public-content-card-body {
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important;
+    border: 1px solid #eee8e8 !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08) !important;
+    padding: 0 !important;
+    color: #46443f;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 22px !important;
+    line-height: 1.55 !important;
+}
+
+.public-text-content {
+    margin: 0 !important;
+    padding: 14px 16px !important;
+    white-space: pre-line;
+}
+
+.public-text-content,
+.public-table-content {
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            #ffffff 0,
+            #ffffff 58px,
+            #fbf7f7 58px,
+            #fbf7f7 116px
+        );
+}
+
+.public-code-content {
+    display: block !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    border-radius: 4px !important;
+    background: #111827 !important;
+    color: #e5e7eb !important;
+    font-family: Consolas, "Courier New", monospace !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    overflow-x: auto !important;
+}
+
+.public-code-content::before {
+    display: none !important;
+}
+
+.public-section-image,
+.public-section-video {
+    max-width: calc(100% - 24px);
+    box-sizing: border-box;
+    width: calc(100% - 24px);
+    margin: 12px;
+    border-radius: 4px;
+    border: 1px solid #eee8e8;
+}
+
+.public-section-link {
+    margin: 14px 16px;
+    background: transparent !important;
+    color: #b00000 !important;
+    border-bottom: 1px dotted #b00000;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+}
+
+.collection-box,
+.rating-section,
+.action-bar,
+#commentsToggleWrapper,
+.public-back-actions {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.detail-card .collection-box {
+    margin-top: 38px !important;
+}
+
+@media (max-width: 1024px) {
+    .public-content-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 680px) {
+    .page-container {
+        padding: 0 14px 30px !important;
+    }
+
+    .detail-card h1 {
+        font-size: 32px !important;
+    }
+
+    .detail-title-author {
+        display: block;
+        margin-top: 4px;
+        font-size: 22px;
+    }
+
+    .detail-excerpt {
+        font-size: 18px;
+    }
+
+    .public-content-grid {
+        grid-template-columns: 1fr !important;
+        gap: 26px !important;
+        margin-top: 36px !important;
+    }
+
+    .public-content-card-body {
+        font-size: 18px !important;
+    }
+}
+
+/* Final compact override */
+.page-container {
+    width: min(1500px, calc(100% - 120px)) !important;
+    max-width: 1500px !important;
+    margin: 0 auto !important;
+    padding: 0 0 36px !important;
+    box-sizing: border-box !important;
+}
+
+.detail-card h1 {
+    font-size: 38px !important;
+    margin-bottom: 8px !important;
+}
+
+.post-meta {
+    margin-bottom: 4px !important;
+}
+
+.badge-row {
+    margin: 6px 0 !important;
+}
+
+.tag-list {
+    margin: 6px 0 0 !important;
+}
+
+.detail-excerpt {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 14px 0 0 !important;
+    padding-bottom: 16px !important;
+    font-size: 17px !important;
+    line-height: 1.35 !important;
+    min-height: auto !important;
+    max-height: 46px !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+}
+
+.public-content-grid {
+    margin-top: 24px !important;
+    gap: 22px 28px !important;
+}
+
+.public-content-card-header {
+    padding-bottom: 8px !important;
+}
 </style>
 </head>
 <body>
@@ -280,7 +919,12 @@
     </c:if>
 
     <article class="detail-card">
-        <h1><c:out value="${post.title}" /></h1>
+        <h1>
+            <c:out value="${post.title}" />
+            <span class="detail-title-author">
+                by <span class="detail-title-author-name"><c:out value="${post.author.username}" /></span>
+            </span>
+        </h1>
 
         <div class="post-meta">
             <span><strong>Category:</strong> <c:out value="${post.category.name}" /></span>
@@ -307,33 +951,102 @@
             </ul>
         </c:if>
 
-        <div class="detail-excerpt">
-            <c:choose>
-                <c:when test="${not empty post.excerpt}"><c:out value="${post.excerpt}" /></c:when>
-                <c:otherwise>No excerpt provided.</c:otherwise>
-            </c:choose>
-        </div>
+        <div class="detail-excerpt"><c:choose>
+            <c:when test="${not empty post.excerpt}"><c:out value="${post.excerpt}" /></c:when>
+            <c:otherwise>No excerpt provided.</c:otherwise>
+        </c:choose></div>
 
-        <%-- Collection Box (Logged In User) --%>
+        <%-- Post Content Grid --%>
+        <c:if test="${not empty contents}">
+            <div class="public-content-grid" aria-label="Cheat sheet sections">
+                <c:forEach var="content" items="${contents}">
+                    <article class="public-content-card">
+                        <header class="public-content-card-header">
+                            <h2>
+                                <c:choose>
+                                    <c:when test="${not empty content.subtitle}">
+                                        <c:out value="${content.subtitle}" />
+                                    </c:when>
+                                    <c:otherwise>Untitled Section</c:otherwise>
+                                </c:choose>
+                            </h2>
+                            <span><c:out value="${content.contentType}" /></span>
+                        </header>
+
+                        <div class="public-content-card-body">
+                            <c:choose>
+                                <c:when test="${content.contentType == 'CODE'}">
+                                    <pre class="public-code-content"><code><c:out value="${content.contentData}" /></code></pre>
+                                </c:when>
+
+                                <c:when test="${content.contentType == 'IMAGE'}">
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(content.contentData, '/')}">
+                                            <img class="public-section-image"
+                                                 src="${pageContext.request.contextPath}${fn:escapeXml(content.contentData)}"
+                                                 alt="${fn:escapeXml(content.subtitle)}">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img class="public-section-image"
+                                                 src="${fn:escapeXml(content.contentData)}"
+                                                 alt="${fn:escapeXml(content.subtitle)}">
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:when>
+
+                                <c:when test="${content.contentType == 'VIDEO'}">
+                                    <video class="public-section-video" controls src="${fn:escapeXml(content.contentData)}"></video>
+                                </c:when>
+
+                                <c:when test="${content.contentType == 'LINK'}">
+                                    <a class="public-section-link"
+                                       href="${fn:escapeXml(content.contentData)}"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        <c:out value="${content.contentData}" />
+                                    </a>
+                                </c:when>
+
+                                <c:otherwise>
+                                    <p class="public-text-content">
+                                        <c:out value="${content.contentData}" />
+                                    </p>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </article>
+                </c:forEach>
+            </div>
+        </c:if>
+
+        <%-- Collection Box --%>
         <c:if test="${not empty sessionScope.userId}">
             <div class="collection-box">
-                <form action="${pageContext.request.contextPath}/user/collections/add-post" method="post" class="collection-form">
+                <form action="${pageContext.request.contextPath}/user/collections/add-post"
+                      method="post"
+                      class="collection-form">
+
                     <input type="hidden" name="postId" value="${post.id}">
                     <input type="hidden" name="slug" value="${post.slug}">
-                    
+
                     <label for="collectionSelect" class="collection-label">
                         📁 Save to Folder:
                     </label>
-                    
-                    <select id="collectionSelect" name="collectionId" required class="collection-select" onchange="checkFolderStatus()">
+
+                    <select id="collectionSelect"
+                            name="collectionId"
+                            required
+                            class="collection-select"
+                            onchange="checkFolderStatus()">
                         <option value="">-- Select Your Collection --</option>
+
                         <c:forEach var="col" items="${collections}">
                             <option value="${col.id}" data-saved="${col.posts.contains(post) ? 'true' : 'false'}">
                                 <c:out value="${col.name}" />
                             </option>
                         </c:forEach>
                     </select>
-                    
+
                     <button id="addFolderBtn" type="submit" class="btn-add-collection">
                         ➕ Add to Folder
                     </button>
@@ -346,15 +1059,33 @@
             <c:choose>
                 <c:when test="${not empty userLoggedIn || not empty sessionScope.userId}">
                     <div class="star-rating">
-                        <input type="radio" id="star5" name="rating" value="5" onclick="submitRating(${post.id}, 5)" ${userRating == 5 ? 'checked' : ''}><label for="star5" title="5 stars">★</label>
-                        <input type="radio" id="star4" name="rating" value="4" onclick="submitRating(${post.id}, 4)" ${userRating == 4 ? 'checked' : ''}><label for="star4" title="4 stars">★</label>
-                        <input type="radio" id="star3" name="rating" value="3" onclick="submitRating(${post.id}, 3)" ${userRating == 3 ? 'checked' : ''}><label for="star3" title="3 stars">★</label>
-                        <input type="radio" id="star2" name="rating" value="2" onclick="submitRating(${post.id}, 2)" ${userRating == 2 ? 'checked' : ''}><label for="star2" title="2 stars">★</label>
-                        <input type="radio" id="star1" name="rating" value="1" onclick="submitRating(${post.id}, 1)" ${userRating == 1 ? 'checked' : ''}><label for="star1" title="1 star">★</label>
+                        <input type="radio" id="star5" name="rating" value="5"
+                               onclick="submitRating(${post.id}, 5)" ${userRating == 5 ? 'checked' : ''}>
+                        <label for="star5" title="5 stars">★</label>
+
+                        <input type="radio" id="star4" name="rating" value="4"
+                               onclick="submitRating(${post.id}, 4)" ${userRating == 4 ? 'checked' : ''}>
+                        <label for="star4" title="4 stars">★</label>
+
+                        <input type="radio" id="star3" name="rating" value="3"
+                               onclick="submitRating(${post.id}, 3)" ${userRating == 3 ? 'checked' : ''}>
+                        <label for="star3" title="3 stars">★</label>
+
+                        <input type="radio" id="star2" name="rating" value="2"
+                               onclick="submitRating(${post.id}, 2)" ${userRating == 2 ? 'checked' : ''}>
+                        <label for="star2" title="2 stars">★</label>
+
+                        <input type="radio" id="star1" name="rating" value="1"
+                               onclick="submitRating(${post.id}, 1)" ${userRating == 1 ? 'checked' : ''}>
+                        <label for="star1" title="1 star">★</label>
                     </div>
                 </c:when>
+
                 <c:otherwise>
-                    <div class="star-rating" onclick="alert('Please login to rate this post.'); window.location.href='${pageContext.request.contextPath}/login';" style="cursor: pointer;" title="Click to rate">
+                    <div class="star-rating"
+                         onclick="alert('Please login to rate this post.'); window.location.href='${pageContext.request.contextPath}/login';"
+                         style="cursor: pointer;"
+                         title="Click to rate">
                         <label style="color: ${averageRating >= 1 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
                         <label style="color: ${averageRating >= 2 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
                         <label style="color: ${averageRating >= 3 ? '#ffc107' : '#ccc'}; cursor: pointer;">★</label>
@@ -365,16 +1096,20 @@
             </c:choose>
 
             <div class="average-rating-box">
-                <strong>⭐ Average:</strong> <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>/5 
+                <strong>⭐ Average:</strong>
+                <span id="avgRatingValue">${not empty averageRating ? averageRating : 0.0}</span>/5
                 (<span id="totalRatingCount">${not empty totalRatings ? totalRatings : 0}</span> ratings)
             </div>
         </div>
-        
-        <%-- Interactive Action Bar --%>
+
+        <%-- Action Bar --%>
         <div class="action-bar">
             <c:choose>
                 <c:when test="${not empty sessionScope.userId}">
-                    <button type="button" onclick="toggleLikePost(${post.id}, this)" class="button ${hasUserLiked ? 'liked-btn' : 'unliked-btn'}" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <button type="button"
+                            onclick="toggleLikePost(${post.id}, this)"
+                            class="button ${hasUserLiked ? 'liked-btn' : 'unliked-btn'}"
+                            style="display: inline-flex; align-items: center; gap: 8px;">
                         <span id="likeIcon-${post.id}">
                             <c:choose>
                                 <c:when test="${hasUserLiked}">👍 Unlike</c:when>
@@ -382,23 +1117,32 @@
                             </c:choose>
                         </span>
                     </button>
+
                     <span style="font-size: 14px; font-weight: 600; color: #475569;">
                         Likes: <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span>
                     </span>
                 </c:when>
+
                 <c:otherwise>
-                    <button type="button" onclick="alert('Please login to like this post.'); window.location.href='${pageContext.request.contextPath}/login';" class="button unliked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <button type="button"
+                            onclick="alert('Please login to like this post.'); window.location.href='${pageContext.request.contextPath}/login';"
+                            class="button unliked-btn"
+                            style="display: inline-flex; align-items: center; gap: 8px;">
                         👍 Like
                     </button>
+
                     <span style="font-size: 14px; font-weight: 600; color: #475569;">
                         Likes: <span id="likeCount-${post.id}">${not empty likeCount ? likeCount : 0}</span>
                     </span>
                 </c:otherwise>
             </c:choose>
-            
+
             <c:choose>
                 <c:when test="${not empty sessionScope.userId}">
-                    <button type="button" onclick="toggleBookmark(${post.id}, this)" class="button ${hasUserBookmarked ? 'bookmarked-btn' : 'unbookmarked-btn'}" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <button type="button"
+                            onclick="toggleBookmark(${post.id}, this)"
+                            class="button ${hasUserBookmarked ? 'bookmarked-btn' : 'unbookmarked-btn'}"
+                            style="display: inline-flex; align-items: center; gap: 8px;">
                         <span id="bookmarkIcon-${post.id}">
                             <c:choose>
                                 <c:when test="${hasUserBookmarked}">⭐ Bookmarked</c:when>
@@ -407,93 +1151,73 @@
                         </span>
                     </button>
                 </c:when>
+
                 <c:otherwise>
-                    <button type="button" onclick="alert('Please login to bookmark this post.'); window.location.href='${pageContext.request.contextPath}/login';" class="button unbookmarked-btn" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <button type="button"
+                            onclick="alert('Please login to bookmark this post.'); window.location.href='${pageContext.request.contextPath}/login';"
+                            class="button unbookmarked-btn"
+                            style="display: inline-flex; align-items: center; gap: 8px;">
                         ⭐ Bookmark
                     </button>
                 </c:otherwise>
             </c:choose>
 
-            <button type="button" id="commentCountBtn" class="button button-secondary" onclick="toggleCommentsSection()">
+            <button type="button"
+                    id="commentCountBtn"
+                    class="button button-secondary"
+                    onclick="toggleCommentsSection()">
                 💬 Comments (${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)})
             </button>
 
             <c:if test="${post.status != 'USER_DELETED' && empty post.deletedAt}">
-                <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/${post.slug}/download-pdf" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                <a class="button button-secondary"
+                   href="${pageContext.request.contextPath}/posts/${post.slug}/download-pdf"
+                   style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
                     📄 Download PDF
                 </a>
             </c:if>
 
             <c:if test="${sessionScope.userId != post.author.id}">
-                <button type="button" onclick="openReportModal('post', ${post.id})" class="button button-secondary" style="display: inline-flex; align-items: center; gap: 8px; color: #dc2626; border-color: #fca5a5;">
+                <button type="button"
+                        onclick="openReportModal('post', ${post.id})"
+                        class="button button-secondary"
+                        style="display: inline-flex; align-items: center; gap: 8px; color: #dc2626; border-color: #fca5a5;">
                     🚩 Report Post
                 </button>
             </c:if>
         </div>
 
-        <%-- Post Content Grid --%>
-        <c:if test="${not empty contents}">
-            <div class="public-content-grid" aria-label="Cheat sheet sections">
-                <c:forEach var="content" items="${contents}">
-                    <article class="public-content-card">
-                        <header class="public-content-card-header">
-                            <h2>
-                                <c:choose>
-                                    <c:when test="${not empty content.subtitle}"><c:out value="${content.subtitle}" /></c:when>
-                                    <c:otherwise>Untitled Section</c:otherwise>
-                                </c:choose>
-                            </h2>
-                            <span><c:out value="${content.contentType}" /></span>
-                        </header>
-
-                        <div class="public-content-card-body">
-                            <c:choose>
-                                <c:when test="${content.contentType == 'CODE'}">
-                                    <pre class="public-code-content"><code><c:out value="${content.contentData}" /></code></pre>
-                                </c:when>
-                                <c:when test="${content.contentType == 'IMAGE'}">
-                                    <c:choose>
-                                        <c:when test="${fn:startsWith(content.contentData, '/')}">
-                                            <img class="public-section-image" src="${pageContext.request.contextPath}${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
-                                        </c:when>
-                                        <c:otherwise>
-                                            <img class="public-section-image" src="${fn:escapeXml(content.contentData)}" alt="${fn:escapeXml(content.subtitle)}">
-                                        </c:otherwise>
-                                    </c:choose>
-                                </c:when>
-                                <c:when test="${content.contentType == 'VIDEO'}">
-                                    <video class="public-section-video" controls src="${fn:escapeXml(content.contentData)}"></video>
-                                </c:when>
-                                <c:when test="${content.contentType == 'LINK'}">
-                                    <a class="public-section-link" href="${fn:escapeXml(content.contentData)}" target="_blank" rel="noopener noreferrer">
-                                        <c:out value="${content.contentData}" />
-                                    </a>
-                                </c:when>
-                                <c:otherwise>
-                                    <p class="public-text-content"><c:out value="${content.contentData}" /></p>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </article>
-                </c:forEach>
-            </div>
-        </c:if>
-
         <%-- Comments Section --%>
-        <section id="commentsToggleWrapper" class="comments-section" style="display: none; margin-top: 35px; padding-top: 25px; border-top: 1px solid #e2e8f0;">
-            <h2 id="commentCountHeader" data-count="${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)}" style="font-size: 20px; color: #1e293b; margin-bottom: 20px;">
+        <section id="commentsToggleWrapper"
+                 class="comments-section"
+                 style="display: none; margin-top: 35px; padding-top: 25px; border-top: 1px solid #e2e8f0;">
+
+            <h2 id="commentCountHeader"
+                data-count="${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)}"
+                style="font-size: 20px; color: #1e293b; margin-bottom: 20px;">
                 💬 Comments (${not empty totalComments ? totalComments : (not empty comments ? fn:length(comments) : 0)})
             </h2>
 
-            <%-- Comment Input Form --%>
             <c:choose>
                 <c:when test="${not empty sessionScope.userId}">
                     <form id="commentForm" style="margin-bottom: 25px;">
                         <input type="hidden" id="postId" name="postId" value="${post.id}">
-                        <textarea id="commentText" name="commentText" rows="3" required placeholder="Write a comment..." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
-                        <button type="submit" class="button button-primary" style="margin-top: 10px; padding: 10px 20px; background: #4038ff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Post Comment</button>
+
+                        <textarea id="commentText"
+                                  name="commentText"
+                                  rows="3"
+                                  required
+                                  placeholder="Write a comment..."
+                                  style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
+
+                        <button type="submit"
+                                class="button button-primary"
+                                style="margin-top: 10px; padding: 10px 20px; background: #4038ff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            Post Comment
+                        </button>
                     </form>
                 </c:when>
+
                 <c:otherwise>
                     <div style="padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 25px; color: #64748b; font-size: 14px;">
                         Please <a href="${pageContext.request.contextPath}/login" style="color: #4038ff; font-weight: 600;">login</a> to leave a comment.
@@ -501,7 +1225,6 @@
                 </c:otherwise>
             </c:choose>
 
-            <%-- Comment List --%>
             <c:choose>
                 <c:when test="${not empty comments}">
                     <div id="commentListContainer" class="comment-list" style="display: flex; flex-direction: column; gap: 16px;">
@@ -511,23 +1234,37 @@
                                     <strong><c:out value="${comment.user.username}" /></strong>
                                     <span><c:out value="${comment.createdAt}" /></span>
                                 </div>
-                                <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;"><c:out value="${comment.content}" /></p>
+
+                                <p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">
+                                    <c:out value="${comment.content}" />
+                                </p>
 
                                 <div style="display: flex; gap: 12px; margin-bottom: 8px;">
                                     <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+
                                     <c:if test="${sessionScope.userId == comment.user.id}">
                                         <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
                                     </c:if>
+
                                     <button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal('comment', ${comment.id})">Report</button>
                                 </div>
 
-                                <%-- Main Comment Reply Form --%>
                                 <c:if test="${not empty sessionScope.userId}">
                                     <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
                                         <form onsubmit="submitReply(event, 'c-${comment.id}', ${comment.id}, ${post.id})">
-                                            <textarea id="replyText-c-${comment.id}" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>
+                                            <textarea id="replyText-c-${comment.id}"
+                                                      rows="2"
+                                                      required
+                                                      placeholder="Write a reply..."
+                                                      style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>
+
                                             <br>
-                                            <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 4px 10px; margin-top: 4px; cursor: pointer;">Post Reply</button>
+
+                                            <button type="submit"
+                                                    class="button button-secondary"
+                                                    style="font-size: 11px; padding: 4px 10px; margin-top: 4px; cursor: pointer;">
+                                                Post Reply
+                                            </button>
                                         </form>
                                     </div>
                                 </c:if>
@@ -544,16 +1281,18 @@
                         </c:forEach>
                     </div>
                 </c:when>
+
                 <c:otherwise>
                     <p id="noCommentsMessage" style="color: #888;">No comments yet.</p>
                 </c:otherwise>
             </c:choose>
         </section>
-
     </article>
 
     <div class="public-back-actions">
-        <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">Back to Posts</a>
+        <a class="button button-secondary" href="${pageContext.request.contextPath}/posts/public">
+            Back to Posts
+        </a>
     </div>
 </main>
 

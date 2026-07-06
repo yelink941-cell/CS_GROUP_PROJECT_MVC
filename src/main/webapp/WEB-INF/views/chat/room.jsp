@@ -773,6 +773,7 @@
     let contextMenuMessage = null;
 
     $(document).ready(function() {
+        $.ajaxSetup({ cache: false });
         // DEBUG: Check chatId and myUserId in console
         console.log('[DEBUG] chatId:', chatId, '| myUserId:', myUserId, '| ctx:', ctx);
         if (!chatId || chatId === '' || chatId === 'null') {
@@ -1289,9 +1290,12 @@
         var reactionsContainer = $('<div class="message-reactions" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;"></div>');
         if (msg.reactions && msg.reactions.length) {
             msg.reactions.forEach(function(r) {
-                var hasUserReacted = r.userIds && r.userIds.map(String).includes(String(myUserId));
+                var userIds = (r.userIds || []).map(String);
+                var uniqueUserIds = Array.from(new Set(userIds));
+                var count = uniqueUserIds.length > 0 ? uniqueUserIds.length : (r.count || 1);
+                var hasUserReacted = uniqueUserIds.includes(String(myUserId));
                 var badge = $('<span class="reaction-badge ' + (hasUserReacted ? 'user-reacted' : '') + '" style="display:inline-flex; align-items:center; gap:3px; background:' + (hasUserReacted ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.15)') + '; border:1px solid ' + (hasUserReacted ? '#38bdf8' : 'rgba(255, 255, 255, 0.2)') + '; border-radius:12px; padding:2px 7px; font-size:12px; cursor:pointer; user-select:none;"></span>')
-                    .html(r.emoji + ' <span style="font-size:11px; opacity:0.9;">' + r.count + '</span>')
+                    .html(r.emoji + ' <span style="font-size:11px; opacity:0.9;">' + count + '</span>')
                     .click(function(e) {
                         e.stopPropagation();
                         toggleReaction(msg.id, r.emoji);
