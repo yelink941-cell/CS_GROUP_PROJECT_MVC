@@ -218,10 +218,8 @@ public class ChatServiceImpl implements ChatService {
             return List.of();
         }
 
-        Long safeUserId = (currentUserId != null) ? currentUserId : -1L;
-
-        return userRepository.searchByUsername(keyword.trim(), safeUserId, 10).stream()
-                .filter(user -> safeUserId <= 0L || !blockedUserRepository.isBlockedEitherWay(safeUserId, user.getId()))
+        return userRepository.searchByUsername(keyword.trim(), currentUserId, 10).stream()
+                .filter(user -> !blockedUserRepository.isBlockedEitherWay(currentUserId, user.getId()))
                 .map(user -> new UserSearchResult(
                         user.getId(),
                         user.getUsername(),

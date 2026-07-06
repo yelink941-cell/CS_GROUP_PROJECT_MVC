@@ -87,19 +87,15 @@ public class UserRepositoryImpl implements UserRepository {
 
 	@Override
 	public List<User> searchByUsername(String keyword, Long excludeUserId, int limit) {
-		Long safeExcludeId = (excludeUserId != null) ? excludeUserId : -1L;
-		String searchKw = "%" + (keyword != null ? keyword.trim().toLowerCase() : "") + "%";
-
 		return getSession()
 				.createQuery("select distinct u from User u left join u.profile p "
 						+ "where u.deletedAt is null "
 						+ "and u.id <> :excludeId "
-						+ "and (lower(u.username) like :keyword "
-						+ "or lower(u.email) like :keyword "
-						+ "or lower(coalesce(p.fullName, '')) like :keyword) "
+						+ "and (lower(u.username) like lower(:keyword) "
+						+ "or lower(p.fullName) like lower(:keyword)) "
 						+ "order by u.username asc", User.class)
-				.setParameter("excludeId", safeExcludeId)
-				.setParameter("keyword", searchKw)
+				.setParameter("excludeId", excludeUserId)
+				.setParameter("keyword", "%" + keyword + "%")
 				.setMaxResults(limit)
 				.getResultList();
 	}
