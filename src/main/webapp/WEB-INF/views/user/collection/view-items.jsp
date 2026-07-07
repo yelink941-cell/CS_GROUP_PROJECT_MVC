@@ -10,7 +10,8 @@
     <title>${folder.name} - CheatSheet Hub</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/navigation.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css
+    ">
     
     <style>
         /* ============================================
