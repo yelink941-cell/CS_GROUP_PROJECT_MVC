@@ -304,6 +304,9 @@
                                                     <%-- Post Ban / Restore Buttons --%>
                                                     <% if (r.getPost() != null) { %>
                                                         <div style="display:flex; gap:4px;">
+                                                            <a href="<%= ctx %>/admin/posts/view/<%= r.getPost().getId() %>" target="_blank" class="btn btn-edit">
+                                                                📄 View Details
+                                                            </a>
                                                             <% if (isPostBanned) { %>
                                                                 <form action="<%= ctx %>/admin/posts/<%= r.getPost().getId() %>/unban" method="POST" style="margin:0;">
                                                                     <button type="submit" class="btn btn-unban" onclick="return confirm('Restore visibility for post: <%= r.getPost().getTitle().replace("'", "\\'") %>?');">
@@ -376,6 +379,9 @@
                                                     <span class="auto-delete-badge">🚨 Auto-Deleted (10+ Reports Threshold Triggered)</span><br/>
                                                 <% } %>
                                                 <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                                                    <a href="<%= ctx %>/admin/posts/view/<%= g.getPost().getId() %>" target="_blank" class="btn btn-edit" style="font-size:12px; margin-top:0;">
+                                                        📄 View Post Details
+                                                    </a>
                                                     <button type="button" class="btn-toggle-details" style="margin-top:0;" onclick="toggleDetails('<%= detailsId %>')">
                                                         👁️ View Reporter Details (<%= g.getReportCount() %>)
                                                     </button>
@@ -524,8 +530,13 @@
                                                     
                                                     <%-- Comment Ban / Restore Buttons --%>
                                                     <% if (r.getComment() != null) { %>
-                                                        <div style="display:flex; gap:4px;">
-                                                            <% if (isCommentHidden) { %>
+                                                         <div style="display:flex; gap:4px;">
+                                                             <% if (r.getComment().getPost() != null) { %>
+                                                                 <a href="<%= ctx %>/admin/posts/view/<%= r.getComment().getPost().getId() %>" target="_blank" class="btn btn-edit">
+                                                                     📄 View Details
+                                                                 </a>
+                                                             <% } %>
+                                                             <% if (isCommentHidden) { %>
                                                                 <form action="<%= ctx %>/admin/comments/<%= r.getComment().getId() %>/unban" method="POST" style="margin:0;">
                                                                     <button type="submit" class="btn btn-unban" onclick="return confirm('Restore comment visibility?');">
                                                                         🎉 Restore (Unban) Comment
@@ -604,6 +615,11 @@
                                                     <span class="auto-delete-badge">🚨 Auto-Deleted (10+ Reports Threshold Triggered)</span><br/>
                                                 <% } %>
                                                 <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                                                    <% if (g.getComment().getPost() != null) { %>
+                                                        <a href="<%= ctx %>/admin/posts/view/<%= g.getComment().getPost().getId() %>" target="_blank" class="btn btn-edit" style="font-size:12px; text-decoration:none; margin-top:0;">
+                                                            📄 View Post Details
+                                                        </a>
+                                                    <% } %>
                                                     <button type="button" class="btn-toggle-details" style="margin-top:0;" onclick="toggleDetails('<%= detailsId %>')">
                                                         👁️ View Reporter Details (<%= g.getReportCount() %>)
                                                     </button>
