@@ -556,9 +556,10 @@
                                     <div class="card-meta-left">
                                         <span class="author-initial"><c:out value="${fn:substring(post.author.username, 0, 1)}" /></span>
                                         <div>
-                                            <a href="${pageContext.request.contextPath}/profile?id=${post.author.id}">
-                                                <strong>@<c:out value="${post.author.username}" /></strong>
-                                            </a>
+                                            <%-- Change /profile?id= to /profile/view?id= to route to the public view mapping --%>
+											<a href="${pageContext.request.contextPath}/profile/view?id=${post.author.id}">
+											    <strong>@<c:out value="${post.author.username}" /></strong>
+											</a>
                                             <c:if test="${not empty post.createdAt}">
                                                 <br><small><c:out value="${fn:substring(post.createdAt, 0, 10)}" /></small>
                                             </c:if>
