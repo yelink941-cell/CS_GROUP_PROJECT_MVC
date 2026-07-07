@@ -3,11 +3,15 @@ package com.hibernate.controller;
 import com.hibernate.entity.Category;
 import com.hibernate.entity.Post;
 import com.hibernate.entity.Tag;
+import com.hibernate.service.BookmarkService;
 import com.hibernate.service.CategoryService;
 import com.hibernate.service.CollectionService; // 🎯 Added import for CollectionService
+import com.hibernate.service.CommentService;
 import com.hibernate.service.PostContentService;
+import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.PostViewService;
+import com.hibernate.service.RatingService;
 import com.hibernate.service.TagService;
 import com.hibernate.service.UserService;
 
@@ -35,6 +39,10 @@ public class PublicPostController {
     private final PostContentService postContentService;
     private final PostViewService postViewService;
     private final UserService userService;
+    private final PostLikeService postLikeService;
+    private final BookmarkService bookmarkService;
+    private final RatingService ratingService;
+    private final CommentService commentService;
     private final com.hibernate.repository.BlockedUserRepository blockedUserRepository;
 
     @GetMapping("/public")
@@ -144,7 +152,7 @@ public class PublicPostController {
     }
 
     @GetMapping("/public/posts/{slug}")
-    
+
     public String publicPostDetails(
             @PathVariable("slug") String slug,
             Model model,
@@ -157,6 +165,28 @@ public class PublicPostController {
                     postViewService.recordView(post, viewerUserId, request, response);
                     model.addAttribute("post", post);
                     model.addAttribute("contents", postContentService.getContentsByPostId(post.getId()));
+
+                    // 🟢 login ဖြစ်နေလျှင် like/bookmark/rating အခြေအနေများ ပို့ပေးပါ
+                    if (viewerUserId != null) {
+                        model.addAttribute("collections", collectionService.getCollectionsByUserId(viewerUserId));
+                        model.addAttribute("hasUserLiked", postLikeService.hasUserLiked(post.getId(), viewerUserId));
+                        model.addAttribute("hasUserBookmarked", bookmarkService.hasUserBookmarked(viewerUserId, post.getId()));
+
+                        // 🟢 Rating data ပို့ပေးပါ
+                        model.addAttribute("userRating", ratingService.getUserRating(post.getId(), viewerUserId));
+                        model.addAttribute("hasUserRated", ratingService.hasUserRated(post.getId(), viewerUserId));
+                    }
+
+                    // 🟢 Count များ (login ဖြစ်ဖြစ် မဖြစ်ဖြစ် ပေါ်လာစေရန်)
+                    model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
+                    model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
+                    model.addAttribute("totalComments", commentService.getTotalActiveComments(post.getId()));
+                    model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(post.getId()));
+
+                    // 🟢 Rating count/average (login မရှိဘူးလည်း ပေးပါ)
+                    model.addAttribute("averageRating", ratingService.getAverageRating(post.getId()));
+                    model.addAttribute("totalRatings", ratingService.getRatingCount(post.getId()));
+
                     return "public/post/details";
                 })
                 .orElse("redirect:/posts/public");

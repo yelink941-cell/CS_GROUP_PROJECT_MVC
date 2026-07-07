@@ -530,7 +530,6 @@ public class UserController {
         model.addAttribute("totalPosts", postService.countAllPosts());
         model.addAttribute("pendingPosts", postService.countPendingPosts());
         model.addAttribute("totalUsers", userService.countAllUsers());
-        model.addAttribute("totalComments", commentService.countAllComments());
         
         return "admin/admin-dashboard";
     }
