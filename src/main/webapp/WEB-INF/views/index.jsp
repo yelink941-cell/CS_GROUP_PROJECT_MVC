@@ -372,7 +372,7 @@
                             <c:forEach var="cat" items="${categoryResults}">
                                 <div class="result-item">
                                     <div>
-                                        <strong style="color: #1e293b; font-size: 15px;"><c:out value="${cat.name}"/></strong>
+                                   <a href="${pageContext.request.contextPath}/categories/${cat.id}" style="color: #d97706; font-weight: 600; font-size: 15px; text-decoration: none;">📁 <c:out value="${cat.name}"/></a>
                                         <div style="font-size: 13px; color: #64748b; margin-top: 4px;"><c:out value="${cat.description}"/></div>
                                     </div>
                                     <span class="badge">Category</span>
@@ -469,27 +469,44 @@
 
             <%-- CONDITION B: UNIFIED HOME SCREEN LAYOUT --%>
             <c:otherwise>
-                <section class="home-hero">
-                    <c:choose>
-                        <c:when test="${not empty sessionScope.currentUser}">
-                            <div class="accent-label">Dashboard Active</div>
-                            <h2>Welcome back, <c:out value="${sessionScope.currentUser.username}"/> &#128075;</h2>
-                            <p>Explore categories, discover popular cheat sheets, and continue learning from community-approved guides.</p>
-                            <p>You can now use the top navigation bar from your dashboard to look up references and manage your private notes.</p>
-                            <div style="margin-top: 18px;">
-                                <a href="${pageContext.request.contextPath}/notes" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 14px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); transition: all 0.2s;">
-                                    📝 My Private Notes
-                                </a>
-                            </div>
-                        </c:when>
-                        
-                        <c:otherwise>
-                            <div class="accent-label">Public Library</div>
-                            <h2>Explore Cheat Sheets</h2>
-                            <p>Simple, practical guides created by the community and approved for everyone.</p>
-                        </c:otherwise>
-                    </c:choose>
-                </section>
+               <section style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; padding: 60px 40px; border-radius: 24px; position: relative; overflow: hidden; margin-bottom: 30px; box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.2);">
+    
+    <!-- Decorator circles for modern look -->
+   <!-- ညာဘက်အပေါ်ထောင့် အဝိုင်း (Screen အစွန်းထိ ရောက်အောင်) -->
+    <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: rgba(255,255,255,0.15); border-radius: 50%; pointer-events: none;"></div>
+    
+    <!-- ဘယ်ဘက်အောက်ထောင့် အဝိုင်း (Screen အစွန်းထိ ရောက်အောင်) -->
+    <div style="position: absolute; bottom: -80px; left: -50px; width: 200px; height: 200px; background: rgba(0,0,0,0.1); border-radius: 50%; pointer-events: none;"></div>
+
+    <!-- ကျန်တဲ့ Content တွေ ဒီနေရာမှာ ထည့်ပါ -->
+    <div style="position: relative; z-index: 1;">
+        <!-- Content -->
+    </div>
+    <c:choose>
+        <c:when test="${not empty sessionScope.currentUser}">
+            <div style="max-width: 700px; position: relative; z-index: 1;">
+                <span style="background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Dashboard Active</span>
+                <h2 style="font-size: 40px; margin: 20px 0;">Welcome back, <c:out value="${sessionScope.currentUser.username}"/> &#128075;</h2>
+                <p style="font-size: 1.1rem; opacity: 0.9; line-height: 1.6; margin-bottom: 25px;">
+                    Explore categories, discover popular cheat sheets, and continue learning from community-approved guides. You can now manage your private notes easily.
+                </p>
+                <a href="${pageContext.request.contextPath}/notes" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: white; color: #4f46e5; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    📝 My Private Notes
+                </a>
+            </div>
+        </c:when>
+        
+        <c:otherwise>
+            <div style="max-width: 700px; position: relative; z-index: 1;">
+                <span style="background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Public Library</span>
+                <h2 style="font-size: 40px; margin: 20px 0;">Explore Cheat Sheets</h2>
+                <p style="font-size: 1.2rem; opacity: 0.9; line-height: 1.6;">
+                    Simple, practical guides created by the community and approved for everyone. Start your learning journey today.
+                </p>
+            </div>
+        </c:otherwise>
+    </c:choose>
+</section>
 
                 <section class="home-section">
                     <div class="home-section-header">
@@ -527,107 +544,171 @@
                     </c:choose>
                 </section>
 
-                <section class="home-section">
-                    <div class="home-section-header">
-                        <div>
-                            <span class="section-kicker">Most Viewed</span>
-                            <h2>Popular Posts</h2>
-                        </div>
-                        <a href="${pageContext.request.contextPath}/posts/popular">See more</a>
-                    </div>
-                    <div class="post-card-grid">
-                        <c:choose>
-                            <c:when test="${not empty popularPosts}">
-                                <c:forEach var="post" items="${popularPosts}">
-                                    <article class="home-post-card">
-                                        <span class="post-category"><c:out value="${post.category.name}" /></span>
-                                        <h3><c:out value="${post.title}" /></h3>
-                                        <p><c:out value="${empty post.excerpt ? 'No excerpt available.' : post.excerpt}" /></p>
-                                        <div class="post-meta">
-                                            <span>By <c:out value="${empty post.author ? '-' : post.author.username}" /></span>
-                                            <span><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
-                                        </div>
-                                        <div class="post-footer">
-                                            <small><c:out value="${post.createdAt}" /></small>
-                                            <a href="${pageContext.request.contextPath}/posts/${post.slug}">Read More</a>
-                                        </div>
-                                    </article>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="home-empty">No popular posts are available yet.</div>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </section>
+              <section style="padding: 40px 20px; background: #ffffff; border-radius: 20px; margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">
+        <div>
+            <span style="color: #8b5cf6; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase;">
+                Most Viewed
+            </span>
+            <h2 style="margin: 5px 0 0 0; color: #1e293b; font-size: 28px;">
+                <span style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Popular Posts
+                </span>
+            </h2>
+        </div>
+        <a href="${pageContext.request.contextPath}/posts/popular" style="color: #7c3aed; text-decoration: none; font-weight: 600; font-size: 14px;">
+            See more →
+        </a>
+    </div>
 
-                <section class="home-section">
-                    <div class="home-section-header">
-                        <div>
-                            <span class="section-kicker">Last 30 Days</span>
-                            <h2>Trending Posts</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+        <c:choose>
+            <c:when test="${not empty popularPosts}">
+                <c:forEach var="post" items="${popularPosts}">
+                    <article style="background: #f8fafc; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+                        <span style="font-size: 11px; background: #ede9fe; color: #7c3aed; padding: 4px 10px; border-radius: 12px; font-weight: 700; align-self: flex-start; margin-bottom: 10px;">
+                            <c:out value="${post.category.name}" />
+                        </span>
+                        
+                        <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 1.25rem;">
+                            <c:out value="${post.title}" />
+                        </h3>
+                        
+                        <p style="margin: 0 0 20px 0; color: #64748b; font-size: 0.9rem; line-height: 1.5; flex-grow: 1;">
+                            <c:out value="${empty post.excerpt ? 'No excerpt available.' : post.excerpt}" />
+                        </p>
+                        
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; margin-bottom: 15px;">
+                            <span>By <c:out value="${empty post.author ? '-' : post.author.username}" /></span>
+                            <span>👁️ <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /></span>
                         </div>
-                        <a href="${pageContext.request.contextPath}/posts/trending">See more</a>
-                    </div>
-                    <div class="post-card-grid">
-                        <c:choose>
-                            <c:when test="${not empty trendingPosts}">
-                                <c:forEach var="post" items="${trendingPosts}">
-                                    <article class="home-post-card">
-                                        <span class="post-category"><c:out value="${post.category.name}" /></span>
-                                        <h3><c:out value="${post.title}" /></h3>
-                                        <p><c:out value="${empty post.excerpt ? 'No excerpt available.' : post.excerpt}" /></p>
-                                        <div class="post-meta">
-                                            <span>By <c:out value="${empty post.author ? '-' : post.author.username}" /></span>
-                                            <span><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
-                                        </div>
-                                        <div class="post-footer">
-                                            <small><c:out value="${post.createdAt}" /></small>
-                                            <a href="${pageContext.request.contextPath}/posts/${post.slug}">Read More</a>
-                                        </div>
-                                    </article>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="home-empty">No trending posts are available yet.</div>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </section>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; pt: 15px;">
+                            <small style="color: #94a3b8;"><c:out value="${post.createdAt}" /></small>
+                            <a href="${pageContext.request.contextPath}/posts/${post.slug}" style="color: #7c3aed; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Read More →</a>
+                        </div>
+                    </article>
+                </c:forEach>
+            </c:when>
+            <c:otherwise>
+                <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #94a3b8;">
+                    No popular posts are available yet.
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</section>
 
-                <section class="home-section">
-                    <div class="home-section-header">
-                        <div>
-                            <span class="section-kicker">Fresh Guides</span>
-                            <h2>New Posts</h2>
+                <section style="padding: 40px 20px; background: #ffffff; border-radius: 20px; margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">
+        <div>
+            <span style="color: #e11d48; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase;">
+                Last 30 Days
+            </span>
+            <h2 style="margin: 5px 0 0 0; color: #1e293b; font-size: 28px;">
+                <span style="background: linear-gradient(135deg, #e11d48, #9f1239); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Trending Posts
+                </span>
+            </h2>
+        </div>
+        <a href="${pageContext.request.contextPath}/posts/trending" style="color: #e11d48; text-decoration: none; font-weight: 600; font-size: 14px;">
+            See more →
+        </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+        <c:choose>
+            <c:when test="${not empty trendingPosts}">
+                <c:forEach var="post" items="${trendingPosts}">
+                    <article style="background: #fff1f2; padding: 24px; border-radius: 16px; border: 1px solid #fda4af; display: flex; flex-direction: column;">
+                        <span style="font-size: 11px; background: #fecdd3; color: #9f1239; padding: 4px 10px; border-radius: 12px; font-weight: 700; align-self: flex-start; margin-bottom: 10px;">
+                            <c:out value="${post.category.name}" />
+                        </span>
+                        
+                        <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 1.25rem;">
+                            <c:out value="${post.title}" />
+                        </h3>
+                        
+                        <p style="margin: 0 0 20px 0; color: #64748b; font-size: 0.9rem; line-height: 1.5; flex-grow: 1;">
+                            <c:out value="${empty post.excerpt ? 'No excerpt available.' : post.excerpt}" />
+                        </p>
+                        
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; margin-bottom: 15px;">
+                            <span>By <c:out value="${empty post.author ? '-' : post.author.username}" /></span>
+                            <span>🔥 <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
                         </div>
-                        <a href="${pageContext.request.contextPath}/posts/new">See more</a>
-                    </div>
-                    <div class="post-card-grid">
-                        <c:choose>
-                            <c:when test="${not empty newPosts}">
-                                <c:forEach var="post" items="${newPosts}">
-                                    <article class="home-post-card">
-                                        <span class="post-category"><c:out value="${post.category.name}" /></span>
-                                        <h3><c:out value="${post.title}" /></h3>
-                                        <p><c:out value="${empty post.excerpt ? 'No excerpt available.' : post.excerpt}" /></p>
-                                        <div class="post-meta">
-                                            <span>By <c:out value="${empty post.author ? '-' : post.author.username}" /></span>
-                                            <span><c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
-                                        </div>
-                                        <div class="post-footer">
-                                            <small><c:out value="${post.createdAt}" /></small>
-                                            <a href="${pageContext.request.contextPath}/posts/${post.slug}">Read More</a>
-                                        </div>
-                                    </article>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="home-empty">No new posts are available yet.</div>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </section>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #fda4af; padding-top: 15px;">
+                            <small style="color: #94a3b8;"><c:out value="${post.createdAt}" /></small>
+                            <a href="${pageContext.request.contextPath}/posts/${post.slug}" style="color: #e11d48; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Read More →</a>
+                        </div>
+                    </article>
+                </c:forEach>
+            </c:when>
+            <c:otherwise>
+                <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #94a3b8;">
+                    No trending posts are available yet.
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</section>
+                <section style="padding: 40px 20px; background: #ffffff; border-radius: 20px; margin-top: 20px;">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">
+        <div>
+            <span style="color: #0284c7; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase;">
+                Fresh Guides
+            </span>
+            <h2 style="margin: 5px 0 0 0; color: #1e293b; font-size: 28px;">
+                <span style="background: linear-gradient(135deg, #0284c7, #0369a1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    New Posts
+                </span>
+            </h2>
+        </div>
+        <a href="${pageContext.request.contextPath}/posts/new" style="color: #0284c7; text-decoration: none; font-weight: 600; font-size: 14px;">
+            See more →
+        </a>
+    </div>
+
+    <!-- Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+        <c:choose>
+            <c:when test="${not empty newPosts}">
+                <c:forEach var="post" items="${newPosts}">
+                    <article style="background: #f0f9ff; padding: 24px; border-radius: 16px; border: 1px solid #bae6fd; display: flex; flex-direction: column;">
+                        <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-weight: 700; align-self: flex-start; margin-bottom: 10px;">
+                            <c:out value="${post.category.name}" />
+                        </span>
+                        
+                        <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 1.25rem;">
+                            <c:out value="${post.title}" />
+                        </h3>
+                        
+                        <p style="margin: 0 0 20px 0; color: #64748b; font-size: 0.9rem; line-height: 1.5; flex-grow: 1;">
+                            <c:out value="${empty post.excerpt ? 'No excerpt available.' : post.excerpt}" />
+                        </p>
+                        
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; margin-bottom: 15px;">
+                            <span>By <c:out value="${empty post.author ? '-' : post.author.username}" /></span>
+                            <span>✨ <c:out value="${empty post.viewCount ? 0 : post.viewCount}" /> views</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #bae6fd; padding-top: 15px;">
+                            <small style="color: #94a3b8;"><c:out value="${post.createdAt}" /></small>
+                            <a href="${pageContext.request.contextPath}/posts/${post.slug}" style="color: #0284c7; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Read More →</a>
+                        </div>
+                    </article>
+                </c:forEach>
+            </c:when>
+            <c:otherwise>
+                <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #94a3b8;">
+                    No new posts are available yet.
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</section>
             </c:otherwise>
         </c:choose>
     </main>
