@@ -177,19 +177,19 @@
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/announcements" class="sidebar-link">
-                    <span>📢 Event Announcements</span>
+                    <span>&#128364; Event Announcements</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports/cheatsheet" class="sidebar-link">
-                    <span>📄 CheatSheet Report</span>
+                    <span>&#128196; CheatSheet Report</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link active">
-                    <span>🚩 Moderation Reports</span>
+                    <span>📊 Report Logs</span>
                 </a>
-            </li>
+            </li>          
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/chat" class="sidebar-link">
                     <span>💬 Chat / Messages</span>

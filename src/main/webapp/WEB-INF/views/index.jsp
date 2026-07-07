@@ -13,10 +13,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .home-main-content { 
-            padding: 42px 20px 70px; 
-            max-width: 1180px; 
+            padding: 16px 24px 70px; 
+            max-width: none; 
             margin: 0 auto; 
             width: 100%;
+            box-sizing: border-box;
         }
         
         .welcome-msg { 
@@ -470,9 +471,7 @@
             <%-- CONDITION B: UNIFIED HOME SCREEN LAYOUT --%>
             <c:otherwise>
                <section style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; padding: 60px 40px; border-radius: 24px; position: relative; overflow: hidden; margin-bottom: 30px; box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.2);">
-    
-    <!-- Decorator circles for modern look -->
-   <!-- ညာဘက်အပေါ်ထောင့် အဝိုင်း (Screen အစွန်းထိ ရောက်အောင်) -->
+  
     <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: rgba(255,255,255,0.15); border-radius: 50%; pointer-events: none;"></div>
     
     <!-- ဘယ်ဘက်အောက်ထောင့် အဝိုင်း (Screen အစွန်းထိ ရောက်အောင်) -->

@@ -399,16 +399,7 @@
                     <div class="category-stat-number">${totalCategories}</div>
                     <div class="category-stat-label">Total Categories</div>
                 </div>
-                <div class="category-stat-card green">
-                    <span class="category-stat-icon">✅</span>
-                    <div class="category-stat-number">${activeCategories}</div>
-                    <div class="category-stat-label">Active Categories</div>
-                </div>
-                <div class="category-stat-card orange">
-                    <span class="category-stat-icon">🚫</span>
-                    <div class="category-stat-number">${inactiveCategories}</div>
-                    <div class="category-stat-label">Inactive Categories</div>
-                </div>
+               
                 <div class="category-stat-card purple">
                     <span class="category-stat-icon">📚</span>
                     <div class="category-stat-number">${totalPosts}</div>
@@ -452,16 +443,7 @@
                                     <td><strong>#${category.id}</strong></td>
                                     <td><strong><c:out value="${category.name}" /></strong></td>
                                     <td><c:out value="${category.description}" /></td>
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${category.isActive}">
-                                                <span class="badge-active">● Active</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge-inactive">● Inactive</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
+                                  
                                     <td style="text-align: center; white-space: nowrap;">
                                         <!-- Edit Button -->
                                         <a href="${pageContext.request.contextPath}/admin/categories/edit/${category.id}" 
@@ -470,11 +452,7 @@
                                         </a>
                                         
                                         <!-- Toggle Status Button (NEW) -->
-                                        <a href="${pageContext.request.contextPath}/admin/categories/toggle/${category.id}" 
-                                           class="action-btn ${category.isActive ? 'toggle-inactive' : 'toggle-active'}"
-                                           onclick="return confirm('Are you sure you want to ${category.isActive ? 'deactivate' : 'activate'} this category?')">
-                                            ${category.isActive ? '🔁 Deactivate' : '🔁 Activate'}
-                                        </a>
+                                        
                                         
                                         <!-- Delete Button -->
                                         <a href="${pageContext.request.contextPath}/admin/categories/delete/${category.id}" 

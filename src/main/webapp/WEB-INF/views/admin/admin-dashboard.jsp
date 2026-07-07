@@ -326,7 +326,7 @@
         <header class="top-navbar">
             <div class="nav-title">📊 System Overview Workspace</div>
             <div class="user-profile-badge">
-                <a href="${pageContext.request.contextPath}/" class="btn-logout">🏠 Home</a>
+               
                 <span>Welcome, <strong><%= displayUsername %></strong></span>
                 <span class="badge"><%= displayRole %></span>
                 <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Sign Out</a>

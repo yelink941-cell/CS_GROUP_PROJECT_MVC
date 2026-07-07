@@ -681,21 +681,21 @@
                     <span>👥 User Management</span>
                 </a>
             </li>
-            <li class="sidebar-item">
+           <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/announcements" class="sidebar-link">
-                    <span>📢 Event Announcements</span>
+                    <span>&#128364; Event Announcements</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports/cheatsheet" class="sidebar-link">
-                    <span>📄 CheatSheet Report</span>
+                    <span>&#128196; CheatSheet Report</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link">
                     <span>📊 Report Logs</span>
                 </a>
-            </li>
+            </li>          
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/chat" class="sidebar-link active">
                     <span>💬 Chat / Messages</span>
@@ -708,7 +708,7 @@
         <header class="top-navbar" style="flex-shrink: 0;">
             <div class="nav-title">💬 Admin Support Center</div>
             <div class="user-profile-badge">
-                <a href="${pageContext.request.contextPath}/" class="btn-logout">🏠 Home</a>
+               
                 <span>Welcome, <strong><%= displayUsername %></strong></span>
                 <span class="badge"><%= displayRole %></span>
                 <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Sign Out</a>

@@ -14,11 +14,16 @@
         justify-content: space-between;
         align-items: center;
         width: 100%;
-        max-width: 1300px; 
+        max-width: 1580px; 
         margin: 0 auto;
         padding: 0 20px;
-        flex-wrap: wrap; 
+        flex-wrap: nowrap; 
         gap: 15px;
+    }
+
+    .brand {
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
     
     .nav-right-zone {
@@ -27,7 +32,8 @@
         justify-content: flex-end;
         gap: 16px;
         flex-grow: 1;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        min-width: 0;
     }
 
     /* ============================================
@@ -240,6 +246,8 @@
         display: flex;
         align-items: center;
         gap: 12px; 
+        flex: 0 0 auto;
+        flex-wrap: nowrap;
     }
 
     .nav-link {
