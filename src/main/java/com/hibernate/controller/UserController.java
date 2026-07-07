@@ -152,7 +152,7 @@ public class UserController {
             
             if (user != null) {
                 // LOGIC BLOCK: If user account is FULL BANNED, block access immediately
-                if (user.isCurrentlyBanned() && "FULL".equalsIgnoreCase(user.getBanType())) {
+                if (user.isFullBanned()) {
                     String reason = (user.getBanReason() != null && !user.getBanReason().trim().isEmpty())
                             ? user.getBanReason()
                             : "Violation of community guidelines";

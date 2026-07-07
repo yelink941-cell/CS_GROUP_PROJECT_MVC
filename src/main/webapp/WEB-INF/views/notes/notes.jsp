@@ -220,6 +220,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             position: relative;
             min-height: 200px;
+            cursor: pointer;
         }
         
         .note-card:hover {
@@ -450,6 +451,101 @@
             box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
         }
         
+        /* ===== VIEW NOTE MODAL ===== */
+        .view-modal-box {
+            max-width: 650px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            padding: 32px;
+            background: #ffffff;
+            border: 1px solid #e8edf4;
+            border-radius: 16px;
+            width: 90%;
+            box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.15);
+            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .view-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .view-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #64748b;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .view-modal-close:hover {
+            color: #1e293b;
+            background: #f1f5f9;
+        }
+        
+        .view-modal-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        
+        .view-modal-meta {
+            font-size: 13px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .view-modal-body {
+            font-size: 15px;
+            color: #334155;
+            line-height: 1.7;
+            overflow-y: auto;
+            flex: 1;
+            margin-bottom: 24px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            padding-right: 8px;
+        }
+        
+        /* Custom scrollbar for view modal body */
+        .view-modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .view-modal-body::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        .view-modal-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .view-modal-body::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        .view-modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
+        }
+        
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .library-header {
@@ -627,7 +723,7 @@
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="note" items="${notes}">
-                            <div class="note-card">
+                            <div class="note-card" data-id="${note.id}" onclick="openNoteView(this, event)">
                                 <span class="note-private-badge">🔒 Private</span>
                                 <div class="note-title"><c:out value="${note.title}" /></div>
                                 <div class="note-snippet"><c:out value="${note.content}" /></div>
@@ -671,6 +767,27 @@
             </div>
         </div>
     </div>
+
+    <!-- ===== VIEW NOTE MODAL ===== -->
+    <div class="modal-overlay" id="viewModal">
+        <div class="view-modal-box">
+            <div class="view-modal-header">
+                <span class="note-private-badge" style="position: static;">🔒 Private</span>
+                <button type="button" class="view-modal-close" onclick="closeViewModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="view-modal-title" id="viewNoteTitle"></div>
+            <div class="view-modal-meta" id="viewNoteMeta"></div>
+            <div class="view-modal-body" id="viewNoteBody"></div>
+            <div class="view-modal-footer">
+                <a href="#" id="viewNoteEditBtn" class="btn-edit">
+                    <i class="fas fa-pen"></i> Edit
+                </a>
+                <button type="button" class="modal-cancel" onclick="closeViewModal()">Close</button>
+            </div>
+        </div>
+    </div>
 <footer class="site-footer">
     <div class="footer-container">
         <div class="footer-brand">
@@ -710,6 +827,42 @@
         // Click outside to close
         document.getElementById('deleteModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
+        });
+
+        // View Note Modal Logic
+        function openNoteView(card, event) {
+            // Ignore click if it came from action buttons/container
+            if (event.target.closest('.note-actions')) {
+                return;
+            }
+            
+            const noteId = card.getAttribute('data-id');
+            const title = card.querySelector('.note-title').textContent.trim();
+            const content = card.querySelector('.note-snippet').textContent;
+            const meta = card.querySelector('.note-meta').innerHTML;
+            
+            document.getElementById('viewNoteTitle').textContent = title;
+            document.getElementById('viewNoteBody').textContent = content;
+            document.getElementById('viewNoteMeta').innerHTML = meta;
+            document.getElementById('viewNoteEditBtn').href = '${pageContext.request.contextPath}/notes/' + noteId + '/edit';
+            
+            document.getElementById('viewModal').classList.add('active');
+        }
+        
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.remove('active');
+        }
+        
+        document.getElementById('viewModal').addEventListener('click', function(e) {
+            if (e.target === this) closeViewModal();
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeViewModal();
+            }
         });
 
         // Auto-hide flash after 4s

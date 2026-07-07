@@ -16,6 +16,7 @@ import com.hibernate.dto.MessageReportRequest;
 import com.hibernate.dto.MessageRequest;
 import com.hibernate.dto.MessageResponse;
 import com.hibernate.dto.ReactionRequest;
+import com.hibernate.dto.ChatRoomView;
 import com.hibernate.entity.Conversation;
 import com.hibernate.entity.Message;
 import com.hibernate.entity.User;
@@ -413,6 +414,22 @@ public class ChatController {
 
     }
 
+    @GetMapping("/room/details")
+    public ResponseEntity<?> getRoomDetails(@RequestParam Long conversationId, HttpSession session) {
+        User currentUser = requireUser(session);
+        if (currentUser == null) {
+            return unauthorized();
+        }
+        try {
+            ChatRoomView roomView = chatService.getRoomView(conversationId, currentUser.getId());
+            if (roomView == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Conversation not found");
+            }
+            return ResponseEntity.ok(roomView);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
 
     private User requireUser(HttpSession session) {

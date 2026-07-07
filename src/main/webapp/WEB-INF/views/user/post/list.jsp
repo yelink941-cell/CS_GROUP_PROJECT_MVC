@@ -547,7 +547,14 @@
                         📊 <strong><c:out value="${fn:length(posts)}" /></strong> total items
                     </span>
                     <c:if test="${activeTab != 'bookmarks'}">
-                        <a class="btn-create" href="${pageContext.request.contextPath}/user/posts/new">➕ Create Post</a>
+                        <c:choose>
+                            <c:when test="${dbUser.postBanned}">
+                                <span class="btn-create" style="opacity: 0.6; cursor: not-allowed; background: #e2e8f0; color: #64748b;" title="Posting restricted">➕ Create Post</span>
+                            </c:when>
+                            <c:otherwise>
+                                <a class="btn-create" href="${pageContext.request.contextPath}/user/posts/new">➕ Create Post</a>
+                            </c:otherwise>
+                        </c:choose>
                     </c:if>
                 </div>
             </div>
@@ -567,7 +574,14 @@
                 <h2>No posts found</h2>
                 <p>Create your first cheat sheet to start building your collection.</p>
                 <c:if test="${activeTab != 'bookmarks'}">
-                    <a class="btn-create-empty" href="${pageContext.request.contextPath}/user/posts/new">➕ Create Your First Post</a>
+                    <c:choose>
+                        <c:when test="${dbUser.postBanned}">
+                            <span class="btn-create-empty" style="opacity: 0.6; cursor: not-allowed; background: #e2e8f0; color: #64748b;" title="Posting restricted">➕ Create Your First Post</span>
+                        </c:when>
+                        <c:otherwise>
+                            <a class="btn-create-empty" href="${pageContext.request.contextPath}/user/posts/new">➕ Create Your First Post</a>
+                        </c:otherwise>
+                    </c:choose>
                 </c:if>
             </section>
         </c:if>

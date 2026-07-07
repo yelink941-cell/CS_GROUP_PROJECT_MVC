@@ -22,6 +22,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminPostManagementController {
     private final AdminPostManagementService adminPostManagementService;
     private final PostContentService postContentService;
+    private final com.hibernate.service.CommentService commentService;
+    private final com.hibernate.service.PostLikeService postLikeService;
+    private final com.hibernate.service.BookmarkService bookmarkService;
+    private final com.hibernate.service.RatingService ratingService;
 
     @GetMapping
     public String listPosts(Model model, HttpSession session) {
@@ -44,7 +48,17 @@ public class AdminPostManagementController {
         Post post = adminPostManagementService.getPostDetail(id);
         model.addAttribute("post", post);
         model.addAttribute("contents", postContentService.getContentsByPostId(id));
-        return "admin/posts/manage-detail";
+
+        // Populate rating, like, and comment stats for the preview page
+        double avgRating = ratingService.getAverageRating(id);
+        model.addAttribute("averageRating", Math.round(avgRating * 10.0) / 10.0);
+        model.addAttribute("totalRatings", ratingService.getRatingCount(id));
+        model.addAttribute("likeCount", postLikeService.getLikeCount(id));
+        model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(id));
+        model.addAttribute("comments", commentService.getActiveParentComments(id));
+        model.addAttribute("totalComments", commentService.getTotalActiveComments(id));
+
+        return "admin/posts/detail-preview";
     }
 
     @PostMapping("/{id}/archive")

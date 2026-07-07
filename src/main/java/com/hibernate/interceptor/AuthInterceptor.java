@@ -77,7 +77,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 return false;
             }
             if (Role.ADMIN.equals(user.getRole())) {
-                redirect(request, response, "/admin-dashboard");
+                redirect(request, response, "/admin/dashboard");
                 return false;
             }
         }
@@ -103,7 +103,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private boolean isAdminPath(String path) {
         boolean isApi = path.contains("/api/") || path.contains("/rest/");
-        return ("/admin-dashboard".equals(path) || path.startsWith("/admin/")) && !isApi;
+        return ("/admin/dashboard".equals(path) || path.startsWith("/admin/")) && !isApi;
     }
 
     private boolean isUserPath(String path) {

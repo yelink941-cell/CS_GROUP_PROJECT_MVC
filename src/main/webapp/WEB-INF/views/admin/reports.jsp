@@ -190,6 +190,11 @@
                     <span>🚩 Moderation Reports</span>
                 </a>
             </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/chat" class="sidebar-link">
+                    <span>💬 Chat / Messages</span>
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -274,7 +279,13 @@
                                                 <div class="date-meta">Reported: <%= r.getCreatedAt() %></div>
                                             </td>
                                             <td>
-                                                <strong>Title:</strong> <%= r.getPost() != null ? r.getPost().getTitle() : "N/A" %><br/>
+                                                <strong>Title:</strong>
+                                                <% if (r.getPost() != null) { %>
+                                                    <a href="<%= ctx %>/admin/posts/view/<%= r.getPost().getId() %>" target="_blank" style="color: #0284c7; font-weight: bold; text-decoration: none;"><%= r.getPost().getTitle() %></a>
+                                                <% } else { %>
+                                                    N/A
+                                                <% } %>
+                                                <br/>
                                                 <span style="font-size:12px; color:#64748b;">Slug: <%= r.getPost() != null ? r.getPost().getSlug() : "N/A" %></span><br/>
                                                 <span style="font-size:12px; color:<%= isPostBanned ? "#dc2626" : "#059669" %>; font-weight:600;">
                                                     Status: <%= r.getPost() != null ? r.getPost().getStatus() : "N/A" %>
@@ -293,9 +304,6 @@
                                                     <%-- Post Ban / Restore Buttons --%>
                                                     <% if (r.getPost() != null) { %>
                                                         <div style="display:flex; gap:4px;">
-                                                            <a href="<%= ctx %>/user/posts/details/<%= r.getPost().getId() %>" target="_blank" class="btn btn-edit">
-                                                                📄 View Details
-                                                            </a>
                                                             <% if (isPostBanned) { %>
                                                                 <form action="<%= ctx %>/admin/posts/<%= r.getPost().getId() %>/unban" method="POST" style="margin:0;">
                                                                     <button type="submit" class="btn btn-unban" onclick="return confirm('Restore visibility for post: <%= r.getPost().getTitle().replace("'", "\\'") %>?');">
@@ -317,19 +325,13 @@
                                                     <% if (author != null) { %>
                                                         <% if (isAuthorBanned) { %>
                                                             <div style="display:flex; gap:4px; margin-top:2px;">
-                                                                <form action="<%= ctx %>/admin/users/<%= author.getId() %>/unban" method="POST" style="margin:0;">
-                                                                    <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
-                                                                    <button type="submit" class="btn btn-unban" onclick="return confirm('Pardon and unban author @<%= author.getUsername() %>?');">
-                                                                        🔓 Unban Author
-                                                                    </button>
-                                                                </form>
-                                                                <button type="button" class="btn btn-edit" onclick="openBanModal('<%= author.getId() %>', '<%= author.getUsername().replace("'", "\\'") %>', '<%= author.getBanType() != null ? author.getBanType() : "POST_ONLY" %>', '<%= author.getBanReason() != null ? author.getBanReason().replace("'", "\\'") : "" %>')">
-                                                                    ✏️ Edit Author Ban
+                                                                <button type="button" class="btn btn-edit" onclick="openBanModal('<%= author.getId() %>', '<%= author.getUsername().replace("'", "\\'") %>', '<%= author.getBanType() != null ? author.getBanType() : "POST_ONLY" %>', '<%= author.getBanReason() != null ? author.getBanReason().replace("'", "\\'") : "" %>', true)">
+                                                                    ✏️ Edit/Unban Author
                                                                 </button>
                                                             </div>
                                                             <span class="type-tag-badge">Author Banned</span>
                                                         <% } else { %>
-                                                            <button type="button" class="btn btn-ban" onclick="openBanModal('<%= author.getId() %>', '<%= author.getUsername().replace("'", "\\'") %>', 'POST_ONLY', '')">
+                                                            <button type="button" class="btn btn-ban" onclick="openBanModal('<%= author.getId() %>', '<%= author.getUsername().replace("'", "\\'") %>', 'POST_ONLY', '', false)">
                                                                 🚫 Ban Author Account
                                                             </button>
                                                         <% } %>
@@ -364,7 +366,9 @@
                                     %>
                                         <tr>
                                             <td>
-                                                <strong style="font-size: 15px; color: #0f172a;"><%= g.getPost().getTitle() %></strong><br/>
+                                                <strong style="font-size: 15px;">
+                                                    <a href="<%= ctx %>/admin/posts/view/<%= g.getPost().getId() %>" target="_blank" style="color: #0284c7; font-weight: bold; text-decoration: none;"><%= g.getPost().getTitle() %></a>
+                                                </strong><br/>
                                                 <span style="font-size: 12px; color: #64748b;">Slug: <%= g.getPost().getSlug() %></span><br/>
                                                 <span style="font-size: 12px; color: #475569;">Author: <strong>@<%= author != null ? author.getUsername() : "N/A" %></strong></span>
                                                 <br/>
@@ -372,9 +376,6 @@
                                                     <span class="auto-delete-badge">🚨 Auto-Deleted (10+ Reports Threshold Triggered)</span><br/>
                                                 <% } %>
                                                 <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-                                                    <a href="<%= ctx %>/user/posts/details/<%= g.getPost().getId() %>" target="_blank" class="btn btn-edit" style="font-size:12px;">
-                                                        📄 View Post Details
-                                                    </a>
                                                     <button type="button" class="btn-toggle-details" style="margin-top:0;" onclick="toggleDetails('<%= detailsId %>')">
                                                         👁️ View Reporter Details (<%= g.getReportCount() %>)
                                                     </button>
@@ -414,15 +415,7 @@
                                                     </form>
                                                     
                                                     <% if (author != null && isAuthorBanned) { %>
-                                                        <div style="display:inline-flex; gap:4px; margin-top:2px;">
-                                                            <form action="<%= ctx %>/admin/users/<%= author.getId() %>/unban" method="POST" style="margin:0;">
-                                                                <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Pardon and unban author @<%= author.getUsername() %>?');">
-                                                                    🔓 Unban Author
-                                                                </button>
-                                                            </form>
-                                                            <span class="type-tag-badge">Author Banned</span>
-                                                        </div>
+                                                        <span class="type-tag-badge">Author Banned</span>
                                                     <% } %>
 
                                                 </div>
@@ -507,8 +500,15 @@
                                                 <p style="background: #f8fafc; padding: 8px; border-radius: 6px; font-size:13px; border-left:3px solid #cbd5e1;">
                                                     "<%= r.getComment() != null ? r.getComment().getContent() : "Deleted Comment" %>"
                                                 </p>
-                                                <span style="font-size:11px; color:#64748b; margin-top:4px; display:block;">On Post: <%= (r.getComment() != null && r.getComment().getPost() != null) ? r.getComment().getPost().getTitle() : "N/A" %></span>
-                                                <span style="font-size:11px; color:<%= isCommentHidden ? "#dc2626" : "#059669" %>; font-weight:600;">
+                                                <span style="font-size:11px; color:#64748b; margin-top:4px; display:block;">
+                                                    On Post:
+                                                    <% if (r.getComment() != null && r.getComment().getPost() != null) { %>
+                                                        <a href="<%= ctx %>/admin/posts/view/<%= r.getComment().getPost().getId() %>" target="_blank" style="color: #0284c7; font-weight: bold; text-decoration: none;"><%= r.getComment().getPost().getTitle() %></a>
+                                                    <% } else { %>
+                                                        N/A
+                                                    <% } %>
+                                                </span>
+                                                <span style="font-size:11px; color:<%= isCommentHidden ? "#dc2626" : "#059669" %>; font-weight:600; display:block; margin-bottom:4px;">
                                                     Visibility: <%= isCommentHidden ? "Hidden / Banned" : "Visible" %>
                                                 </span>
                                             </td>
@@ -524,39 +524,35 @@
                                                     
                                                     <%-- Comment Ban / Restore Buttons --%>
                                                     <% if (r.getComment() != null) { %>
-                                                        <% if (isCommentHidden) { %>
-                                                            <form action="<%= ctx %>/admin/comments/<%= r.getComment().getId() %>/unban" method="POST" style="margin:0;">
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Restore comment visibility?');">
-                                                                    🎉 Restore (Unban) Comment
-                                                                </button>
-                                                            </form>
-                                                        <% } else { %>
-                                                            <form action="<%= ctx %>/admin/comments/<%= r.getComment().getId() %>/hide" method="POST" style="margin:0;">
-                                                                <input type="hidden" name="reason" value="<%= r.getReason() %>" />
-                                                                <button type="submit" class="btn btn-ban" onclick="return confirm('Hide / Ban comment?');">
-                                                                    🚫 Ban / Hide Comment
-                                                                </button>
-                                                            </form>
-                                                        <% } %>
+                                                        <div style="display:flex; gap:4px;">
+                                                            <% if (isCommentHidden) { %>
+                                                                <form action="<%= ctx %>/admin/comments/<%= r.getComment().getId() %>/unban" method="POST" style="margin:0;">
+                                                                    <button type="submit" class="btn btn-unban" onclick="return confirm('Restore comment visibility?');">
+                                                                        🎉 Restore (Unban) Comment
+                                                                    </button>
+                                                                </form>
+                                                            <% } else { %>
+                                                                <form action="<%= ctx %>/admin/comments/<%= r.getComment().getId() %>/hide" method="POST" style="margin:0;">
+                                                                    <input type="hidden" name="reason" value="<%= r.getReason() %>" />
+                                                                    <button type="submit" class="btn btn-ban" onclick="return confirm('Hide / Ban comment?');">
+                                                                        🚫 Ban / Hide Comment
+                                                                    </button>
+                                                                </form>
+                                                            <% } %>
+                                                        </div>
                                                     <% } %>
 
                                                     <%-- Commenter Moderation Controls --%>
                                                     <% if (commenter != null) { %>
                                                         <% if (isCommenterBanned) { %>
                                                             <div style="display:flex; gap:4px; margin-top:2px;">
-                                                                <form action="<%= ctx %>/admin/users/<%= commenter.getId() %>/unban" method="POST" style="margin:0;">
-                                                                    <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
-                                                                    <button type="submit" class="btn btn-unban" onclick="return confirm('Pardon and unban commenter @<%= commenter.getUsername() %>?');">
-                                                                        🔓 Unban Commenter
-                                                                    </button>
-                                                                </form>
-                                                                <button type="button" class="btn btn-edit" onclick="openBanModal('<%= commenter.getId() %>', '<%= commenter.getUsername().replace("'", "\\'") %>', '<%= commenter.getBanType() != null ? commenter.getBanType() : "COMMENT_ONLY" %>', '<%= commenter.getBanReason() != null ? commenter.getBanReason().replace("'", "\\'") : "" %>')">
-                                                                    ✏️ Edit Ban
+                                                                <button type="button" class="btn btn-edit" onclick="openBanModal('<%= commenter.getId() %>', '<%= commenter.getUsername().replace("'", "\\'") %>', '<%= commenter.getBanType() != null ? commenter.getBanType() : "COMMENT_ONLY" %>', '<%= commenter.getBanReason() != null ? commenter.getBanReason().replace("'", "\\'") : "" %>', true)">
+                                                                    ✏️ Edit/Unban Commenter
                                                                 </button>
                                                             </div>
                                                             <span class="type-tag-badge">Commenter Banned</span>
                                                         <% } else { %>
-                                                            <button type="button" class="btn btn-ban" onclick="openBanModal('<%= commenter.getId() %>', '<%= commenter.getUsername().replace("'", "\\'") %>', 'COMMENT_ONLY', '')">
+                                                            <button type="button" class="btn btn-ban" onclick="openBanModal('<%= commenter.getId() %>', '<%= commenter.getUsername().replace("'", "\\'") %>', 'COMMENT_ONLY', '', false)">
                                                                 🚫 Ban Commenter Account
                                                             </button>
                                                         <% } %>
@@ -588,21 +584,30 @@
                                         User commenter = g.getComment().getUser();
                                         boolean isCommenterBanned = (commenter != null && commenter.isCurrentlyBanned());
                                         boolean isAutoDeleted = (g.getReportCount() >= 10 || Boolean.TRUE.equals(g.getComment().getIsDeleted()));
-                                    %>
+                                     %>
                                         <tr>
                                             <td>
                                                 <p style="background: #f8fafc; padding: 10px; border-radius: 6px; font-size:13px; border-left:3px solid #0284c7; color: #1e293b;">
                                                     "<%= g.getComment().getContent() %>"
                                                 </p>
-                                                <span style="font-size:12px; color:#64748b; margin-top:4px; display:block;">On Post: <strong><%= g.getComment().getPost() != null ? g.getComment().getPost().getTitle() : "N/A" %></strong></span>
+                                                <span style="font-size:12px; color:#64748b; margin-top:4px; display:block;">
+                                                    On Post:
+                                                    <% if (g.getComment().getPost() != null) { %>
+                                                        <a href="<%= ctx %>/admin/posts/view/<%= g.getComment().getPost().getId() %>" target="_blank" style="color: #0284c7; font-weight: bold; text-decoration: none;"><%= g.getComment().getPost().getTitle() %></a>
+                                                    <% } else { %>
+                                                        N/A
+                                                    <% } %>
+                                                </span>
                                                 <span style="font-size:12px; color:#475569;">Commenter: <strong>@<%= commenter != null ? commenter.getUsername() : "N/A" %></strong></span>
                                                 <br/>
                                                 <% if (isAutoDeleted) { %>
                                                     <span class="auto-delete-badge">🚨 Auto-Deleted (10+ Reports Threshold Triggered)</span><br/>
                                                 <% } %>
-                                                <button type="button" class="btn-toggle-details" onclick="toggleDetails('<%= detailsId %>')">
-                                                    👁️ View Reporter Details (<%= g.getReportCount() %>)
-                                                </button>
+                                                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                                                    <button type="button" class="btn-toggle-details" style="margin-top:0;" onclick="toggleDetails('<%= detailsId %>')">
+                                                        👁️ View Reporter Details (<%= g.getReportCount() %>)
+                                                    </button>
+                                                </div>
                                             </td>
                                             <td>
                                                 <span class="count-badge">🔥 <%= g.getReportCount() %> <%= g.getReportCount() > 1 ? "Reports" : "Report" %></span>
@@ -638,15 +643,7 @@
                                                     </form>
 
                                                     <% if (commenter != null && isCommenterBanned) { %>
-                                                        <div style="display:inline-flex; gap:4px; margin-top:2px;">
-                                                            <form action="<%= ctx %>/admin/users/<%= commenter.getId() %>/unban" method="POST" style="margin:0;">
-                                                                <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
-                                                                <button type="submit" class="btn btn-unban" onclick="return confirm('Pardon and unban commenter @<%= commenter.getUsername() %>?');">
-                                                                    🔓 Unban Commenter
-                                                                </button>
-                                                            </form>
-                                                            <span class="type-tag-badge">Commenter Banned</span>
-                                                        </div>
+                                                        <span class="type-tag-badge">Commenter Banned</span>
                                                     <% } %>
 
                                                 </div>
@@ -723,22 +720,47 @@
 
                 <div style="display: flex; justify-content: flex-end; gap: 8px;">
                     <button type="button" class="btn btn-dismiss" onclick="document.getElementById('banModal').classList.remove('open')">Cancel</button>
+                    <button type="button" id="unbanModalBtn" class="btn btn-unban" style="display: none;">🔓 Unban User</button>
                     <button type="submit" class="btn btn-resolve"><i class="fas fa-save"></i> Save Ban Settings</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Hidden Unban Form -->
+    <form id="modalUnbanForm" action="" method="POST" style="display:none;">
+        <input type="hidden" name="redirectUrl" value="<%= currentRedirectUrl %>" />
+    </form>
+
     <script>
-        function openBanModal(userId, username, banType, reason) {
+        function openBanModal(userId, username, banType, reason, isBanned) {
             document.getElementById('banTargetUsername').textContent = '@' + username;
             document.getElementById('banForm').action = '<%= ctx %>/admin/users/' + userId + '/ban';
             if (banType) {
                 document.getElementById('banTypeSelect').value = banType;
+            } else {
+                document.getElementById('banTypeSelect').selectedIndex = 0;
             }
             if (reason) {
                 document.getElementById('banReasonInput').value = reason;
+            } else {
+                document.getElementById('banReasonInput').value = '';
             }
+
+            var unbanBtn = document.getElementById('unbanModalBtn');
+            if (isBanned) {
+                unbanBtn.style.display = 'inline-flex';
+                unbanBtn.onclick = function() {
+                    if (confirm('Pardon and unban user @' + username + '?')) {
+                        var form = document.getElementById('modalUnbanForm');
+                        form.action = '<%= ctx %>/admin/users/' + userId + '/unban';
+                        form.submit();
+                    }
+                };
+            } else {
+                unbanBtn.style.display = 'none';
+            }
+
             document.getElementById('banModal').classList.add('open');
         }
 

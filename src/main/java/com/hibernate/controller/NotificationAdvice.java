@@ -13,12 +13,35 @@ import javax.servlet.http.HttpSession;
 public class NotificationAdvice {
 
     private final NotificationService notificationService;
+    private final com.hibernate.repository.MessageSeenStatusRepository seenStatusRepository;
+    private final com.hibernate.repository.UserRepository userRepository;
 
     @ModelAttribute
     public void addUnreadNotificationCount(HttpSession session, org.springframework.ui.Model model) {
-        User user = (User) session.getAttribute("currentUser");
-        if (user != null) {
-            model.addAttribute("unreadNotificationCount", notificationService.getUnreadCount(user.getId()));
+        Object userIdObj = session.getAttribute("userId");
+        Long userId = null;
+        if (userIdObj instanceof Number) {
+            userId = ((Number) userIdObj).longValue();
+        }
+
+        if (userId != null) {
+            User dbUser = userRepository.findById(userId).orElse(null);
+            if (dbUser != null) {
+                // If the user has been fully banned, log them out instantly
+                if (dbUser.isFullBanned()) {
+                    session.invalidate();
+                    org.springframework.security.core.context.SecurityContextHolder.clearContext();
+                    return;
+                }
+
+                // Update session and model attributes with the fresh database state
+                session.setAttribute("currentUser", dbUser);
+                model.addAttribute("dbUser", dbUser);
+
+                long totalUnread = seenStatusRepository.countTotalUnreadMessages(userId);
+                model.addAttribute("totalUnreadChatCount", totalUnread);
+                model.addAttribute("unreadNotificationCount", notificationService.getUnreadCount(userId));
+            }
         }
     }
 }

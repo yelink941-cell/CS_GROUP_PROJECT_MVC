@@ -1200,22 +1200,31 @@ body {
 
             <c:choose>
                 <c:when test="${not empty sessionScope.userId}">
-                    <form id="commentForm" style="margin-bottom: 25px;">
-                        <input type="hidden" id="postId" name="postId" value="${post.id}">
+                    <c:choose>
+                        <c:when test="${dbUser.commentBanned}">
+                            <div style="padding: 14px; background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 10px; margin-bottom: 25px; color: #991b1b; font-size: 14px; font-weight: 600;">
+                                🚫 Your account is restricted from posting comments. Reason: <c:out value="${not empty dbUser.banReason ? dbUser.banReason : 'Violation of community guidelines'}"/> (${dbUser.banRemainingText})
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <form id="commentForm" style="margin-bottom: 25px;">
+                                <input type="hidden" id="postId" name="postId" value="${post.id}">
 
-                        <textarea id="commentText"
-                                  name="commentText"
-                                  rows="3"
-                                  required
-                                  placeholder="Write a comment..."
-                                  style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
+                                <textarea id="commentText"
+                                          name="commentText"
+                                          rows="3"
+                                          required
+                                          placeholder="Write a comment..."
+                                          style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
 
-                        <button type="submit"
-                                class="button button-primary"
-                                style="margin-top: 10px; padding: 10px 20px; background: #4038ff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                            Post Comment
-                        </button>
-                    </form>
+                                <button type="submit"
+                                        class="button button-primary"
+                                        style="margin-top: 10px; padding: 10px 20px; background: #4038ff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    Post Comment
+                                </button>
+                            </form>
+                        </c:otherwise>
+                    </c:choose>
                 </c:when>
 
                 <c:otherwise>
@@ -1240,7 +1249,9 @@ body {
                                 </p>
 
                                 <div style="display: flex; gap: 12px; margin-bottom: 8px;">
-                                    <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+                                    <c:if test="${not dbUser.commentBanned}">
+                                        <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+                                    </c:if>
 
                                     <c:if test="${sessionScope.userId == comment.user.id}">
                                         <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
@@ -1249,7 +1260,7 @@ body {
                                     <button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal('comment', ${comment.id})">Report</button>
                                 </div>
 
-                                <c:if test="${not empty sessionScope.userId}">
+                                <c:if test="${not empty sessionScope.userId && not dbUser.commentBanned}">
                                     <div id="replyFormContainer-c-${comment.id}" style="display: none; margin-top: 6px; margin-left: 20px;">
                                         <form onsubmit="submitReply(event, 'c-${comment.id}', ${comment.id}, ${post.id})">
                                             <textarea id="replyText-c-${comment.id}"

@@ -30,7 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
         
         // 3. Block login if account is FULL BANNED
-        if (user.isCurrentlyBanned() && "FULL".equalsIgnoreCase(user.getBanType())) {
+        if (user.isFullBanned()) {
             String reason = (user.getBanReason() != null && !user.getBanReason().trim().isEmpty())
                     ? user.getBanReason()
                     : "Violation of community guidelines";

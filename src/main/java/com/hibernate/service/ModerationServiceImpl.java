@@ -44,26 +44,15 @@ public class ModerationServiceImpl implements ModerationService {
             throw new SecurityException("Unauthorized: Admins can only be banned by Super Admins.");
         }
 
-        LocalDateTime expiresAt = null;
-        String durationText = "Permanent";
-        if ("1_WEEK".equalsIgnoreCase(duration)) {
-            expiresAt = LocalDateTime.now().plusWeeks(1);
-            durationText = "1 Week";
-        } else if ("1_MONTH".equalsIgnoreCase(duration)) {
-            expiresAt = LocalDateTime.now().plusMonths(1);
-            durationText = "1 Month";
-        } else if ("1_YEAR".equalsIgnoreCase(duration)) {
-            expiresAt = LocalDateTime.now().plusYears(1);
-            durationText = "1 Year";
-        }
-
         String scopeText = "FULL".equalsIgnoreCase(banType) ? "Full Account Ban" : ("POST_ONLY".equalsIgnoreCase(banType) ? "Post Creation Restricted" : "Comments Restricted");
 
         target.setStatus(UserStatus.BANNED);
-        target.setBanExpiresAt(expiresAt);
         target.setBanReason(reason);
-        target.setBanType(banType != null ? banType : "FULL");
-        target.setBanDuration(duration != null ? duration : "PERMANENT");
+        if ("FULL".equalsIgnoreCase(banType)) {
+            target.setBanType(null);
+        } else {
+            target.setBanType(banType);
+        }
         sessionFactory.getCurrentSession().merge(target);
 
         // Audit Logging
@@ -71,14 +60,14 @@ public class ModerationServiceImpl implements ModerationService {
         log.setAdminId(requesterAdminId.intValue());
         log.setTargetUserId(targetUserId.intValue());
         log.setAction(ModerationAction.BAN);
-        log.setReason("Scope: " + scopeText + " | Duration: " + durationText + " | Reason: " + reason);
+        log.setReason("Scope: " + scopeText + " | Reason: " + reason);
         moderationLogRepository.save(log);
 
         notificationService.createNotification(
                 targetUserId,
                 "BAN",
                 "Account Restriction Updated (" + scopeText + ")",
-                "Your account has been restricted (" + scopeText + ") for " + durationText + ". Reason: " + reason,
+                "Your account has been restricted (" + scopeText + "). Reason: " + reason,
                 "USER",
                 targetUserId.intValue()
         );
@@ -98,10 +87,8 @@ public class ModerationServiceImpl implements ModerationService {
         }
 
         target.setStatus(UserStatus.ACTIVE);
-        target.setBanExpiresAt(null);
         target.setBanReason(null);
-        target.setBanType("FULL");
-        target.setBanDuration("PERMANENT");
+        target.setBanType(null);
         sessionFactory.getCurrentSession().merge(target);
 
         // Audit Logging

@@ -62,6 +62,11 @@
                     <span>📊 Report Logs</span>
                 </a>
             </li>
+            <li class="sidebar-item">
+                <a href="${pageContext.request.contextPath}/admin/chat" class="sidebar-link">
+                    <span>💬 Chat / Messages</span>
+                </a>
+            </li>
         </ul>
     </aside>
 

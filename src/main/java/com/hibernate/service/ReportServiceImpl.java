@@ -173,6 +173,9 @@ public class ReportServiceImpl implements ReportService {
                 // Soft delete / ban ONLY the target post
                 moderationService.softDeletePost(adminId, post.getId(),
                         "Resolved report " + reportId + ": " + reason);
+                if (post.getAuthor() != null) {
+                    moderationService.banUser(adminId, post.getAuthor().getId(), reason, "1_WEEK", "POST_ONLY");
+                }
             }
         }
     }
@@ -189,6 +192,9 @@ public class ReportServiceImpl implements ReportService {
             if (comment != null) {
                 // Soft delete / ban ONLY the target comment
                 moderationService.softDeleteComment(adminId, comment.getId(), "Resolved report " + reportId + ": " + reason);
+                if (comment.getUser() != null) {
+                    moderationService.banUser(adminId, comment.getUser().getId(), reason, "1_WEEK", "COMMENT_ONLY");
+                }
             }
         }
     }
@@ -223,9 +229,14 @@ public class ReportServiceImpl implements ReportService {
 
         Post post = pendingList.get(0).getPost();
         if (post != null) {
-            // Soft delete / ban ONLY the target post (does not affect author's account or author's other posts)
+            // Soft delete / ban target post
             moderationService.softDeletePost(adminId, post.getId(),
                     "Resolved all pending reports (" + pendingList.size() + "): " + reason);
+            
+            // Ban the post author
+            if (post.getAuthor() != null) {
+                moderationService.banUser(adminId, post.getAuthor().getId(), reason, duration, banType);
+            }
         }
     }
 
@@ -259,9 +270,14 @@ public class ReportServiceImpl implements ReportService {
 
         Comment comment = pendingList.get(0).getComment();
         if (comment != null) {
-            // Soft delete / ban ONLY the target comment
+            // Soft delete / ban target comment
             moderationService.softDeleteComment(adminId, comment.getId(),
                     "Resolved all pending reports (" + pendingList.size() + "): " + reason);
+            
+            // Ban the commenter
+            if (comment.getUser() != null) {
+                moderationService.banUser(adminId, comment.getUser().getId(), reason, duration, banType);
+            }
         }
     }
 
