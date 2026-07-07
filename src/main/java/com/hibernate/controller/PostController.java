@@ -12,6 +12,7 @@ import com.hibernate.service.CommentService;
 import com.hibernate.service.PostContentService;
 import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
+import com.hibernate.service.RatingService;
 import com.hibernate.service.TagService;
 
 import java.util.HashMap;
@@ -46,6 +47,7 @@ public class PostController {
     private final PostLikeService postLikeService; 
     private final CommentService commentService;
     private final BookmarkService bookmarkService;
+    private final RatingService ratingService;
     private final com.hibernate.repository.UserRepository userRepository;
     private final com.hibernate.repository.BlockedUserRepository blockedUserRepository;
 
@@ -244,26 +246,41 @@ public class PostController {
         return postService.getPostBySlug(slug).map(post -> {
             model.addAttribute("post", post);
             model.addAttribute("contents", post.getContents());
-            
-            Long userId = (Long) session.getAttribute("userId");
+
+            // 🟢 userId ကို Number အဖြင့် ကြည့်စိတ်ရုံ ရယူခြင်း (Integer/Long နှစ်ခုလုံး အလိုအပ်ပေးနိုင်)
+            Long userId = null;
+            Object sessionUserId = session.getAttribute("userId");
+            if (sessionUserId instanceof Number) {
+                userId = ((Number) sessionUserId).longValue();
+            }
+
             if (userId != null) {
                 // 🟢 အရေးကြီး: Refresh လုပ်တိုင်း အခြေအနေကို DB ကနေ ပြန်ယူပါ
                 boolean hasLiked = postLikeService.hasUserLiked(post.getId(), userId);
                 model.addAttribute("hasUserLiked", hasLiked);
-                
+
                 boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, post.getId());
                 model.addAttribute("hasUserBookmarked", hasBookmarked);
-                
+
+                // 🟢 Rating data ပို့ပေးပါ
+                model.addAttribute("userRating", ratingService.getUserRating(post.getId(), userId));
+                model.addAttribute("hasUserRated", ratingService.hasUserRated(post.getId(), userId));
+
                 // Collections တွေကိုလည်း ဆွဲထုတ်ပေးပါ
                 model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
             }
-            
+
             // Count များကိုလည်း ပို့ပေးပါ
             model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
             model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(post.getId()));
             model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
-            
-            return "public/post/details"; 
+            model.addAttribute("totalComments", commentService.getTotalActiveComments(post.getId()));
+
+            // 🟢 Rating count/average များ (login မရှိဘူးလည်း ပေးပါ)
+            model.addAttribute("averageRating", ratingService.getAverageRating(post.getId()));
+            model.addAttribute("totalRatings", ratingService.getRatingCount(post.getId()));
+
+            return "public/post/details";
         }).orElse("redirect:/user/posts");
     }
 
@@ -361,8 +378,13 @@ public class PostController {
     @GetMapping("/details/{id}")
     public String getPostDetails(@PathVariable("id") Integer id, Model model, HttpSession session) {
         Post post = postService.getPostById(id).orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        
-        Long userId = (Long) session.getAttribute("userId");
+
+        // 🟢 userId ကို Number အဖြင့် ကြည့်စိတ်ရုံ ရယူခြင်း
+        Long userId = null;
+        Object sessionUserId = session.getAttribute("userId");
+        if (sessionUserId instanceof Number) {
+            userId = ((Number) sessionUserId).longValue();
+        }
         if (userId == null) {
             return "redirect:/login";
         }
@@ -390,19 +412,30 @@ public class PostController {
         if (userId != null) {
             boolean hasLiked = postLikeService.hasUserLiked(id, userId);
             model.addAttribute("hasUserLiked", hasLiked);
-            
+
             boolean hasBookmarked = bookmarkService.hasUserBookmarked(userId, id);
             model.addAttribute("hasUserBookmarked", hasBookmarked);
+
+            // 🟢 Rating data ပို့ပေးပါ
+            model.addAttribute("userRating", ratingService.getUserRating(id, userId));
+            model.addAttribute("hasUserRated", ratingService.hasUserRated(id, userId));
+
+            // Collections တွေကိုလည်း ဆွဲထုတ်ပေးပါ
+            model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
         }
-        
+
         model.addAttribute("likeCount", postLikeService.getLikeCount(id));
         model.addAttribute("comments", commentService.getActiveParentComments(id));
         model.addAttribute("totalComments", commentService.getTotalActiveComments(id));
-        model.addAttribute("userLoggedIn", userId); 
-        
+        model.addAttribute("userLoggedIn", userId);
+
         model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(id));
-        
-        return "public/post/details"; 
+
+        // 🟢 Rating count/average (login မရှိဘူးလည်း ပေးပါ)
+        model.addAttribute("averageRating", ratingService.getAverageRating(id));
+        model.addAttribute("totalRatings", ratingService.getRatingCount(id));
+
+        return "public/post/details";
     }
     @GetMapping("/bookmark")
     public String showMyBookmarks(Model model, HttpSession session) {

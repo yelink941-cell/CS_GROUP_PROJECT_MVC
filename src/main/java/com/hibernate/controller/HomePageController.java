@@ -10,6 +10,7 @@ import com.hibernate.service.PostContentService;
 import com.hibernate.service.PostLikeService;
 import com.hibernate.service.PostService;
 import com.hibernate.service.PostViewService;
+import com.hibernate.service.RatingService;
 import com.hibernate.service.UserService;
 
 import java.util.List;
@@ -37,6 +38,7 @@ public class HomePageController {
     private final PostLikeService postLikeService;
     private final BookmarkService bookmarkService;
     private final PostViewService postViewService;
+    private final RatingService ratingService;
     private final UserService userService;
     private final com.hibernate.repository.BlockedUserRepository blockedUserRepository;
 
@@ -110,10 +112,20 @@ public class HomePageController {
                         model.addAttribute("collections", collectionService.getCollectionsByUserId(userId));
                         model.addAttribute("hasUserLiked", postLikeService.hasUserLiked(post.getId(), userId));
                         model.addAttribute("hasUserBookmarked", bookmarkService.hasUserBookmarked(userId, post.getId()));
+
+                        // 🟢 Rating data ပို့ပေးပါ
+                        model.addAttribute("userRating", ratingService.getUserRating(post.getId(), userId));
+                        model.addAttribute("hasUserRated", ratingService.hasUserRated(post.getId(), userId));
                     }
 
                     model.addAttribute("likeCount", postLikeService.getLikeCount(post.getId()));
                     model.addAttribute("comments", commentService.getActiveParentComments(post.getId()));
+                    model.addAttribute("totalComments", commentService.getTotalActiveComments(post.getId()));
+                    model.addAttribute("totalBookmarks", bookmarkService.getBookmarkCount(post.getId()));
+
+                    // 🟢 Rating count/average (login မရှိဘူးလည်း ပေးပါ)
+                    model.addAttribute("averageRating", ratingService.getAverageRating(post.getId()));
+                    model.addAttribute("totalRatings", ratingService.getRatingCount(post.getId()));
                     
                     return "public/post/details";
                 })

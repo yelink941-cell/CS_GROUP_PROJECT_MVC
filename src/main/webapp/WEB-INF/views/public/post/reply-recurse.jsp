@@ -17,25 +17,31 @@
                 <c:out value="${reply.content}" />
             </p>
 
-            <!-- Actions -->
-            <div class="comment-actions" style="display: flex; gap: 12px; margin-bottom: 8px;">
-                <button type="button" onclick="toggleReplyForm('r-${reply.id}')" class="button button-secondary" style="font-size: 11px; padding: 3px 8px;">Reply</button>
+            <!-- Actions: Reply (all), Delete (own), Report (others) -->
+            <div class="comment-actions">
+                <button type="button"
+                        class="btn-action"
+                        onclick="toggleReplyForm('r-${reply.id}')">
+                    Reply
+                </button>
 
                 <c:if test="${sessionScope.userId == reply.user.id}">
                     <button type="button"
-                            class="button-link"
-                            style="color: #dc3545;"
+                            class="btn-action btn-delete"
+                            style="margin-left:8px;"
                             onclick="deleteComment(${reply.id})">
                         Delete
                     </button>
                 </c:if>
 
-                <button type="button"
-                        class="button-link"
-                        style="color: #dc2626;"
-                        onclick="openReportModal('comment', ${reply.id})">
-                    Report
-                </button>
+                <c:if test="${sessionScope.userId != null && sessionScope.userId != reply.user.id}">
+                    <button type="button"
+                            class="btn-action"
+                            style="color:#dc2626; margin-left:8px;"
+                            onclick="openReportModal('comment', ${reply.id})">
+                        Report
+                    </button>
+                </c:if>
             </div>
 
             <!-- Reply Form -->
@@ -45,21 +51,33 @@
 
                     <form onsubmit="submitReply(event,'r-${reply.id}',${reply.id},${post.id})">
 
-                        <textarea id="replyText-r-${reply.id}" rows="2" required placeholder="Write a reply..." style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
-                        <br>
-                        <button type="submit" class="button button-secondary" style="font-size: 11px; padding: 3px 8px; margin-top: 4px;">Post Reply</button>
+                        <textarea id="replyText-r-${reply.id}"
+                                  rows="2"
+                                  required
+                                  placeholder="Reply ပြန်ရန်..."
+                                  style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
+                        </textarea>
+
+                        <button type="submit"
+                                class="button button-secondary"
+                                style="font-size:12px; padding:4px 10px; margin-top:4px;">
+                            Submit Reply
+                        </button>
 
                     </form>
                 </div>
             </c:if>
 
-            <!-- Nested Replies Container -->
-            <ul id="replySubListContainer-${reply.id}" style="margin-left:20px; padding-left:0; list-style:none;">
-                <c:if test="${not empty reply.replies}">
+            <!-- Nested Replies (CLEAN FIXED VERSION) -->
+            <c:if test="${not empty reply.replies}">
+                <ul id="replySubListContainer-${reply.id}"
+                    style="margin-left:20px; padding-left:0; list-style:none;">
+
                     <c:set var="replyList" value="${reply.replies}" scope="request"/>
                     <jsp:include page="reply-recurse.jsp"/>
-                </c:if>
-            </ul>
+
+                </ul>
+            </c:if>
 
         </li>
 
