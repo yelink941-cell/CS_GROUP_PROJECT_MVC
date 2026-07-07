@@ -433,7 +433,11 @@ body {
     border-color: var(--primary) !important;
 }
 
-.unliked-btn,
+.unliked-btn{
+background: white !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+}
 .button.bookmarked-btn {
     background: #f59e0b !important;
     color: white !important;
