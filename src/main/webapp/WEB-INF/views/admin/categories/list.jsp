@@ -400,11 +400,11 @@
                     <div class="category-stat-label">Total Categories</div>
                 </div>
                
-                <div class="category-stat-card purple">
+                <%-- <div class="category-stat-card purple">
                     <span class="category-stat-icon">📚</span>
                     <div class="category-stat-number">${totalPosts}</div>
                     <div class="category-stat-label">Posts in Categories</div>
-                </div>
+                </div> --%>
             </div>
 
             <!-- Create Button -->

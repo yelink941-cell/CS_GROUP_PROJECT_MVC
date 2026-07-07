@@ -109,11 +109,11 @@
                     <div class="tag-stat-number">${totalPosts}</div>
                     <div class="tag-stat-label">Total Posts</div>
                 </div>
-                <div class="tag-stat-card green">
+                <%-- <div class="tag-stat-card green">
                     <span class="tag-stat-icon">📊</span>
                     <div class="tag-stat-number">${avgTagsPerPost}</div>
                     <div class="tag-stat-label">Avg Tags per Post</div>
-                </div>
+                </div> --%>
                 <div class="tag-stat-card orange">
                     <span class="tag-stat-icon">🔥</span>
                     <div class="tag-stat-number">${mostUsedTag}</div>

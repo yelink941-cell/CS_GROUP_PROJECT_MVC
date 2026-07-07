@@ -38,7 +38,7 @@ public class CategoryController {
                 .count();
         model.addAttribute("activeCategories", activeCount);
         model.addAttribute("inactiveCategories", totalCategories - activeCount);
-        model.addAttribute("totalPosts", 0);
+        model.addAttribute("totalPosts", categoryService.getTotalPostsInCategories());
         
         return "admin/categories/list";
     }

@@ -633,6 +633,10 @@
                                 <p class="rejection-reason"><strong>⚠️ Reason:</strong> <c:out value="${post.rejectionReason}" /></p>
                             </c:if>
 
+                            <c:if test="${post.status == 'REMOVED' && not empty post.removalReason}">
+                                <p class="rejection-reason"><strong>Removal Reason:</strong> <c:out value="${post.removalReason}" /></p>
+                            </c:if>
+
                             <div class="my-post-actions">
                                 <a class="my-action-link primary" href="${pageContext.request.contextPath}/user/posts/${post.id}/contents">
                                     <span class="icon">📝</span> Sections

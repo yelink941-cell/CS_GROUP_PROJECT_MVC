@@ -25,8 +25,7 @@ public class CategoryRepositoryImpl implements CategoryRepository {
 
     @Override
     public Category update(Category category) {
-        getCurrentSession().update(category);
-        return category;
+        return (Category) getCurrentSession().merge(category);
     }
 
     @Override
@@ -58,7 +57,11 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     @Override
     public long countTotalPostsInAllCategories() {
         Long count = getCurrentSession()
-                .createQuery("SELECT SUM(p.id) FROM Post p", Long.class)
+                .createQuery(
+                        "SELECT COUNT(p.id) FROM Post p "
+                                + "WHERE p.category IS NOT NULL "
+                                + "AND p.deletedAt IS NULL",
+                        Long.class)
                 .uniqueResult();
         return count != null ? count : 0;
     }

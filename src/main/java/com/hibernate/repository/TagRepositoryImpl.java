@@ -25,8 +25,7 @@ public class TagRepositoryImpl implements TagRepository {
 
     @Override
     public Tag update(Tag tag) {
-        getCurrentSession().update(tag);
-        return tag;
+        return (Tag) getCurrentSession().merge(tag);
     }
 
     @Override

@@ -270,6 +270,12 @@ body {
             </span>
         </div>
 
+        <c:if test="${post.status == 'REMOVED' && not empty post.removalReason}">
+            <div style="margin: 12px 0; padding: 12px 14px; border-radius: 10px; background: #fee2e2; border-left: 4px solid #ef4444; color: #991b1b;">
+                <strong>Removal Reason:</strong> <c:out value="${post.removalReason}" />
+            </div>
+        </c:if>
+
         <c:if test="${not empty post.tags}">
             <ul class="tag-list" aria-label="Post tags">
                 <c:forEach var="tag" items="${post.tags}">

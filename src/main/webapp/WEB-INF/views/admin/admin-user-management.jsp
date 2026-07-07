@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.hibernate.entity.User" %>
 <%@ page import="com.hibernate.entity.UserProfile" %>
 <%@ page import="java.util.List" %>
@@ -14,7 +14,11 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; }
         body { display: flex; min-height: 100vh; background: #f0f2f5; color: #1a2332; }
         
-        .main-workspace { margin-left: 260px; flex-grow: 1; padding: 32px 40px; background: #f0f2f5; }
+        .main-workspace { margin-left: 260px; flex-grow: 1; padding: 0; background: #f0f2f5; min-height: 100vh; }
+        .top-navbar { min-height: 88px; background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 34px 0 44px; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04); position: sticky; top: 0; z-index: 20; }
+        .nav-title { display: flex; align-items: center; gap: 12px; color: #1e293b; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+        .user-profile-badge { display: flex; align-items: center; gap: 14px; color: #1e293b; font-size: 18px; }
+        .content-area { padding: 32px 40px; }
         h2 { font-size: 26px; color: #0f1724; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px; }
 
         .flash-msg { padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
@@ -52,6 +56,9 @@
         .btn-report-link:hover { background: #fca5a5; color: #7f1d1d; }
 
         .badge-banned { background: #fef2f2; color: #991b1b; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 11px; border: 1px solid #fecaca; display: inline-block; }
+        .badge { background: #ef4444; color: #ffffff; padding: 8px 14px; border-radius: 7px; font-size: 13px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }
+        .btn-logout { background: #64748b; color: #ffffff; padding: 13px 20px; text-decoration: none; border-radius: 8px; font-size: 15px; font-weight: 800; transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; }
+        .btn-logout:hover { background: #475569; transform: translateY(-1px); box-shadow: 0 8px 18px rgba(71, 85, 105, 0.22); }
 
         .modal-mask { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 999; }
         .modal-mask.open { opacity: 1; pointer-events: auto; }
@@ -68,42 +75,47 @@
         .modal-info-row { display: flex; flex-direction: column; gap: 2px; }
         .modal-label { color: #64748b; font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
         .modal-val { color: #0f1724; font-weight: 600; }
+        @media (max-width: 900px) {
+            .top-navbar { align-items: flex-start; flex-direction: column; padding: 20px 24px; }
+            .user-profile-badge { flex-wrap: wrap; font-size: 15px; }
+            .content-area { padding: 24px; }
+        }
     </style>
 </head>
 <body>
 
     <aside class="sidebar">
-        <div class="sidebar-brand">CheatSheet Admin Panel 👑</div>
+        <div class="sidebar-brand">CheatSheet Admin Panel ðŸ‘‘</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link ">
-                    <span>📊 Core Dashboard</span>
+                    <span>ðŸ“Š Core Dashboard</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/categories" class="sidebar-link">
-                    <span>📁 Category Management</span>
+                    <span>ðŸ“ Category Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
-                    <span>🏷️ Tags Management</span>
+                    <span>ðŸ·ï¸ Tags Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
-                    <span>📄 Post Management</span>
+                    <span>ðŸ“„ Post Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
-                    <span>⏳ Pending Posts</span>
+                    <span>â³ Pending Posts</span>
                 </a>
             </li>
            
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link active">
-                    <span>👥 User Management</span>
+                    <span>ðŸ‘¥ User Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
@@ -118,18 +130,28 @@
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link">
-                    <span>📊 Report Logs</span>
+                    <span>ðŸ“Š Report Logs</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/chat" class="sidebar-link">
-                    <span>💬 Chat / Messages</span>
+                    <span>ðŸ’¬ Chat / Messages</span>
                 </a>
             </li>
         </ul>
     </aside>
-    <main class="main-workspace">
-        <h2>👥 User Directory & Status Registry</h2>
+        <main class="main-workspace">
+        <header class="top-navbar">
+            <div class="nav-title">👥 User Management</div>
+            <div class="user-profile-badge">
+                <span>Welcome, <strong>Admin</strong></span>
+                <span class="badge">ADMIN</span>
+                <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Sign Out</a>
+            </div>
+        </header>
+
+        <section class="content-area">
+        <h2>ðŸ‘¥ User Directory & Status Registry</h2>
 
         <% if (request.getAttribute("success") != null || session.getAttribute("success") != null) { %>
             <div class="flash-msg flash-success">
@@ -220,7 +242,7 @@
                         
                         <td>
                             <% if (isBanned) { %>
-                                <span class="badge-banned">🚫 SUSPENDED</span>
+                                <span class="badge-banned">ðŸš« SUSPENDED</span>
                                 <div style="font-size:11px; color:#dc2626; margin-top:4px; font-weight:600;">
                                     <%= u.getBanRemainingText() %>
                                 </div>
@@ -263,6 +285,7 @@
                 </tbody>
             </table>
         </div>
+        </section>
     </main>
 
     <!-- ===== PROFILE INSPECTOR MODAL ===== -->
@@ -345,3 +368,4 @@
 
 </body>
 </html>
+
