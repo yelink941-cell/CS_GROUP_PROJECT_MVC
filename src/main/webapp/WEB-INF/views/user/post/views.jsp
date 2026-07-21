@@ -42,7 +42,7 @@
                         <tr>
                             <th>Viewer</th>
                             <th>Viewed At</th>
-                            <th>IP Address</th>
+                            <!-- <th>IP Address</th> -->
                             <th>User Agent</th>
                         </tr>
                     </thead>
@@ -56,8 +56,8 @@
                                     </c:choose>
                                 </td>
                                 <td><c:out value="${view.viewedAt}" /></td>
-                                <td><c:out value="${view.ipAddress}" /></td>
-                                <td class="user-agent-cell" title="${fn:escapeXml(view.userAgent)}">
+<%--                                 <td><c:out value="${view.ipAddress}" /></td>
+ --%>                                <td class="user-agent-cell" title="${fn:escapeXml(view.userAgent)}">
                                     <c:choose>
                                         <c:when test="${fn:length(view.userAgent) > 90}">
                                             <c:out value="${fn:substring(view.userAgent, 0, 90)}" />...

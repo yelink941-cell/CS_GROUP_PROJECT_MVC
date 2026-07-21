@@ -90,4 +90,13 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
     }
+
+    @Override
+    @Transactional
+    public void deleteNotification(Integer id, Long userId) {
+        Notification notification = notificationRepository.findById(id);
+        if (notification != null && notification.getUser().getId().equals(userId)) {
+            notificationRepository.delete(notification);
+        }
+    }
 }

@@ -477,6 +477,56 @@ background: white !important;
     font-weight: 600;
 }
 
+/* Comment Action Buttons */
+.comment-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.btn-action {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+}
+
+.btn-action-reply {
+    color: #4f46e5 !important;
+}
+.btn-action-reply:hover {
+    background: #e0e7ff !important;
+    color: #4338ca !important;
+}
+
+.btn-action-delete {
+    color: #dc3545 !important;
+}
+.btn-action-delete:hover {
+    background: #fdf2f2 !important;
+    color: #b91c1c !important;
+}
+
+.btn-action-report {
+    color: #dc2626 !important;
+}
+.btn-action-report:hover {
+    background: #fff1f2 !important;
+    color: #b91c1c !important;
+}
+
+
 #commentsToggleWrapper {
     margin-top: 18px !important;
     background: var(--white);
@@ -1280,17 +1330,17 @@ body {
                                     <c:out value="${comment.content}" />
                                 </p>
 
-                                <div style="display: flex; gap: 12px; margin-bottom: 8px;">
+                                <div class="comment-actions">
                                     <c:if test="${not dbUser.commentBanned}">
-                                        <button type="button" class="button-link" onclick="toggleReplyForm('c-${comment.id}')">Reply</button>
+                                        <button type="button" class="btn-action btn-action-reply" onclick="toggleReplyForm('c-${comment.id}')">↩️ Reply</button>
                                     </c:if>
 
                                     <c:if test="${sessionScope.userId == comment.user.id}">
-                                        <button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(${comment.id})">Delete</button>
+                                        <button type="button" class="btn-action btn-action-delete" onclick="deleteComment(${comment.id})">🗑️ Delete</button>
                                     </c:if>
 
                                     <c:if test="${sessionScope.userId != comment.user.id}">
-                                        <button type="button" class="button-link" style="color: #dc2626;" onclick="openReportModal('comment', ${comment.id})">Report</button>
+                                        <button type="button" class="btn-action btn-action-report" onclick="openReportModal('comment', ${comment.id})">🚩 Report</button>
                                     </c:if>
                                 </div>
 
@@ -1539,9 +1589,9 @@ commentForm.addEventListener('submit', function(e) {
                     '<span>' + safeDate + '</span>' +
                 '</div>' +
                 '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
-                '<div style="display: flex; gap: 12px; margin-bottom: 8px;">' +
-                    '<button type="button" class="button-link" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">Reply</button>' +
-                    '<button type="button" class="button-link" style="color: #dc3545;" onclick="deleteComment(' + data.commentId + ')">Delete</button>' +
+                '<div class="comment-actions">' +
+                    '<button type="button" class="btn-action btn-action-reply" onclick="toggleReplyForm(\'c-' + data.commentId + '\')">↩️ Reply</button>' +
+                    '<button type="button" class="btn-action btn-action-delete" onclick="deleteComment(' + data.commentId + ')">🗑️ Delete</button>' +
                 '</div>' +
                 '<div id="replyFormContainer-c-' + data.commentId + '" style="display: none; margin-top: 6px; margin-left: 20px;">' +
                     '<form onsubmit="submitReply(event, \'c-' + data.commentId + '\', ' + data.commentId + ', ' + postId + ')">' +
@@ -1669,10 +1719,9 @@ function submitReply(e, commentId, parentId, postId) {
             '</div>' +
             '<!-- Content -->' +
             '<p style="margin: 0 0 6px 0; line-height: 1.5; color: #333;">' + safeContent + '</p>' +
-            '<!-- Actions -->' +
             '<div class="comment-actions">' +
-                '<button type="button" class="btn-action" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">Reply</button>' +
-                '<button type="button" class="btn-action btn-delete" style="margin-left: 8px;" onclick="deleteComment(' + data.replyId + ')">Delete</button>' +
+                '<button type="button" class="btn-action btn-action-reply" onclick="toggleReplyForm(\'r-' + data.replyId + '\')">↩️ Reply</button>' +
+                '<button type="button" class="btn-action btn-action-delete" onclick="deleteComment(' + data.replyId + ')">🗑️ Delete</button>' +
             '</div>' +
             '<!-- Reply Form -->' +
             '<div id="replyFormContainer-r-' + data.replyId + '" style="display: none; margin-top: 8px; margin-left: 20px;">' +

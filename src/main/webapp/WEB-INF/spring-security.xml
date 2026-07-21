@@ -1,66 +1,43 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:security="http://www.springframework.org/schema/security"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="
-           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
-
-    <security:http pattern="/resources/**" security="none"/>
-
-    <security:http auto-config="true" use-expressions="true">
-        <security:intercept-url pattern="/" access="permitAll" />
-        <security:intercept-url pattern="/login" access="permitAll" />
-        <security:intercept-url pattern="/register" access="permitAll" />
-        <security:intercept-url pattern="/forgot-password" access="permitAll" />
-        <security:intercept-url pattern="/verify-otp" access="permitAll" />
-        <security:intercept-url pattern="/reset-password" access="permitAll" />
-        <security:intercept-url pattern="/suspended" access="permitAll" />
-        <security:intercept-url pattern="/doSearch" access="permitAll" />
-        <security:intercept-url pattern="/search/suggestions" method="GET" access="permitAll" />
-
-        <security:intercept-url pattern="/home" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/public" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/public/details" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/categories" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/categories/*" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/tags" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/tags/*" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/popular" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/trending" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/new" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/posts/*" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/categories/*" method="GET" access="permitAll" />
-        <security:intercept-url pattern="/category/*/posts" method="GET" access="permitAll" />
-
-        <security:intercept-url pattern="/admin/**" access="hasAnyRole('ADMIN', 'SUPER_ADMIN')" />
-        <security:intercept-url pattern="/user/**" access="isAuthenticated()" />
-        <security:intercept-url pattern="/notes/**" access="isAuthenticated()" />
-        <security:intercept-url pattern="/chat/**" access="isAuthenticated()" />
-        <security:intercept-url pattern="/comments/**" access="isAuthenticated()" />
-        <security:intercept-url pattern="/api/**" access="isAuthenticated()" />
-        <security:intercept-url pattern="/**" access="isAuthenticated()" />
-
-        <security:form-login 
-            login-page="/login" 
-            authentication-success-handler-ref="customSuccessHandler" 
-            authentication-failure-url="/login?error=true" 
-            username-parameter="email" 
-            password-parameter="password" />
-
-        <security:logout 
-            logout-url="/logout" 
-            logout-success-url="/?logout=true" 
-            invalidate-session="true" />
-        <security:csrf disabled="true"/>
-    </security:http>
-
-    <security:authentication-manager>
-        <security:authentication-provider user-service-ref="customUserDetailsService">
-            <security:password-encoder ref="passwordEncoder"/>
-        </security:authentication-provider>
-    </security:authentication-manager>
-
-    <bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
-
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:security="http://www.springframework.org/schema/security" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+<security:http pattern="/resources/**" security="none"/>
+<security:http auto-config="true" use-expressions="true">
+<security:intercept-url pattern="/" access="permitAll"/>
+<security:intercept-url pattern="/login" access="permitAll"/>
+<security:intercept-url pattern="/register" access="permitAll"/>
+<security:intercept-url pattern="/forgot-password" access="permitAll"/>
+<security:intercept-url pattern="/verify-otp" access="permitAll"/>
+<security:intercept-url pattern="/reset-password" access="permitAll"/>
+<security:intercept-url pattern="/suspended" access="permitAll"/>
+<security:intercept-url pattern="/doSearch" access="permitAll"/>
+<security:intercept-url pattern="/search/suggestions" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/home" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/public" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/public/details" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/categories" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/categories/*" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/tags" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/tags/*" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/popular" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/trending" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/new" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/posts/*" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/categories/*" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/category/*/posts" method="GET" access="permitAll"/>
+<security:intercept-url pattern="/admin/**" access="hasAnyRole('ADMIN', 'SUPER_ADMIN')"/>
+<security:intercept-url pattern="/user/**" access="isAuthenticated()"/>
+<security:intercept-url pattern="/notes/**" access="isAuthenticated()"/>
+<security:intercept-url pattern="/chat/**" access="isAuthenticated()"/>
+<security:intercept-url pattern="/comments/**" access="isAuthenticated()"/>
+<security:intercept-url pattern="/api/**" access="isAuthenticated()"/>
+<security:intercept-url pattern="/**" access="isAuthenticated()"/>
+<security:form-login login-page="/login" authentication-success-handler-ref="customSuccessHandler" authentication-failure-url="/login?error=true" username-parameter="email" password-parameter="password"/>
+<security:logout logout-url="/logout" logout-success-url="/?logout=true" invalidate-session="true"/>
+<security:csrf disabled="true"/>
+</security:http>
+<security:authentication-manager>
+<security:authentication-provider user-service-ref="customUserDetailsService">
+<security:password-encoder ref="passwordEncoder"/>
+</security:authentication-provider>
+</security:authentication-manager>
+<bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
 </beans>

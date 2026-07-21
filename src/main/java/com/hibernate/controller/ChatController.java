@@ -1,4 +1,5 @@
 package com.hibernate.controller;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import com.hibernate.entity.User;
 import com.hibernate.service.ChatService;
 import com.hibernate.websocket.ChatEventBroadcaster;
 
+
 @RestController
 @RequestMapping("/api/chat")
 public class ChatController {
@@ -33,14 +35,15 @@ public class ChatController {
     						ChatEventBroadcaster broadcaster) {
         this.chatService = chatService;
         this.broadcaster = broadcaster;
-    }
+    	}
 
     @PostMapping("/messages/{messageId}/reactions")
     public ResponseEntity<?> toggleReaction(
             @PathVariable Long messageId,
             @RequestBody ReactionRequest request,
             HttpSession session) {
-        User currentUser = requireUser(session);
+        
+                User currentUser = requireUser(session);
         if (currentUser == null) {
             return unauthorized();
         }
@@ -440,7 +443,7 @@ public class ChatController {
 
     private ResponseEntity<?> unauthorized() {
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login ဝင်ပါ။");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(" Enter Login ");
 
     }
 

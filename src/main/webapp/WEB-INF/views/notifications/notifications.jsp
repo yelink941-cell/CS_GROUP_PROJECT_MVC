@@ -307,6 +307,16 @@
             color: #475569;
         }
 
+        .badge-like {
+            background: #ffe4e6;
+            color: #e11d48;
+        }
+
+        .badge-comment {
+            background: #ccfbf1;
+            color: #0d9488;
+        }
+
         .btn-read {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -322,6 +332,25 @@
         .btn-read:hover {
             background: #e2e8f0;
             color: #1e293b;
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: #fff5f5;
+            border: 1px solid #fecaca;
+            color: #ef4444;
+            padding: 7px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 800;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fca5a5;
             transform: translateY(-2px);
         }
 
@@ -515,7 +544,9 @@
                                     <span class="badge-type 
                                         ${n.type == 'EVENT' ? 'badge-event' : 
                                           (n.type == 'ANNOUNCEMENT' ? 'badge-announcement' : 
-                                           (n.type == 'SYSTEM' ? 'badge-system' : 'badge-default'))}">
+                                           (n.type == 'SYSTEM' ? 'badge-system' : 
+                                            (n.type == 'LIKE' ? 'badge-like' : 
+                                             (n.type == 'COMMENT' || n.type == 'REPLY' ? 'badge-comment' : 'badge-default'))))}">
                                         <c:out value="${n.type}"/>
                                     </span>
 
@@ -523,13 +554,25 @@
                                     <span><c:out value="${n.createdAt}"/></span>
                                 </div>
 
-                                <c:if test="${!n.isRead}">
-                                    <form action="${pageContext.request.contextPath}/notifications/${n.id}/read" method="POST" style="margin:0;">
-                                        <button type="submit" class="btn-read">
-                                            <i class="fas fa-check"></i> Mark read
+                                <div class="notification-actions" style="display: flex; gap: 8px; align-items: center;">
+                                    <c:if test="${n.referenceType == 'POST'}">
+                                        <a href="${pageContext.request.contextPath}/user/posts/details/${n.referenceId}" class="btn-read" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                            <i class="fas fa-external-link-alt"></i> View Post
+                                        </a>
+                                    </c:if>
+                                    <c:if test="${!n.isRead}">
+                                        <form action="${pageContext.request.contextPath}/notifications/${n.id}/read" method="POST" style="margin:0;">
+                                            <button type="submit" class="btn-read">
+                                                <i class="fas fa-check"></i> Mark read
+                                            </button>
+                                        </form>
+                                    </c:if>
+                                    <form action="${pageContext.request.contextPath}/notifications/${n.id}/delete" method="POST" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete this notification?');">
+                                        <button type="submit" class="btn-delete">
+                                            <i class="fas fa-trash-alt"></i> Delete
                                         </button>
                                     </form>
-                                </c:if>
+                                </div>
                             </div>
                         </div>
                     </c:forEach>

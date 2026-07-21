@@ -59,4 +59,15 @@ public class NotificationController {
         notificationService.markAllAsRead(currentUser.getId());
         return "redirect:/notifications";
     }
+
+    @PostMapping("/{id}/delete")
+    public String deleteNotification(@PathVariable("id") Integer id, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        notificationService.deleteNotification(id, currentUser.getId());
+        return "redirect:/notifications";
+    }
 }

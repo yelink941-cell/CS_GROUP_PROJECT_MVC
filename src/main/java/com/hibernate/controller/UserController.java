@@ -3,7 +3,7 @@ package com.hibernate.controller;
 import com.hibernate.dto.RegistrationDto;
 import com.hibernate.entity.Post;
 import com.hibernate.entity.User;
-import com.hibernate.entity.UserPreference;
+
 import com.hibernate.entity.UserProfile;
 import com.hibernate.entity.enums.Role;
 import com.hibernate.entity.enums.UserStatus;
@@ -454,6 +454,9 @@ public class UserController {
     public String processUpdateProfile(
             @ModelAttribute("userProfile") UserProfile updatedProfile,
             @RequestParam("avatarFile") MultipartFile avatarFile,
+            @RequestParam(value = "currentPassword", required = false) String currentPassword,
+            @RequestParam(value = "newPassword", required = false) String newPassword,
+            @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
             HttpSession session,
             Model model) {
         
@@ -462,8 +465,47 @@ public class UserController {
             return "redirect:/login";
         }
 
+        User managedUser = userService.getUserById(currentUser.getId());
+        if (managedUser == null) {
+            return "redirect:/login";
+        }
+
+        // 1. Password Verification Block
+        if (newPassword != null && !newPassword.trim().isEmpty()) {
+            
+            if (currentPassword == null || currentPassword.trim().isEmpty() || 
+                !org.mindrot.jbcrypt.BCrypt.checkpw(currentPassword, managedUser.getPasswordHash())) {
+                
+                UserProfile dbProfile = userService.getUserProfileByUserId(managedUser.getId());
+                if (dbProfile != null && dbProfile.getAvatar() != null) {
+                    String base64Avatar = java.util.Base64.getEncoder().encodeToString(dbProfile.getAvatar());
+                    model.addAttribute("avatarImage", base64Avatar);
+                }
+                
+                model.addAttribute("errorMessage", "Current password is incorrect!");
+                model.addAttribute("userProfile", updatedProfile);
+                return "profile/edit-profile";
+            }
+
+            if (!newPassword.equals(confirmPassword)) {
+                UserProfile dbProfile = userService.getUserProfileByUserId(managedUser.getId());
+                if (dbProfile != null && dbProfile.getAvatar() != null) {
+                    String base64Avatar = java.util.Base64.getEncoder().encodeToString(dbProfile.getAvatar());
+                    model.addAttribute("avatarImage", base64Avatar);
+                }
+
+                model.addAttribute("errorMessage", "Passwords do not match!");
+                model.addAttribute("userProfile", updatedProfile);
+                return "profile/edit-profile";
+            }
+            
+            // Password updates successfully here!
+            userService.updatePassword(managedUser, newPassword);
+        }
+
+        // 2. Profile Data Processing Block
         try {
-            UserProfile existingProfile = userService.getUserProfileByUserId(currentUser.getId());
+            UserProfile existingProfile = userService.getUserProfileByUserId(managedUser.getId());
 
             if (existingProfile != null) {
                 updatedProfile.setUser(existingProfile.getUser());
@@ -475,18 +517,33 @@ public class UserController {
                     updatedProfile.setAvatar(existingProfile.getAvatar());
                 }
 
-                userService.updateUserProfile(existingProfile);
+                userService.updateUserProfile(updatedProfile);
             } else {
-                updatedProfile.setUser(currentUser);
+                updatedProfile.setUser(managedUser);
                 userService.updateUserProfile(updatedProfile);
             }
+            
+            // =========================================================
+            // 🔥 CRITICAL FIX: Fully refresh and resync the Session object
+            // =========================================================
+            User freshUser = userService.getUserById(managedUser.getId());
+            session.setAttribute("currentUser", freshUser);
+            
+            // Redirect instead of returning a view directly to avoid session state lag
+            return "redirect:/profile?success=true";
+            
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("error", "Failed to update profile settings.");
+            model.addAttribute("errorMessage", "Failed to update profile settings.");
+            
+            // Reload avatar if catch block triggers
+            UserProfile dbProfile = userService.getUserProfileByUserId(managedUser.getId());
+            if (dbProfile != null && dbProfile.getAvatar() != null) {
+                String base64Avatar = java.util.Base64.getEncoder().encodeToString(dbProfile.getAvatar());
+                model.addAttribute("avatarImage", base64Avatar);
+            }
             return "profile/edit-profile";
         }
-        
-        return "redirect:/profile";
     }
     
     

@@ -16,34 +16,30 @@
             <p style="margin:0 0 6px 0; line-height:1.5; color:#333;">
                 <c:out value="${reply.content}" />
             </p>
-
             <!-- Actions: Reply (all), Delete (own), Report (others) -->
             <div class="comment-actions">
                 <button type="button"
-                        class="btn-action"
+                        class="btn-action btn-action-reply"
                         onclick="toggleReplyForm('r-${reply.id}')">
-                    Reply
+                    ↩️ Reply
                 </button>
 
                 <c:if test="${sessionScope.userId == reply.user.id}">
                     <button type="button"
-                            class="btn-action btn-delete"
-                            style="margin-left:8px;"
+                            class="btn-action btn-action-delete"
                             onclick="deleteComment(${reply.id})">
-                        Delete
+                        🗑️ Delete
                     </button>
                 </c:if>
 
                 <c:if test="${sessionScope.userId != null && sessionScope.userId != reply.user.id}">
                     <button type="button"
-                            class="btn-action"
-                            style="color:#dc2626; margin-left:8px;"
+                            class="btn-action btn-action-report"
                             onclick="openReportModal('comment', ${reply.id})">
-                        Report
+                        🚩 Report
                     </button>
                 </c:if>
             </div>
-
             <!-- Reply Form -->
             <c:if test="${sessionScope.userId != null}">
                 <div id="replyFormContainer-r-${reply.id}"

@@ -38,71 +38,64 @@ title_style = ParagraphStyle(
     'DocTitle',
     parent=styles['Heading1'],
     fontName=font_bold_name,
-    fontSize=20,
-    leading=26,
+    fontSize=18,
+    leading=23,
     textColor=colors.HexColor('#1E293B'),
     alignment=1, # Center
-    spaceAfter=10
+    spaceAfter=8
 )
 
 subtitle_style = ParagraphStyle(
     'DocSubTitle',
     parent=styles['Normal'],
     fontName=font_name,
-    fontSize=11,
-    leading=16,
-    textColor=colors.HexColor('#64748B'),
+    fontSize=10,
+    leading=14,
+    textColor=colors.HexColor('#475569'),
     alignment=1,
-    spaceAfter=20
+    spaceAfter=15
 )
 
 h1_style = ParagraphStyle(
     'SectionH1',
     parent=styles['Heading2'],
     fontName=font_bold_name,
-    fontSize=14,
-    leading=18,
+    fontSize=13,
+    leading=17,
     textColor=colors.HexColor('#0F172A'),
-    spaceBefore=14,
-    spaceAfter=8
+    spaceBefore=12,
+    spaceAfter=6,
+    keepWithNext=True
 )
 
 h2_style = ParagraphStyle(
     'SectionH2',
     parent=styles['Heading3'],
     fontName=font_bold_name,
-    fontSize=11,
-    leading=15,
+    fontSize=10.5,
+    leading=14,
     textColor=colors.HexColor('#2563EB'),
     spaceBefore=8,
-    spaceAfter=4
+    spaceAfter=4,
+    keepWithNext=True
 )
 
 body_style = ParagraphStyle(
     'BodyTextCustom',
     parent=styles['Normal'],
     fontName=font_name,
-    fontSize=9.5,
-    leading=14,
+    fontSize=9,
+    leading=13,
     textColor=colors.HexColor('#334155'),
-    spaceAfter=6
-)
-
-code_style = ParagraphStyle(
-    'CodeStyle',
-    parent=styles['Normal'],
-    fontName='Courier',
-    fontSize=8.5,
-    leading=11,
-    textColor=colors.HexColor('#0F172A')
+    spaceAfter=5
 )
 
 table_header_style = ParagraphStyle(
     'TableHeader',
     parent=styles['Normal'],
     fontName=font_bold_name,
-    fontSize=9.5,
-    leading=13,
+    fontSize=9,
+    leading=12,
     textColor=colors.white
 )
 
@@ -110,9 +103,32 @@ table_cell_style = ParagraphStyle(
     'TableCell',
     parent=styles['Normal'],
     fontName=font_name,
-    fontSize=8.5,
-    leading=12,
+    fontSize=8,
+    leading=11,
     textColor=colors.HexColor('#1E293B')
+)
+
+func_header_style = ParagraphStyle(
+    'FuncHeader',
+    parent=styles['Normal'],
+    fontName=font_bold_name,
+    fontSize=9,
+    leading=13,
+    textColor=colors.HexColor('#1E3A8A'),
+    spaceBefore=4,
+    spaceAfter=2,
+    keepWithNext=True
+)
+
+func_desc_style = ParagraphStyle(
+    'FuncDesc',
+    parent=styles['Normal'],
+    fontName=font_name,
+    fontSize=8,
+    leading=11.5,
+    textColor=colors.HexColor('#475569'),
+    leftIndent=12,
+    spaceAfter=3
 )
 
 elements = []
@@ -133,15 +149,15 @@ def make_table(data):
                 formatted_row.append(Paragraph(cell, table_cell_style))
         formatted_data.append(formatted_row)
     
-    t = Table(formatted_data, colWidths=[160, 200, 180])
+    t = Table(formatted_data, colWidths=[150, 200, 190])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1E293B')),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('LEFTPADDING', (0, 0), (-1, -1), 5),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')),
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F8FAFC')])
     ]))
@@ -154,7 +170,7 @@ elements.append(Paragraph("<b>Overview:</b> Real-time direct & group messaging s
 chat_data = [
     ["File Name", "Role / Path", "Key Functionality / Notes"],
     ["ChatController.java", "src/main/java/com/hibernate/controller/ChatController.java", "REST endpoints for messaging actions (send, edit, delete, react, block, report)."],
-    ["ChatPageController.java", "src/main/java/com/hibernate/controller/ChatPageController.java", "Page routing for /chat and /chat/room/{id} views."],
+    ["ChatPageController.java", "src/main/java/com/hibernate/controller/ChatPageController.java", "Page routing for /chat and /chat/room views."],
     ["ChatWebSocketHandler.java", "src/main/java/com/hibernate/websocket/ChatWebSocketHandler.java", "WebSocket connection session handler & text payload routing."],
     ["ChatEventBroadcaster.java", "src/main/java/com/hibernate/websocket/ChatEventBroadcaster.java", "Broadcasts real-time events (new message, typing, reactions, read receipts)."],
     ["ChatService.java / Impl", "src/main/java/com/hibernate/service/ChatServiceImpl.java", "Core business logic for conversation creation, message saving & read status."],
@@ -170,7 +186,47 @@ chat_data = [
     ["create-group.jsp", "src/main/webapp/WEB-INF/views/chat/create-group.jsp", "UI dialog for starting a new group conversation."]
 ]
 elements.append(make_table(chat_data))
-elements.append(Spacer(1, 12))
+elements.append(Spacer(1, 6))
+
+elements.append(Paragraph("<b>🛠️ Key Functions and Capabilities (What They Can Do)</b>", h2_style))
+
+elements.append(Paragraph("<b>ChatController.java (REST API Endpoints)</b>", func_header_style))
+elements.append(Paragraph("• <code>toggleReaction(messageId, request, session)</code>: Toggles a user's emoji reaction on a message (adds if absent, removes if present) and broadcasts the event via WebSockets.", func_desc_style))
+elements.append(Paragraph("• <code>getInbox(session)</code>: Fetches all active direct and group conversations for the logged-in user's inbox list.", func_desc_style))
+elements.append(Paragraph("• <code>searchUsers(keyword, session)</code>: Searches for users by username or display name to initiate new direct chats.", func_desc_style))
+elements.append(Paragraph("• <code>startDirectChat(userId, session)</code>: Initiates a direct message room between the logged-in user and target user (or returns the existing room ID).", func_desc_style))
+elements.append(Paragraph("• <code>createConversation(request, session)</code>: Creates a group conversation with a designated title and user participant IDs.", func_desc_style))
+elements.append(Paragraph("• <code>sendMessage(request, session)</code>: Persists a new text message in the database, handling replies via parent message ID, and triggers WebSocket broadcast.", func_desc_style))
+elements.append(Paragraph("• <code>editMessage(messageId, request, session)</code>: Modifies an existing message's text, tags it as edited, and broadcasts the modification.", func_desc_style))
+elements.append(Paragraph("• <code>markMessagesAsRead(request, session)</code>: Marks all messages in a conversation up to a specific message ID as read for the user, broadcasting read receipts.", func_desc_style))
+elements.append(Paragraph("• <code>reportMessage(messageId, request, session)</code>: Submits a moderation report for a chat message, defining the violation reason and description.", func_desc_style))
+elements.append(Paragraph("• <code>deleteConversation(conversationId, session)</code>: Performs a soft-delete (clears history) of a conversation for the active user.", func_desc_style))
+elements.append(Paragraph("• <code>blockUser(userId, session)</code> / <code>unblockUser(userId, session)</code>: Blocks/unblocks a user to restrict or restore direct messaging capabilities.", func_desc_style))
+elements.append(Paragraph("• <code>deleteMessage(messageId, session)</code>: Deletes a message from the database and broadcasts the deletion to room participants.", func_desc_style))
+elements.append(Paragraph("• <code>sendMediaMessage(conversationId, caption, files, session)</code>: Handles multi-file uploads (attachments), saves the media message, and broadcasts it.", func_desc_style))
+elements.append(Paragraph("• <code>getChatHistory(conversationId, lastMessageId, session)</code>: Fetches past messages from a room using pagination for infinite scrolling.", func_desc_style))
+elements.append(Paragraph("• <code>getRoomDetails(conversationId, session)</code>: Retrieves metadata, partner info, and blocking status of a specific chat room.", func_desc_style))
+
+elements.append(Paragraph("<b>ChatPageController.java (Page Routing)</b>", func_header_style))
+elements.append(Paragraph("• <code>showChatDashboard(session, model)</code>: Renders the inbox view showing all active chats.", func_desc_style))
+elements.append(Paragraph("• <code>showChatRoom(conversationId, session, model)</code>: Fetches conversation info, partner statuses, blocking parameters, and renders the chat room page.", func_desc_style))
+elements.append(Paragraph("• <code>showCreateGroupForm(session)</code>: Displays the page to create new group chat conversations.", func_desc_style))
+elements.append(Paragraph("• <code>createGroupChat(title, usernames, session, model)</code>: Validates group title and participant usernames, saves the group chat room, and redirects the user to the new room.", func_desc_style))
+
+elements.append(Paragraph("<b>ChatWebSocketHandler.java (WebSocket Routing & Connections)</b>", func_header_style))
+elements.append(Paragraph("• <code>afterConnectionEstablished(session)</code>: Registers active WebSocket sessions, updates user online status in the database, and broadcasts the status.", func_desc_style))
+elements.append(Paragraph("• <code>handleTextMessage(session, message)</code>: Parses and handles client JSON payloads for typing indicators, stopped typing indicators, message edits, and new message sends.", func_desc_style))
+elements.append(Paragraph("• <code>afterConnectionClosed(session, status)</code>: Unregisters sessions, sets user status to offline if no active connections remain, and broadcasts the status (with last seen time).", func_desc_style))
+
+elements.append(Paragraph("<b>ChatEventBroadcaster.java (Event Dispatcher)</b>", func_header_style))
+elements.append(Paragraph("• <code>broadcastPayload(conversationId, payload)</code>: Dispatches a JSON packet to active WebSocket sessions of conversation participants.", func_desc_style))
+elements.append(Paragraph("• <code>broadcastNewMessage(...) / broadcastEditedMessage(...) / broadcastDeletedMessage(...)</code>: Transmits message changes to subscribers in real-time.", func_desc_style))
+elements.append(Paragraph("• <code>broadcastReaction(...) / broadcastReadReceipt(...)</code>: Delivers reaction changes and read indicators instantly.", func_desc_style))
+elements.append(Paragraph("• <code>broadcastUserTyping(...) / broadcastUserStoppedTyping(...)</code>: Delivers active typing states to room participants.", func_desc_style))
+elements.append(Paragraph("• <code>broadcastUserStatus(userId, isOnline, lastSeen)</code>: Broadcasts a user's status change (online/offline) to all active WebSocket sessions globally.", func_desc_style))
+
+elements.append(Spacer(1, 10))
+elements.append(PageBreak())
 
 # --- MODULE 2 ---
 elements.append(Paragraph("2. 🚩 Report System (Post, Comment & Message Moderation)", h1_style))
@@ -190,7 +246,30 @@ report_data = [
     ["reports.jsp", "src/main/webapp/WEB-INF/views/admin/reports.jsp", "Admin Moderation Dashboard UI for reviewing reported posts and comments."]
 ]
 elements.append(make_table(report_data))
-elements.append(Spacer(1, 12))
+elements.append(Spacer(1, 6))
+
+elements.append(Paragraph("<b>🛠️ Key Functions and Capabilities (What They Can Do)</b>", h2_style))
+
+elements.append(Paragraph("<b>ReportController.java (Post Reporting)</b>", func_header_style))
+elements.append(Paragraph("• <code>reportPost(id, reason, description, session)</code>: Saves a post report record, saving the reporting user ID, target post ID, violation category, and optional custom text.", func_desc_style))
+
+elements.append(Paragraph("<b>CommentReportController.java (Comment Reporting)</b>", func_header_style))
+elements.append(Paragraph("• <code>reportComment(id, reason, description, session)</code>: Saves a comment report record for a comment ID, logging the violator and description.", func_desc_style))
+
+elements.append(Paragraph("<b>AdminReportController.java (Moderation Dashboard & Actions)</b>", func_header_style))
+elements.append(Paragraph("• <code>viewReports(type, view, model, session)</code>: Renders the reports list filtered by type (posts/comments) and view (active queue/historical reports).", func_desc_style))
+elements.append(Paragraph("• <code>dismissPostReport(id, session) / dismissCommentReport(id, session)</code>: Dismisses a specific report by marking the item as safe in the database.", func_desc_style))
+elements.append(Paragraph("• <code>resolvePostReport(id, reason, session) / resolveCommentReport(id, reason, session)</code>: Resolves a single report by marking it resolved and deleting the reported content.", func_desc_style))
+elements.append(Paragraph("• <code>dismissGroupedPostReport(postId, session) / dismissGroupedCommentReport(commentId, session)</code>: Dismisses all active reports targeting a specific post or comment in bulk.", func_desc_style))
+elements.append(Paragraph("• <code>resolveGroupedPostReport(postId, reason, duration, banType, session) / resolveGroupedCommentReport(commentId, reason, duration, banType, session)</code>: Bulk-resolves reports by deleting the post or comment and applying a temporary user suspension (banning the user's posting, commenting, or all privileges) for a set duration.", func_desc_style))
+
+elements.append(Paragraph("<b>ReportService.java (Moderation Business Logic)</b>", func_header_style))
+elements.append(Paragraph("• <code>getGroupedPendingPostReports() / getGroupedPendingCommentReports()</code>: Groups database reports by target content and wraps them inside DTOs, counting total reports and aggregating reporter reasons for cleaner UI listing.", func_desc_style))
+elements.append(Paragraph("• <code>dismissAllPostReportsByPostId(adminId, postId) / dismissAllCommentReportsByCommentId(...)</code>: Performs database updates to change status of all reports on a specific content to DISMISSED.", func_desc_style))
+elements.append(Paragraph("• <code>resolveAllPostReportsByPostId(...) / resolveAllCommentReportsByCommentId(...)</code>: Marks reports as RESOLVED, soft-deletes the target item, and inserts a user suspension row.", func_desc_style))
+
+elements.append(Spacer(1, 10))
+elements.append(PageBreak())
 
 # --- MODULE 3 ---
 elements.append(Paragraph("3. 📊 Jasper Report Generation (Monthly CheatSheet Report)", h1_style))
@@ -205,7 +284,23 @@ jasper_data = [
     ["cheatsheet-report.jsp", "src/main/webapp/WEB-INF/views/admin/cheatsheet-report.jsp", "Admin page UI to select month/year and preview/download PDF reports."]
 ]
 elements.append(make_table(jasper_data))
-elements.append(Spacer(1, 12))
+elements.append(Spacer(1, 6))
+
+elements.append(Paragraph("<b>🛠️ Key Functions and Capabilities (What They Can Do)</b>", h2_style))
+
+elements.append(Paragraph("<b>CheatSheetReportController.java (Report Request Controller)</b>", func_header_style))
+elements.append(Paragraph("• <code>viewCheatSheetReport(page, pageSize, model, session)</code>: Fetches paginated cheat sheet statistics list and renders the dashboard UI.", func_desc_style))
+elements.append(Paragraph("• <code>downloadPdf(session)</code>: Invokes PDF generation and returns the binary array as an inline PDF attachment stream to the browser.", func_desc_style))
+elements.append(Paragraph("• <code>downloadExcel(session)</code>: Invokes Excel generation and returns the binary array as a downloadable spreadsheet.", func_desc_style))
+
+elements.append(Paragraph("<b>CheatSheetReportService.java (Jasper Report Generator)</b>", func_header_style))
+elements.append(Paragraph("• <code>getReportData()</code>: Queries the database for monthly metrics, including total cheat sheets, active writers, cumulative view counts, and active post trends.", func_desc_style))
+elements.append(Paragraph("• <code>getTotalCheatSheetsCount()</code>: Computes the total quantity of cheat sheets saved in the database.", func_desc_style))
+elements.append(Paragraph("• <code>generatePdfReport()</code>: Loads the Jasper template (<code>.jrxml</code>), fills it with the compiled data DTOs using <code>JasperFillManager</code>, processes it into PDF format, and returns the byte array.", func_desc_style))
+elements.append(Paragraph("• <code>generateExcelReport()</code>: Exports the compiled report data as an Excel binary stream.", func_desc_style))
+
+elements.append(Spacer(1, 10))
+elements.append(PageBreak())
 
 # --- MODULE 4 ---
 elements.append(Paragraph("4. 🔔 Notification System (User Notifications & Advice)", h1_style))
@@ -221,7 +316,27 @@ notif_data = [
     ["notifications.jsp", "src/main/webapp/WEB-INF/views/notifications/notifications.jsp", "User notification list screen."]
 ]
 elements.append(make_table(notif_data))
-elements.append(Spacer(1, 12))
+elements.append(Spacer(1, 6))
+
+elements.append(Paragraph("<b>🛠️ Key Functions and Capabilities (What They Can Do)</b>", h2_style))
+
+elements.append(Paragraph("<b>NotificationController.java (User Notifications Endpoints)</b>", func_header_style))
+elements.append(Paragraph("• <code>listNotifications(session, model)</code>: Fetches all notifications for the active user and renders the notifications list page.", func_desc_style))
+elements.append(Paragraph("• <code>markAsRead(id, session)</code>: Marks a specific notification as read and redirects back to notifications.", func_desc_style))
+elements.append(Paragraph("• <code>markAllAsRead(session)</code>: Marks all unread notifications of the user as read.", func_desc_style))
+
+elements.append(Paragraph("<b>NotificationAdvice.java (Global Controller Interceptor)</b>", func_header_style))
+elements.append(Paragraph("• <code>addUnreadNotificationCount(session, model)</code>: Runs globally before all controllers. It checks if the current user has been fully banned, automatically logging them out if so. If not, it updates the session and model attributes with the fresh database state (<code>dbUser</code>) and binds the global <code>unreadNotificationCount</code> and <code>totalUnreadChatCount</code> badges to display in the header menu.", func_desc_style))
+
+elements.append(Paragraph("<b>NotificationService.java (Notification Builder & Repository Manager)</b>", func_header_style))
+elements.append(Paragraph("• <code>createNotification(userId, type, title, message, referenceType, referenceId)</code>: Constructs a new notification instance (e.g. LIKE, COMMENT, APPROVE) with target URLs, saving it to the database.", func_desc_style))
+elements.append(Paragraph("• <code>broadcastNotification(type, title, message, referenceType, referenceId)</code>: Instantiates and saves a notification to all registered active users in the system.", func_desc_style))
+elements.append(Paragraph("• <code>getNotificationsForUser(userId)</code>: Queries all user notification records, sorted by date (newest first).", func_desc_style))
+elements.append(Paragraph("• <code>getUnreadCount(userId)</code>: Returns the number of unread notifications for a user.", func_desc_style))
+elements.append(Paragraph("• <code>markAsRead(notificationId, userId) / markAllAsRead(userId)</code>: Updates read status flags to true in the database.", func_desc_style))
+
+elements.append(Spacer(1, 10))
+elements.append(PageBreak())
 
 # --- MODULE 5 ---
 elements.append(Paragraph("5. 📢 Event Announcement System", h1_style))
@@ -236,7 +351,18 @@ ann_data = [
     ["announcements.jsp", "src/main/webapp/WEB-INF/views/admin/announcements.jsp", "Admin UI for drafting, publishing, and managing announcements."]
 ]
 elements.append(make_table(ann_data))
-elements.append(Spacer(1, 16))
+elements.append(Spacer(1, 6))
+
+elements.append(Paragraph("<b>🛠️ Key Functions and Capabilities (What They Can Do)</b>", h2_style))
+
+elements.append(Paragraph("<b>AdminAnnouncementController.java (Admin Announcement CRUD)</b>", func_header_style))
+elements.append(Paragraph("• <code>listAnnouncements(...) / createAnnouncement(...) / deleteAnnouncement(...)</code>: CRUD endpoints allowing administrators to draft, edit, publish, or remove global announcements.", func_desc_style))
+
+elements.append(Paragraph("<b>AnnouncementService.java (Announcement Broadcast Coordinator)</b>", func_header_style))
+elements.append(Paragraph("• <code>publishAnnouncement(announcement)</code>: Saves the announcement and calls <code>NotificationService.broadcastNotification(...)</code> to alert all target users.", func_desc_style))
+
+elements.append(Spacer(1, 10))
+elements.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#CBD5E1'), spaceAfter=10))
 
 # --- ARCHITECTURE & DEFENSE TIPS ---
 elements.append(Paragraph("💡 Presentation & Teacher Defense Key Points", h1_style))

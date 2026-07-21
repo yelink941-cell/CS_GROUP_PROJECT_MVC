@@ -48,4 +48,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     public Notification findById(Integer id) {
         return getSession().get(Notification.class, id);
     }
+
+    @Override
+    public void delete(Notification notification) {
+        getSession().delete(notification);
+    }
 }

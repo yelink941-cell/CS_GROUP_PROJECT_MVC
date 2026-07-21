@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hibernate.entity.User;
+import com.hibernate.entity.Post;
 import com.hibernate.repository.PostLikeRepository;
 import com.hibernate.repository.PostRepository;
 import com.hibernate.repository.UserRepository;
 import com.hibernate.service.PostLikeService;
+import com.hibernate.service.NotificationService;
 
 @RestController
 public class LikeRestController {
@@ -32,6 +34,9 @@ public class LikeRestController {
 
     @Autowired
     private PostLikeService postLikeService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @PostMapping("/api/toggle-like")
     @ResponseBody
@@ -77,6 +82,20 @@ public class LikeRestController {
         // Service layer မှာ @Transactional + flush/clear ပါ၊ return value က isLiked
         boolean isLiked = postLikeService.toggleLike(postId, userId);
         long totalLikes = postLikeService.getLikeCount(postId);
+
+        if (isLiked && currentUser != null) {
+            Post post = postRepository.findById(postId).orElse(null);
+            if (post != null && post.getAuthor() != null && !post.getAuthor().getId().equals(userId)) {
+                notificationService.createNotification(
+                    post.getAuthor().getId(),
+                    "LIKE",
+                    "New Like on Your Post",
+                    currentUser.getUsername() + " liked your post '" + post.getTitle() + "'",
+                    "POST",
+                    post.getId()
+                );
+            }
+        }
 
         response.put("status", "success");
         response.put("isLiked", isLiked);

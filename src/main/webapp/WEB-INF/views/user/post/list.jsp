@@ -641,9 +641,9 @@
                                 <a class="my-action-link primary" href="${pageContext.request.contextPath}/user/posts/${post.id}/contents">
                                     <span class="icon">📝</span> Sections
                                 </a>
-                                <a class="my-action-link" href="${pageContext.request.contextPath}/user/posts/${post.id}/files">
+                               <%--  <a class="my-action-link" href="${pageContext.request.contextPath}/user/posts/${post.id}/files">
                                     <span class="icon">📎</span> Files
-                                </a>
+                                </a> --%>
                                 <a class="my-action-link" href="${pageContext.request.contextPath}/posts/${post.slug}/download-pdf">
                                     <span class="icon">📄</span> PDF
                                 </a>

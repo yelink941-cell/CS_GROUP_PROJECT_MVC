@@ -1,4 +1,4 @@
-﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.hibernate.entity.User" %>
 <%@ page import="com.hibernate.entity.UserProfile" %>
 <%@ page import="java.util.List" %>
@@ -85,37 +85,37 @@
 <body>
 
     <aside class="sidebar">
-        <div class="sidebar-brand">CheatSheet Admin Panel ðŸ‘‘</div>
+        <div class="sidebar-brand">CheatSheet Admin Panel &#128081;</div>
         <ul class="sidebar-menu">
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-link ">
-                    <span>ðŸ“Š Core Dashboard</span>
+                    <span>&#128202; Core Dashboard</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/categories" class="sidebar-link">
-                    <span>ðŸ“ Category Management</span>
+                    <span>&#128193; Category Management</span>
                 </a>
             </li>
-            <li class="sidebar-item">
+           <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/tags" class="sidebar-link">
-                    <span>ðŸ·ï¸ Tags Management</span>
+                    <span>🏷️ Tags Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts" class="sidebar-link">
-                    <span>ðŸ“„ Post Management</span>
+                    <span>&#128196; Post Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/posts/pending" class="sidebar-link">
-                    <span>â³ Pending Posts</span>
+                    <span>&#9203; Pending Posts</span>
                 </a>
             </li>
            
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/users" class="sidebar-link active">
-                    <span>ðŸ‘¥ User Management</span>
+                    <span>&#128101; User Management</span>
                 </a>
             </li>
             <li class="sidebar-item">
@@ -130,12 +130,12 @@
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="sidebar-link">
-                    <span>ðŸ“Š Report Logs</span>
+                    <span>&#128202; Report Logs</span>
                 </a>
             </li>
             <li class="sidebar-item">
                 <a href="${pageContext.request.contextPath}/admin/chat" class="sidebar-link">
-                    <span>ðŸ’¬ Chat / Messages</span>
+                    <span>&#128172; Chat / Messages</span>
                 </a>
             </li>
         </ul>
@@ -151,7 +151,7 @@
         </header>
 
         <section class="content-area">
-        <h2>ðŸ‘¥ User Directory & Status Registry</h2>
+        <h2>&#128101; User Directory & Status Registry</h2>
 
         <% if (request.getAttribute("success") != null || session.getAttribute("success") != null) { %>
             <div class="flash-msg flash-success">
@@ -242,7 +242,7 @@
                         
                         <td>
                             <% if (isBanned) { %>
-                                <span class="badge-banned">ðŸš« SUSPENDED</span>
+                                <span class="badge-banned">&#128683; SUSPENDED</span>
                                 <div style="font-size:11px; color:#dc2626; margin-top:4px; font-weight:600;">
                                     <%= u.getBanRemainingText() %>
                                 </div>

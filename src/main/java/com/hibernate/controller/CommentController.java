@@ -22,6 +22,7 @@ import com.hibernate.repository.CommentRepository;
 import com.hibernate.repository.UserRepository;
 import com.hibernate.service.CommentService;
 import com.hibernate.service.PostService;
+import com.hibernate.service.NotificationService;
 
 @Controller
 @RequestMapping("/comments")
@@ -39,6 +40,9 @@ public class CommentController {
 
     @Autowired
     private CommentService commentService; 
+
+    @Autowired
+    private NotificationService notificationService;
 
     @PostMapping({"/add", "/comment"})
     @ResponseBody
@@ -100,6 +104,17 @@ public class CommentController {
         comment.setPost(post);
 
         commentService.saveComment(comment);
+
+        if (post.getAuthor() != null && !post.getAuthor().getId().equals(userId)) {
+            notificationService.createNotification(
+                post.getAuthor().getId(),
+                "COMMENT",
+                "New Comment on Your Post",
+                dbUser.getUsername() + " commented on your post '" + post.getTitle() + "'",
+                "POST",
+                post.getId()
+            );
+        }
 
         response.put("status", "success");
         response.put("message", "Comment added successfully");
@@ -175,6 +190,31 @@ public class CommentController {
         reply.setParent(parent);
 
         commentService.saveComment(reply);
+
+        if (post.getAuthor() != null && !post.getAuthor().getId().equals(userId)) {
+            notificationService.createNotification(
+                post.getAuthor().getId(),
+                "COMMENT",
+                "New Comment on Your Post",
+                dbUser.getUsername() + " commented on your post '" + post.getTitle() + "'",
+                "POST",
+                post.getId()
+            );
+        }
+
+        if (parent != null && parent.getUser() != null) {
+            Long parentAuthorId = parent.getUser().getId();
+            if (!parentAuthorId.equals(userId) && (post.getAuthor() == null || !post.getAuthor().getId().equals(parentAuthorId))) {
+                notificationService.createNotification(
+                    parentAuthorId,
+                    "REPLY",
+                    "New Reply to Your Comment",
+                    dbUser.getUsername() + " replied to your comment on '" + post.getTitle() + "'",
+                    "POST",
+                    post.getId()
+                );
+            }
+        }
 
         response.put("status", "success");
         response.put("message", "Reply added successfully");

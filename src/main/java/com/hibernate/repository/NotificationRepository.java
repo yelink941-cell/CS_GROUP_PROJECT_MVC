@@ -8,4 +8,5 @@ public interface NotificationRepository {
     List<Notification> findByUserId(Long userId);
     long countUnreadByUserId(Long userId);
     Notification findById(Integer id);
+    void delete(Notification notification);
 }
